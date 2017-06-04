@@ -11,6 +11,8 @@ typedef struct{ short maxPotValue;} armValues;	//You HAVE to initialize this
 
 static baseValues baseConstant;  static armValues armConstant; static PID drive; static PID arm;
 
+static bool baseDone = false, armDone = false, clawDone = false;
+
 static void initialize(){
 	baseConstant.width	= 16.5;
 	baseConstant.wheelDiameter = 3.25;
@@ -30,6 +32,7 @@ static void resetValues(){
 	SensorValue[LeftEncoder] = 0; SensorValue[RightEncoder] = 0;																					//Reset encoder values
 	drive.error = 0; drive.lastError = 0; drive.integral = 0; drive.integralLimit = 0; drive.output = 0;	//Reset PID variables for base
 	arm.error = 0; arm.lastError = 0; arm.integral = 0; arm.integralLimit = 0; arm.output = 0;						//Reset PID variables for arm
+	baseDone = false; armDone = false; clawDone = false;
 }
 
 static void move(direction side, unsigned short pulses, byte speed, bool useGyro = true){
@@ -50,31 +53,31 @@ static void move(direction side, unsigned short pulses, byte speed, bool useGyro
 	switch(side){
 	case f:
 		//Move motors based on PID values and "rectify" robot if necessary
-		motor[baseLeftFront] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseLeftBack] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseRightFront] = -(drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1));
-		motor[baseRightBack] = -(drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1));
+		motor[driveLeftFront] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveLeftBack] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveRightFront] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveRightBack] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
 		break;
 	case b:
 		//Move motors based on PID values and "rectify" robot if necessary
-		motor[baseLeftFront] = -(drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1));
-		motor[baseLeftBack] = -(drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1));
-		motor[baseRightFront] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
-		motor[baseRightBack] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveLeftFront] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveLeftBack] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveRightFront] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveRightBack] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
 		break;
 	case l:
 		//Move motors based on PID values and "rectify" robot if necessary
-		motor[baseLeftFront] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseLeftBack] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseRightFront] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
-		motor[baseRightBack] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveLeftFront] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveLeftBack] = -drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveRightFront] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveRightBack] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
 		break;
 	case r:
 		//Move motors based on PID values and "rectify" robot if necessary
-		motor[baseLeftFront] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseLeftBack] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
-		motor[baseRightFront] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
-		motor[baseRightBack] = drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveLeftFront] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveLeftBack] = drive.output / ((abs(SensorValue[LeftEncoder]) - abs(SensorValue[RightEncoder])) * 0.01 + 1);
+		motor[driveRightFront] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
+		motor[driveRightBack] = -drive.output / ((abs(SensorValue[RightEncoder]) - abs(SensorValue[LeftEncoder])) * 0.01 + 1);
 		break;
 	}
 }
@@ -88,14 +91,14 @@ static void intake(unsigned short ticks, byte speed){
 static void hold(target subs, byte speed){
 	switch(subs){
 	case kBase:
-		motor[baseLeftBack] = speed;
-		motor[baseLeftFront] = speed;
-		motor[baseRightBack] = -speed;
-		motor[baseRightFront] = -speed;
+		motor[driveLeftBack] = speed;
+		motor[driveLeftFront] = speed;
+		motor[driveRightBack] = speed;
+		motor[driveRightFront] = speed;
 		break;
 	case kArm:
-		motor[armLeft] = speed;
-		motor[armRight] = -speed;
+		motor[liftLeft] = speed;
+		motor[liftLeft] = speed;
 		break;
 	case kClaw:
 		motor[clawMotor] = speed;
@@ -105,14 +108,14 @@ static void hold(target subs, byte speed){
 static void stop(target subs){
 	switch(subs){
 	case kBase:
-		motor[baseLeftBack] = 0;
-		motor[baseLeftFront] = 0;
-		motor[baseRightBack] = 0;
-		motor[baseRightFront] = 0;
+		motor[driveLeftBack] = 0;
+		motor[driveLeftFront] = 0;
+		motor[driveRightBack] = 0;
+		motor[driveRightFront] = 0;
 		break;
 	case kArm:
-		motor[armLeft] = 0;
-		motor[armRight] = 0;
+		motor[liftLeft] = 0;
+		motor[liftRight] = 0;
 		break;
 	case kClaw:
 		motor[clawMotor] = 0;
