@@ -5,9 +5,9 @@
 #pragma config(Motor,  port1,           driveLeftFront, tmotorVex393TurboSpeed_HBridge, openLoop, driveLeft, encoderPort, dgtl1)
 #pragma config(Motor,  port2,           driveLeftBack, tmotorVex393HighSpeed_MC29, openLoop, driveLeft)
 #pragma config(Motor,  port3,           liftLeft,      tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port4,           xbarLeft,      tmotorVex393HighSpeed_MC29, openLoop)
+#pragma config(Motor,  port4,           xBarLeft,      tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port5,           clawMotor,     tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port7,           xbarRight,     tmotorVex393HighSpeed_MC29, openLoop)
+#pragma config(Motor,  port7,           xBarRight,     tmotorVex393HighSpeed_MC29, openLoop, reversed)
 #pragma config(Motor,  port8,           liftRight,     tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port9,           driveRightBack, tmotorVex393HighSpeed_MC29, openLoop, reversed, driveRight)
 #pragma config(Motor,  port10,          driveRightFront, tmotorVex393TurboSpeed_HBridge, openLoop, reversed, driveRight, encoderPort, dgtl3)
@@ -26,7 +26,7 @@ void pre_auton(){
 
 task autonomous(){
 	move(f,360,127);
-	lift(50,127);
+	lift(47,127);
 	intake(10,127);
 	hold(kArm,127);
 	stop(kArm);
@@ -41,7 +41,7 @@ task autonomous(){
 }
 
 task usercontrol(){
-	//while(true){
-
-	//}
+	while(true){
+		driverControl();
+	}
 }
