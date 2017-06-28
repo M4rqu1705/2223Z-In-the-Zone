@@ -222,6 +222,9 @@ static void lift(float height, byte speed){
 static void intake(unsigned short ticks, byte speed){
 }
 
+
+/****************************************************************--Driver control--*****************************************************************/
+
 void normalDrive(){
 	//make sure small movements of the joystick do not move the robot
 	motor[driveLeftBack] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? vexRT[Ch2] - vexRT[Ch1] : 0;
