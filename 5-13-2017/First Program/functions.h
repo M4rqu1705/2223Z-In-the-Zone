@@ -55,7 +55,7 @@ static kalmanFilter gyro;
 static kalmanFilter potentiometerArm;
 static kalmanFilter potentiometerXBar;
 
-static int button8RToggleState, button8RPressed, driveThreshold;
+static int button8RToggleState, button8RPressed, driveThreshold, slewTime, joystickVertical, joystickHorizontal;
 static bool baseDone = false, armDone = false, clawDone = false;
 
 static void initialize(){
@@ -130,6 +130,9 @@ static void initialize(){
 	button8RToggleState = 0;
 	button8RPressed = 0;
 	driveThreshold = 20;
+	slewTime = 1;
+	joystickVertical = 0;
+	joystickHorizontal = 0;
 }
 
 static void resetValues(){
@@ -398,22 +401,30 @@ static void intake(unsigned short ticks, byte speed){
 
 /****************************************************************--Driver control--*****************************************************************/
 
-void normalDrive(){
+void normalDrive(byte x, byte y){
 	//make sure small movements of the joystick do not move the robot
-	motor[driveLeftBack] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? vexRT[Ch2] - vexRT[Ch1] : 0;
-	motor[driveLeftFront] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? vexRT[Ch2] - vexRT[Ch1] : 0;
-	motor[driveRightBack] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? vexRT[Ch2] + vexRT[Ch1] : 0;
-	motor[driveRightFront] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? vexRT[Ch2] + vexRT[Ch1] : 0;
+	motor[driveLeftBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x - y  : 0;
+	motor[driveLeftFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x - y  : 0;
+	motor[driveRightBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x + y  : 0;
+	motor[driveRightFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x + y  : 0;
 }
-void invertedDirectionDrive(){
+void invertedDirectionDrive(byte x, byte y){
 	//make sure small movements of the joystick do not move the robot
-	motor[driveLeftBack] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? -vexRT[Ch2] - vexRT[Ch1] : 0;
-	motor[driveLeftFront] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? -vexRT[Ch2] - vexRT[Ch1] : 0;
-	motor[driveRightBack] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? -vexRT[Ch2] + vexRT[Ch1] : 0;
-	motor[driveRightFront] = (vexRT[Ch2]>driveThreshold  || vexRT[Ch2]< -driveThreshold || vexRT[Ch1]>driveThreshold || vexRT[Ch1]< -driveThreshold) ? -vexRT[Ch2] + vexRT[Ch1] : 0;
+	motor[driveLeftBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x - y  : 0;
+	motor[driveLeftFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x - y  : 0;
+	motor[driveRightBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x + y  : 0;
+	motor[driveRightFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x + y  : 0;
 }
 
 static void driverControl(){
+	//Slew rate control (basically accelerates and deaccelerates before changing speeds too quickly to preserve motor life)
+
+	if(vexRT[Ch2] >= 0 && joystickHorizontal <= vexRT[Ch2]) joystickHorizontal++;
+	else if (vexRT[Ch2] < 0 && joystickHorizontal <= vexRT[Ch2]) joystickHorizontal--;
+
+	if(vexRT[Ch1] > 0 && joystickVertical <= vexRT[Ch1]) joystickVertical++;
+	else if (vexRT[Ch1] < 0 && joystickVertical <= vexRT[Ch1]) joystickVertical--;
+
 	//Drive
 	if( vexRT[Btn8R] == 1 ){
 		if(!button8RPressed){																//if buttonPressed was previously 0 when Btn8R pressed then
@@ -422,8 +433,9 @@ static void driverControl(){
 		}
 	}
 	else button8RPressed = 0;															// the button is not pressed so buttonPressed = 0
-		if(button8RToggleState)	invertedDirectionDrive();
-	else	normalDrive();
+
+	if(button8RToggleState)	invertedDirectionDrive(joystickHorizontal, joystickVertical);
+	else	normalDrive(joystickHorizontal, joystickVertical);
 
 	//Lift
 
@@ -431,6 +443,7 @@ static void driverControl(){
 
 	//Claw
 
+	wait1Msec(slewTime);
 }
 
 #endif

@@ -29,7 +29,6 @@ task autonomous(){
 	lift(47,127);
 	intake(10,127);
 	hold(kArm,127);
-	stop(kArm);
 	getSensor(kEncoderLeft);
 	while(true){
 		move(f,360,127);	//Move base forward
