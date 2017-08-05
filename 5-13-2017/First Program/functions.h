@@ -401,31 +401,17 @@ static void intake(unsigned short ticks, byte speed){
 
 /****************************************************************--Driver control--*****************************************************************/
 
-void normalDrive(byte x, byte y){
-	//make sure small movements of the joystick do not move the robot
-	motor[driveLeftBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x - y  : 0;
-	motor[driveLeftFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x - y  : 0;
-	motor[driveRightBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x + y  : 0;
-	motor[driveRightFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? x + y  : 0;
-}
-void invertedDirectionDrive(byte x, byte y){
-	//make sure small movements of the joystick do not move the robot
-	motor[driveLeftBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x - y  : 0;
-	motor[driveLeftFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x - y  : 0;
-	motor[driveRightBack] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x + y  : 0;
-	motor[driveRightFront] = (x > driveThreshold  || x < -driveThreshold || y > driveThreshold || y < -driveThreshold) ? -x + y  : 0;
-}
-
 static void driverControl(){
 	//Slew rate control (basically accelerates and deaccelerates before changing speeds too quickly to preserve motor life)
-
+	//Froward and Backward movement
+	if(vexRT[Ch1] > 0 && joystickVertical <= vexRT[Ch1]) joystickVertical++;
+	else if (vexRT[Ch1] < 0 && joystickVertical <= vexRT[Ch1]) joystickVertical--;
+	//Rotation
 	if(vexRT[Ch2] >= 0 && joystickHorizontal <= vexRT[Ch2]) joystickHorizontal++;
 	else if (vexRT[Ch2] < 0 && joystickHorizontal <= vexRT[Ch2]) joystickHorizontal--;
 
-	if(vexRT[Ch1] > 0 && joystickVertical <= vexRT[Ch1]) joystickVertical++;
-	else if (vexRT[Ch1] < 0 && joystickVertical <= vexRT[Ch1]) joystickVertical--;
-
 	//Drive
+	//Decide in which direction to drive
 	if( vexRT[Btn8R] == 1 ){
 		if(!button8RPressed){																//if buttonPressed was previously 0 when Btn8R pressed then
 			button8RToggleState = 1 - button8RToggleState;		// change the toggle state
@@ -434,8 +420,19 @@ static void driverControl(){
 	}
 	else button8RPressed = 0;															// the button is not pressed so buttonPressed = 0
 
-	if(button8RToggleState)	invertedDirectionDrive(joystickHorizontal, joystickVertical);
-	else	normalDrive(joystickHorizontal, joystickVertical);
+	if(button8RToggleState){	//"Inverted" drive
+		motor[driveLeftBack] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? -joystickHorizontal - joystickVertical  : 0;
+		motor[driveLeftFront] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? -joystickHorizontal - joystickVertical  : 0;
+		motor[driveRightBack] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? -joystickHorizontal + joystickVertical  : 0;
+		motor[driveRightFront] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? -joystickHorizontal + joystickVertical  : 0;
+	}
+
+	else{											//"Normal" drive
+		motor[driveLeftBack] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? joystickHorizontal - joystickVertical  : 0;
+		motor[driveLeftFront] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? joystickHorizontal - joystickVertical  : 0;
+		motor[driveRightBack] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? joystickHorizontal + joystickVertical  : 0;
+		motor[driveRightFront] = (joystickHorizontal > driveThreshold  && joystickHorizontal < -driveThreshold && joystickVertical > driveThreshold && joystickVertical < -driveThreshold) ? joystickHorizontal + joystickVertical  : 0;
+	}
 
 	//Lift
 
