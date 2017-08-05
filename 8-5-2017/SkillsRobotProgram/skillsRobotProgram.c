@@ -26,18 +26,23 @@ void pre_auton(){
 }
 
 task autonomous(){
-	move(f,2.5,127);
-	lift(1);
-	intake(10,127);
-	hold(kArm,127);
-	getSensor(kDriveEncoderLeft);
 	while(true){
-		move(f,360,127);	//Move base forward
-		lift(0);	//Move arm up
-		intake(80,127);	//Open claw
+		move(f,5,100);	//Move base forward 5 inches
+		lift(0);	//Move left arm up
+		claw(kOpen);	//Open claw
 		if(driveDone & armDone & clawDone) break;	//Look if processes are done and break from look if finished
+			counter++;
 	}
+
 	resetValues();
+
+	while(true){
+		move(b,4,100);	//Move base forward 4 inches
+		lift(1);	//Move right arm up
+		claw(kClose);	//Open claw
+		if(driveDone & armDone & clawDone) break;	//Look if processes are done and break from look if finished
+			counter++;
+	}
 }
 
 task usercontrol(){
