@@ -6,6 +6,12 @@
 
 #include "PID.h"
 #include "kalmanFilter.h"
+#include "lcd.h"
+#include "conversions.h"
+#include "drive.h"
+#include "arms.h"
+#include "claws.h"
+#include "mobileGoal.h"
 
 #ifdef _cplusplus
 extern "C" {
@@ -14,34 +20,9 @@ extern "C" {
 	//-Constants---------------------------------------------------------------------------------------------------------------------//
 	#include "constants.h"
 
-	//-Variables---------------------------------------------------------------------------------------------------------------------//
-	// Drive
-	signed char driveFoutput, driveSoutput, joysDriveFvalue, joysDriveSvalue;
-	signed short driveLoutput, driveRoutput;
-	bool driveInvertButtonPressed, driveDirectionNormal;
-
-	Encoder encoderLeft; Encoder encoderRight;
-	Gyro driveGyro;
-
-	// Arm
-	bool armButtonPressed, rightArmUp;
-
-	//Claw
-	bool clawButtonPressed, rightClawClosed;
-	unsigned char clawCounter;
-
-	//Mobile Goal
-	bool mogoButtonPressed, mogoRetracted;
-	unsigned char mogoCounter;
-
-
 	//-Functions---------------------------------------------------------------------------------------------------------------------//
-	// Claw
-	void clawControl(bool state);
-	//Mobile Goal
-	void mobileGoalControl(bool state);
 
-	//Program functions
+	void resetValues();
 	void autonomous();
 
 	/*pinMode()) and port states (digitalWrite()) of limit switches, push buttons,

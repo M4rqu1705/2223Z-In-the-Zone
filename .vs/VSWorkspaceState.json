@@ -4,8 +4,10 @@
     "\\PROS",
     "\\PROS\\Prototype",
     "\\PROS\\Prototype\\include",
-    "\\PROS\\Prototype\\src"
+    "\\PROS\\Prototype\\src",
+    "\\RobotC",
+    "\\RobotC\\(3)model6Draft"
   ],
-  "SelectedNode": "\\PROS\\Prototype\\include\\PID.h",
+  "SelectedNode": "\\PROS\\Prototype\\src\\auto.c",
   "PreviewInSolutionExplorer": false
 }
