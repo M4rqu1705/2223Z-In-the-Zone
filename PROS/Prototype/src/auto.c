@@ -28,7 +28,7 @@ void autonomous() {
 }
 
 
-void resetValues() {
+static void resetValues() {
 	motorSet(1, 0);
 	motorSet(2, 0);
 	motorSet(3, 0);

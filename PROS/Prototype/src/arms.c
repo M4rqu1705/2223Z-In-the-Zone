@@ -9,7 +9,7 @@ void armsOperatorControl() {
 	if (joystickGetDigital(1, JOYSTICK_ARM, JOYSTICK_ARM_BUTTON) == 1) {
 		if (!armsButtonPressed) {
 			armsButtonPressed = true;
-			armsPosition = armsPosition == d ? u : d;
+			currentArmPosition = (currentArmPosition == armsPositions::d) ? armsPositions::u : armsPositions::d;
 		}
 	}
 	else armsButtonPressed = false;
@@ -17,13 +17,26 @@ void armsOperatorControl() {
 	if (joystickGetDigital(1, JOYSTICK_ARM_LOADER, JOYSTICK_ARM_LOADER_BUTTON) == 1) {
 		if (!armsLoaderButtonPressed) {
 			armsLoaderButtonPressed = true;
-			armsPosition = armsPosition == u ? lr : armsPosition == d ? ll : armsPosition == lr ? ll : lr;
+			switch (currentArmPosition) {
+			case armsPositions::u:
+				currentArmPosition = armsPositions::lr;
+				break;
+			case armsPositions::d:
+				currentArmPosition = armsPositions::ll;
+				break;
+			case armsPositions::lr:
+				currentArmPosition = armsPositions::ll;
+				break;
+			case armsPositions::ll:
+				currentArmPosition = armsPositions::lr;
+				break;
+			}
 		}
 	}
 	else armsLoaderButtonPressed = false;
 
-	//Based on state of variable 'armsPosition', set motors to different values
-	armsControl(armsPosition);
+	//Based on state of variable 'currentArmPosition', set motors to different values
+	armsControl(currentArmPosition);
 }
 
 void armsControl(armsPositions state) {
@@ -32,25 +45,31 @@ void armsControl(armsPositions state) {
 	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
 
 	//Based on state of variable 'state', set motors to different values
-	if (state == u) {
+	switch (state) {
+	case armsPositions::u:
 		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_DOWN));
 		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP));
-		armsDone = (PID(PIDarmR, ARM_UP) <= PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP) >= -PID_DONE_THRESHOLD) ? true : false;
-	}
-	else if (state == d) {
+		if (PID(PIDarmR, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+	case armsPositions::d:
 		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP));
 		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_DOWN));
-		armsDone = (PID(PIDarmL, ARM_UP) <= PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP) >= -PID_DONE_THRESHOLD) ? true : false;
-	}
-	else if (state == lr) {
+		if (PID(PIDarmL, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+	case armsPositions::lr:
 		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP));
 		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_LOADER));
-		armsDone = (PID(PIDarmL, ARM_UP) <= PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP) >= -PID_DONE_THRESHOLD) ? true : false;
-	}
-	else if (state == ll) {
+		if (PID(PIDarmL, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+	case armsPositions::ll:
 		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_LOADER));
 		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP));
-		armsDone = (PID(PIDarmR, ARM_UP) <= PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP) >= -PID_DONE_THRESHOLD) ? true : false;
-	}
+		if (PID(PIDarmR, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
 
+	}
 }

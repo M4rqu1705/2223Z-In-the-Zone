@@ -1,16 +1,18 @@
 #ifndef CONVERSIONS_H_
 #define CONVERSIONS_H_
 
-signed short map(signed short inNumber, signed short inMin, signed short inMax, signed short outMin, signed short outMax);
+#include <API.h>
 
-signed char withinRange(signed short inNumber);
+int_fast16_t map(int_fast16_t inNumber, int_fast16_t inMin, int_fast16_t inMax, int_fast16_t outMin, int_fast16_t outMax);
 
-signed short inchesOfTranslationToEncoderPulses(signed short inches);
+int_fast8_t withinRange(int_fast16_t inNumber);
 
-signed short degreesOfRotationToGyroTicks(signed short degrees);
+int_fast16_t inchesOfTranslationToEncoderPulses(int_fast16_t inches);
 
-signed short degreesOfRotationToEncoderPulses(signed short degrees);
+int_fast16_t degreesOfRotationToGyroTicks(int_fast16_t degrees);
 
-void rectifyOutputs(signed short *values, signed short speed, int leftSideSensor, int rightSideSensor);
+int_fast16_t degreesOfRotationToEncoderPulses(int_fast16_t degrees);
+
+void rectifyOutputs(int_fast32_t *values, int_fast32_t speed, uint_fast32_t leftSideSensor, uint_fast32_t rightSideSensor);
 
 #endif

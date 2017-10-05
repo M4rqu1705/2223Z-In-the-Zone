@@ -1,6 +1,6 @@
 #include "main.h"
 
-int getSensor(float values[], int sensorValue) {
+uint_fast16_t getSensor(float values[], uint_fast16_t sensorValue) {
 	/*
 	values[] array format:
 	KG(0), estimate(1), previousEstimate(2), errorEstimate(3), previousErrorEstimate(4), errorMeasurement(5)
@@ -11,7 +11,7 @@ int getSensor(float values[], int sensorValue) {
 	values[3] = (1 - values[0]) * values[4];
 	values[2] = values[1]; values[4] = values[3];
 
-	int estimate = ceil(values[1]); //Convert float to int
+	uint_fast16_t estimate = ceil(values[1]); //Convert float to int
 
 	return estimate;
 }

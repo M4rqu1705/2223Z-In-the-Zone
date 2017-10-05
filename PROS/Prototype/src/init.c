@@ -18,10 +18,10 @@ void initialize() {
 	lcdInit(LCD_PORT);
 	lcdClear(LCD_PORT);
 	lcdSetBacklight(LCD_PORT, LCD_BACKLIGHT);
-	currentDisplay = main;
-	currentCode = mogoAndCones;
-	currentColor = red;
-	currentSide = right;
+	currentMenu = lcdMenus::main;
+	currentCode = autonomousCodes::mogoAndCones;
+	currentColor = allianceColor::red;
+	currentSide = startingSide::right;
 	lcdButtonsPressed[0] = false;
 	lcdButtonsPressed[1] = false;
 	lcdButtonsPressed[2] = false;
@@ -83,7 +83,7 @@ void initialize() {
 
 	armsButtonPressed = false;
 	armsLoaderButtonPressed = false;
-	armsPosition = u;
+	currentArmPosition = armsPositions::u;
 
 	armsDone = false;
 

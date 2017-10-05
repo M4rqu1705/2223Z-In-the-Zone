@@ -1,9 +1,11 @@
 #ifndef CLAWS_H_
 #define CLAWS_H_
 
+#include <API.h>
+
 bool clawButtonPressed, rightClawClosed, clawsDone;
-unsigned char clawsCounter;
-signed char clawLoutput, clawRoutput;
+uint_fast8_t clawsCounter;
+int_fast8_t clawLoutput, clawRoutput;
 
 void clawsControl(bool state);
 
