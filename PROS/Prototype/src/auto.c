@@ -11,19 +11,20 @@ void autonomous() {
 	resetValues();
 
 	while (!driveDone || !armsDone || !clawsDone || !mogoDone) {
-		drive(f, 12, 100);	//Move 12 inches forward
-		armsControl(u);	//Raise right arm and lower left
+		drive(direction::f, 12, 100);	//Move 12 inches forward
+		armsControl(armsPositions::u);	//Raise right arm and lower left
 		clawsControl(1);	//Open right claw and close left
 		mobileGoalControl(0);	//Extend mobile goal intake
 	}
 	resetValues();
 
 	while (!driveDone || !armsDone || !clawsDone || !mogoDone) {
-		drive(b, 12, 100);	//Move 12 inches backward
-		armsControl(lr);	//Lower right arm and raise left
+		drive(direction::b, 12, 100);	//Move 12 inches backward
+		armsControl(armsPositions::lr);	//Lower right arm to loader level and raise left
 		clawsControl(0);	//Close right claw and open left
 		mobileGoalControl(1);	//Retract mobile goal intake
 	}
+	resetValues();
 
 }
 
@@ -66,8 +67,10 @@ static void resetValues() {
 	filterDriveR[2] = DRIVE_FILTERS_PREVIOUS_ESTIMATE_PRESET;	filterDriveR[3] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET;
 	filterDriveR[4] = DRIVE_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET;	filterDriveR[5] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
 
+	estimate = 0;
+
 	PIDdrive[0] = DRIVE_PID_KP_PRESET;	PIDdrive[1] = DRIVE_PID_KI_PRESET; PIDdrive[2] = DRIVE_PID_KD_PRESET;
-	PIDdrive[3] = getSensor(filterDriveL, (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2));
+
 	PIDdrive[4] = DRIVE_PID_ERROR_PRESET;	PIDdrive[5] = DRIVE_PID_INTEGRAL_PRESET; PIDdrive[6] = DRIVE_PID_INTEGRAL_LIMIT_PRESET;
 	PIDdrive[7] = DRIVE_PID_LAST_ERROR_PRESET;
 
@@ -84,18 +87,26 @@ static void resetValues() {
 	filterArmR[4] = ARM_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET;	filterArmR[5] = ARM_FILTERS_ERROR_MEASUREMENT_PRESET;
 
 	PIDarmL[0] = ARM_PID_KP_PRESET;	PIDarmL[1] = ARM_PID_KI_PRESET; PIDarmL[2] = ARM_PID_KD_PRESET;
-	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
 	PIDarmL[4] = ARM_PID_ERROR_PRESET;	PIDarmL[5] = ARM_PID_INTEGRAL_PRESET; PIDarmL[6] = ARM_PID_INTEGRAL_LIMIT_PRESET;
 	PIDarmL[7] = ARM_PID_LAST_ERROR_PRESET;
 
 	PIDarmR[0] = ARM_PID_KP_PRESET;	PIDarmR[1] = ARM_PID_KI_PRESET; PIDarmR[2] = ARM_PID_KD_PRESET;
-	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
 	PIDarmR[4] = ARM_PID_ERROR_PRESET;	PIDarmR[5] = ARM_PID_INTEGRAL_PRESET; PIDarmR[6] = ARM_PID_INTEGRAL_LIMIT_PRESET;
 	PIDarmR[7] = ARM_PID_LAST_ERROR_PRESET;
 
+	#if USE_KALMAN_FILTER
+	PIDdrive[3] = getSensor(filterDriveL, (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2));
+	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
+	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
+	#else
+	PIDdrive[3] = (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2);
+	PIDarmL[3] = analogRead(SENSOR_POT_L);
+	PIDarmR[3] = analogRead(SENSOR_POT_R);
+	#endif
+
 	armsButtonPressed = false;
 	armsLoaderButtonPressed = false;
-	armsPosition = u;
+	currentArmPosition = armsPositions::u;
 
 	armsDone = false;
 

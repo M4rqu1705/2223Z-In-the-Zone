@@ -1,7 +1,7 @@
 #ifndef ARMS_H_
 #define ARMS_H_
 
-#include <API.h>
+#include <API>
 
 bool armsButtonPressed, armsLoaderButtonPressed, armsDone;
 

@@ -1,6 +1,6 @@
 #include "main.h"
 
-void lcdDisplay() {
+static void lcdDisplay() {
 	switch (currentMenu) {
 	case lcdMenus::batteryVoltage:
 		lcdClear(LCD_PORT);
@@ -61,24 +61,24 @@ void lcdSelect() {
 	if (lcdReadButtons(LCD_PORT) == 1) {
 		if (!lcdButtonsPressed[2]) {
 			lcdButtonsPressed[2] = true;
-			switch(currentMenu){
-				case lcdMenus::main:
-					currentMenu = lcdMenus::batteryVoltage;
+			switch (currentMenu) {
+			case lcdMenus::main:
+				currentMenu = lcdMenus::batteryVoltage;
 				break;
-				case lcdMenus::batteryVoltage:
+			case lcdMenus::batteryVoltage:
 				currentMenu = lcdMenus::backupBatteryVoltage;
 				break;
-				case lcdMenus::backupBatteryVoltage:
+			case lcdMenus::backupBatteryVoltage:
 				currentMenu = lcdMenus::autonomous;
 				break;
-				case lcdMenus::autonomous:
-					currentMenu = lcdMenus::allianceColor;
+			case lcdMenus::autonomous:
+				currentMenu = lcdMenus::allianceColor;
 				break;
-				case lcdMenus::allianceColor:
+			case lcdMenus::allianceColor:
 				currentMenu = lcdMenus::startingSide;
 				break;
-				case lcdMenus::startingSide:
-					currentMenu = lcdMenus::main;
+			case lcdMenus::startingSide:
+				currentMenu = lcdMenus::main;
 				break;
 			}
 			lcdDisplay();
@@ -89,23 +89,23 @@ void lcdSelect() {
 	if (lcdReadButtons(LCD_PORT) == 4) {
 		if (!lcdButtonsPressed[0]) {
 			lcdButtonsPressed[2] = true;
-			switch(currentMenu){
-				case lcdMenus::main:
+			switch (currentMenu) {
+			case lcdMenus::main:
 				currentMenu = lcdMenus::startingSide;
 				break;
-				case lcdMenus::startingSide:
+			case lcdMenus::startingSide:
 				currentMenu = lcdMenus::allianceColor;
 				break;
-				case lcdMenus::allianceColor:
+			case lcdMenus::allianceColor:
 				currentMenu = lcdMenus::autonomous;
 				break;
-				case lcdMenus::autonomous:
+			case lcdMenus::autonomous:
 				currentMenu = lcdMenus::backupBatteryVoltage;
 				break;
-				case lcdMenus::backupBatteryVoltage:
+			case lcdMenus::backupBatteryVoltage:
 				currentMenu = lcdMenus::batteryVoltage;
 				break;
-				case lcdMenus::batteryVoltage:
+			case lcdMenus::batteryVoltage:
 				currentMenu = lcdMenus::main;
 				break;
 			}

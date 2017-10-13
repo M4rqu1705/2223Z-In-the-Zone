@@ -2,8 +2,13 @@
 
 void armsOperatorControl() {
 	//Refresh sensorValues to be used in PID calculations
+	#if USE_KALMAN_FILTER
 	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
 	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
+	#else
+	PIDarmL[3] = analogRead(SENSOR_POT_L);
+	PIDarmR[3] = analogRead(SENSOR_POT_R);
+	#endif
 
 	//Button toggle
 	if (joystickGetDigital(1, JOYSTICK_ARM, JOYSTICK_ARM_BUTTON) == 1) {
@@ -41,8 +46,13 @@ void armsOperatorControl() {
 
 void armsControl(armsPositions state) {
 	//Refresh sensorValues to be used in PID calculations
+	#if USE_KALMAN_FILTER
 	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
 	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
+	#else
+	PIDarmL[3] = analogRead(SENSOR_POT_L);
+	PIDarmR[3] = analogRead(SENSOR_POT_R);
+	#endif
 
 	//Based on state of variable 'state', set motors to different values
 	switch (state) {

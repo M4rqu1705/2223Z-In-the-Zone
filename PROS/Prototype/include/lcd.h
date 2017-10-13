@@ -18,7 +18,7 @@ startingSide currentSide;
 
 char* lcdOutput[17];
 
-void lcdDisplay();
+static void lcdDisplay();
 void lcdSelect();
 
 #endif

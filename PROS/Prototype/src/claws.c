@@ -28,7 +28,7 @@ void clawsControl(bool state) {
 		motorSet(MOTOR_CLAW_R, clawRoutput);
 		clawsDone = false;
 	}
-	else if (clawsCounter > CLAWS_CYCLES) {
+	else {
 		motorSet(MOTOR_CLAW_L, 0);
 		motorSet(MOTOR_CLAW_R, 0);
 		clawsDone = true;

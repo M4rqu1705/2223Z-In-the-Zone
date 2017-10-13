@@ -58,19 +58,21 @@
 #define ARM_PID_LAST_ERROR_PRESET 0
 
 //-Kalman filter-----------------------------------------------------------------------------------------------------------------//
-#define DRIVE_FILTERS_KG_PRESET 0
+#define DRIVE_FILTERS_KG_PRESET 0.5
 #define DRIVE_FILTERS_ESTIMATE_PRESET 0
 #define DRIVE_FILTERS_PREVIOUS_ESTIMATE_PRESET 0
 #define DRIVE_FILTERS_ERROR_ESTIMATE_PRESET 5
 #define DRIVE_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET 5
 #define DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET 5
 
-#define ARM_FILTERS_KG_PRESET 0
+#define ARM_FILTERS_KG_PRESET 0.5
 #define ARM_FILTERS_ESTIMATE_PRESET 0
 #define ARM_FILTERS_PREVIOUS_ESTIMATE_PRESET 0
 #define ARM_FILTERS_ERROR_ESTIMATE_PRESET 5
 #define ARM_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET 5
 #define ARM_FILTERS_ERROR_MEASUREMENT_PRESET 5
+
+#define USE_KALMAN_FILTER true
 
 //-Others-------------------------------------------------------------------------------------------------------------------------//
 #define LCD_PORT uart1

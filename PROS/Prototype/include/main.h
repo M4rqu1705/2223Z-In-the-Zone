@@ -13,6 +13,8 @@
 #include "claws.h"
 #include "mobileGoal.h"
 
+#include "namespaceDeclarations.h"
+
 #ifdef _cplusplus
 extern "C" {
 	#endif
@@ -22,7 +24,7 @@ extern "C" {
 
 	//-Functions---------------------------------------------------------------------------------------------------------------------//
 
-	void resetValues();
+	static void resetValues();
 	void autonomous();
 
 	/*pinMode()) and port states (digitalWrite()) of limit switches, push buttons,

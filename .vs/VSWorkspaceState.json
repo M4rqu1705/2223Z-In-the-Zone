@@ -5,9 +5,8 @@
     "\\PROS\\Prototype",
     "\\PROS\\Prototype\\include",
     "\\PROS\\Prototype\\src",
-    "\\RobotC",
     "\\RobotC\\(3)model6Draft"
   ],
-  "SelectedNode": "\\PROS\\Prototype\\src\\conversions.c",
+  "SelectedNode": "\\PROS\\Prototype\\src\\mobileGoal.c",
   "PreviewInSolutionExplorer": false
 }

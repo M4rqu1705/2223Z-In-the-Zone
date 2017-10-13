@@ -1,19 +1,14 @@
 #include "main.h"
 
 void initializeIO() {
+	watchdogInit();
 }
 
 void initialize() {
-	motorSet(1, 0);
-	motorSet(2, 0);
-	motorSet(3, 0);
-	motorSet(4, 0);
-	motorSet(5, 0);
-	motorSet(6, 0);
-	motorSet(7, 0);
-	motorSet(8, 0);
-	motorSet(9, 0);
-	motorSet(10, 0);
+
+	motorStopAll();
+
+	setTeamName("2223-Z");
 
 	lcdInit(LCD_PORT);
 	lcdClear(LCD_PORT);
@@ -54,8 +49,9 @@ void initialize() {
 	filterDriveR[2] = DRIVE_FILTERS_PREVIOUS_ESTIMATE_PRESET;	filterDriveR[3] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET;
 	filterDriveR[4] = DRIVE_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET;	filterDriveR[5] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
 
+	estimate = 0;
+
 	PIDdrive[0] = DRIVE_PID_KP_PRESET;	PIDdrive[1] = DRIVE_PID_KI_PRESET; PIDdrive[2] = DRIVE_PID_KD_PRESET;
-	PIDdrive[3] = getSensor(filterDriveL, (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2));
 	PIDdrive[4] = DRIVE_PID_ERROR_PRESET;	PIDdrive[5] = DRIVE_PID_INTEGRAL_PRESET; PIDdrive[6] = DRIVE_PID_INTEGRAL_LIMIT_PRESET;
 	PIDdrive[7] = DRIVE_PID_LAST_ERROR_PRESET;
 
@@ -72,14 +68,22 @@ void initialize() {
 	filterArmR[4] = ARM_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET;	filterArmR[5] = ARM_FILTERS_ERROR_MEASUREMENT_PRESET;
 
 	PIDarmL[0] = ARM_PID_KP_PRESET;	PIDarmL[1] = ARM_PID_KI_PRESET; PIDarmL[2] = ARM_PID_KD_PRESET;
-	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
 	PIDarmL[4] = ARM_PID_ERROR_PRESET;	PIDarmL[5] = ARM_PID_INTEGRAL_PRESET; PIDarmL[6] = ARM_PID_INTEGRAL_LIMIT_PRESET;
 	PIDarmL[7] = ARM_PID_LAST_ERROR_PRESET;
 
 	PIDarmR[0] = ARM_PID_KP_PRESET;	PIDarmR[1] = ARM_PID_KI_PRESET; PIDarmR[2] = ARM_PID_KD_PRESET;
-	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
 	PIDarmR[4] = ARM_PID_ERROR_PRESET;	PIDarmR[5] = ARM_PID_INTEGRAL_PRESET; PIDarmR[6] = ARM_PID_INTEGRAL_LIMIT_PRESET;
 	PIDarmR[7] = ARM_PID_LAST_ERROR_PRESET;
+	
+	#if USE_KALMAN_FILTER
+	PIDdrive[3] = getSensor(filterDriveL, (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2));
+	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
+	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
+	#else
+	PIDdrive[3] = (encoderGet(encoderLeft) + encoderGet(encoderRight) / 2);
+	PIDarmL[3] = analogRead(SENSOR_POT_L);
+	PIDarmR[3] = analogRead(SENSOR_POT_R);
+	#endif
 
 	armsButtonPressed = false;
 	armsLoaderButtonPressed = false;

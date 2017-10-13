@@ -37,8 +37,8 @@ void driveOperatorControl() {
 	driveOutputs[1] = drivePowerOutput - driveTurnOutput;
 
 	//Make sure left and right side values are within a range of values between -127 to 127
-	driveOutputs[0] = withinRange(driveOutputs[0]);
-	driveOutputs[1] = withinRange(driveOutputs[1]);
+	driveOutputs[0] = WITHIN_RANGE(driveOutputs[0]);
+	driveOutputs[1] = WITHIN_RANGE(driveOutputs[1]);
 
 	//Move motors using calculated values for left and right side
 	motorSet(MOTOR_DRIVE_LF, driveOutputs[0]);
@@ -50,26 +50,34 @@ void driveOperatorControl() {
 
 void drive(direction orientation, uint_fast16_t pulses, int_fast8_t speed, bool useGyro) {
 	//Update current sensorValue using filters
+	#if USE_KALMAN_FILTER
 	PIDdrive[3] = getSensor(filterDrive, (abs(encoderGet(encoderLeft)) + abs(encoderGet(encoderRight)) / 2));
+	#else
+	PIDdrive[3] = (abs(encoderGet(encoderLeft)) + abs(encoderGet(encoderRight)) / 2);
+	#endif
+
 
 	//Recalculate pulses to convert them to degrees of rotation
 	if (orientation == direction::l || orientation == direction::r) {
-		if (useGyro) pulses = degreesOfRotationToGyroTicks(pulses);
-		else pulses = degreesOfRotationToEncoderPulses(pulses);
+		if (useGyro) pulses = DEGREES_ROTATION_TO_GYRO_TICKS(pulses);
+		else pulses = DEGREES_ROTATION_TO_ENCODER_PULSES(pulses);
 	}
 
 	//Recaluclate pulses to convert them to inches of movement
-	else pulses = inchesOfTranslationToEncoderPulses(pulses);
+	else pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
 
 	//Calculate PID
-	PIDoutput = PID(PIDdrive, pulses, true, true);
+	PIDoutput = PID(PIDdrive, pulses);
 
 	//Rectify robot if necessary
+	#if USE_KALMAN_FILTER
 	rectifyOutputs(driveOutputs, PIDoutput, getSensor(filterDriveL, abs(encoderGet(encoderLeft))), getSensor(filterDriveR, abs(encoderGet(encoderRight))));
-
+	#else
+	rectifyOutputs(driveOutputs, PIDoutput, abs(encoderGet(encoderLeft)), abs(encoderGet(encoderRight));
+	#endif
 	//Make sure left and right orientation values are within a range of values between -speed to speed
-	driveOutputs[0] = map(withinRange(driveOutputs[0]), -127, 127, -speed, speed);
-	driveOutputs[1] = map(withinRange(driveOutputs[1]), -127, 127, -speed, speed);
+	driveOutputs[0] = MAP(WITHIN_RANGE(driveOutputs[0]), -127, 127, -speed, speed);
+	driveOutputs[1] = MAP(WITHIN_RANGE(driveOutputs[1]), -127, 127, -speed, speed);
 
 	//Move motors based on PID values, direction in which to move
 	switch (orientation) {
