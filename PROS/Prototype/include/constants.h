@@ -72,14 +72,17 @@
 #define ARM_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET 5
 #define ARM_FILTERS_ERROR_MEASUREMENT_PRESET 5
 
-#define USE_KALMAN_FILTER true
+#define USING_KALMAN_FILTER false
 
 //-Others-------------------------------------------------------------------------------------------------------------------------//
 #define LCD_PORT uart1
 #define LCD_BACKLIGHT true
+#define USING_LCD false
 
 #define DRIVE_THRESHOLD 15
-#define SLEW_GAIN 9
+#define SLEW_GAIN 12.7
+// = 254/(floor(maxTime) / DRIVERCONTROL_LOOP_DELAY)
+
 #define DRIVE_WIDTH 17.5
 #define WHEEL_DIAMETER 3.25
 #define GYRO_FULL_ROTATION_TICKS 4000
@@ -95,6 +98,8 @@
 #define MOGO_CYCLES 100
 
 #define DRIVERCONTROL_LOOP_DELAY 15
+
+#define PI 3.141592653589793
 
 
 #endif

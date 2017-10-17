@@ -13,8 +13,6 @@
 #include "claws.h"
 #include "mobileGoal.h"
 
-#include "namespaceDeclarations.h"
-
 #ifdef _cplusplus
 extern "C" {
 	#endif

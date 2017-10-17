@@ -1,15 +1,6 @@
 #include "main.h"
 
 void armsOperatorControl() {
-	//Refresh sensorValues to be used in PID calculations
-	#if USE_KALMAN_FILTER
-	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
-	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
-	#else
-	PIDarmL[3] = analogRead(SENSOR_POT_L);
-	PIDarmR[3] = analogRead(SENSOR_POT_R);
-	#endif
-
 	//Button toggle
 	if (joystickGetDigital(1, JOYSTICK_ARM, JOYSTICK_ARM_BUTTON) == 1) {
 		if (!armsButtonPressed) {
@@ -45,41 +36,67 @@ void armsOperatorControl() {
 }
 
 void armsControl(armsPositions state) {
-	//Refresh sensorValues to be used in PID calculations
-	#if USE_KALMAN_FILTER
-	PIDarmL[3] = getSensor(filterArmL, analogRead(SENSOR_POT_L));
-	PIDarmR[3] = getSensor(filterArmR, analogRead(SENSOR_POT_R));
-	#else
-	PIDarmL[3] = analogRead(SENSOR_POT_L);
-	PIDarmR[3] = analogRead(SENSOR_POT_R);
-	#endif
-
 	//Based on state of variable 'state', set motors to different values
+
+	#if USING_KALMAN_FILTER
 	switch (state) {
 	case armsPositions::u:
-		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_DOWN));
-		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP));
-		if (PID(PIDarmR, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
-		else armsDone = true;
-		break;
-	case armsPositions::d:
-		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP));
-		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_DOWN));
-		if (PID(PIDarmL, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
-		else armsDone = true;
-		break;
-	case armsPositions::lr:
-		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP));
-		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_LOADER));
-		if (PID(PIDarmL, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
-		else armsDone = true;
-		break;
-	case armsPositions::ll:
-		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_LOADER));
-		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP));
-		if (PID(PIDarmR, ARM_UP) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP) < -PID_DONE_THRESHOLD) armsDone = false;
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_DOWN, getSensor(filterArmL, analogRead(SENSOR_POT_L))));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))));
+		if (PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))) < -PID_DONE_THRESHOLD) armsDone = false;
 		else armsDone = true;
 		break;
 
+	case armsPositions::d:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_DOWN, getSensor(filterArmR, analogRead(SENSOR_POT_R))));
+		if (PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+
+	case armsPositions::lr:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_LOADER, getSensor(filterArmR, analogRead(SENSOR_POT_R))));
+		if (PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP, getSensor(filterArmL, analogRead(SENSOR_POT_L))) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+
+	case armsPositions::ll:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_LOADER, getSensor(filterArmL, analogRead(SENSOR_POT_L))));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))));
+		if (PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R))) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
 	}
+	#else
+	switch (state) {
+	case armsPositions::u:
+		motorSet(MOTOR_ARM_L, analogRead(SENSOR_POT_L));
+		motorSet(MOTOR_ARM_R, analogRead(SENSOR_POT_R));
+		if (PID(PIDarmR, ARM_UP, analogRead(SENSOR_POT_R) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP, analogRead(SENSOR_POT_R) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+
+	case armsPositions::d:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_DOWN, analogRead(SENSOR_POT_R));
+		if (PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+
+	case armsPositions::lr:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_LOADER, analogRead(SENSOR_POT_R));
+		if (PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L) > PID_DONE_THRESHOLD || PID(PIDarmL, ARM_UP, analogRead(SENSOR_POT_L) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+
+	case armsPositions::ll:
+		motorSet(MOTOR_ARM_L, PID(PIDarmL, ARM_LOADER, analogRead(SENSOR_POT_L));
+		motorSet(MOTOR_ARM_R, PID(PIDarmR, ARM_UP, getSensor(filterArmR, analogRead(SENSOR_POT_R));
+		if (PID(PIDarmR, ARM_UP, analogRead(SENSOR_POT_R) > PID_DONE_THRESHOLD || PID(PIDarmR, ARM_UP, analogRead(SENSOR_POT_R) < -PID_DONE_THRESHOLD) armsDone = false;
+		else armsDone = true;
+		break;
+	}
+	#endif
 }

@@ -11,7 +11,7 @@ uint_fast16_t getSensor(float values[], uint_fast16_t sensorValue) {
 	else values[0] = 0;
 
 	//Calculate Estimate
-	values[1] = values[2] + values[0] * (sensorValue - values[2]);
+	values[1] = sensorValue + values[0] * (values[2]-sensorValue);
 
 	//Calculate Error in Estimate
 	values[3] = (1 - values[0]) * values[4];
