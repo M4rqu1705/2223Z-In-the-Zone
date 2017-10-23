@@ -31,7 +31,7 @@ void autonomous() {
 }
 
 
-static void resetValues() {
+void resetValues() {
 	motorStopAll();
 
 	// Variables

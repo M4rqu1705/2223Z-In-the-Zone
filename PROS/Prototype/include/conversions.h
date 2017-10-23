@@ -2,12 +2,12 @@
 #define CONVERSIONS_H_
 
 #include <API.h>
-#include <cmath>
 
 #define ROUND(inNumber) (ceil(((inNumber)*(pow(10, 0))) - (0.49)) / (pow(10, 0)))
 //http://www.cplusplus.com/forum/beginner/3600/
 
-#define MAP(inNumber, inMin, inMax, outMin, outMax) ((inNumber)-(inMin)) * ((outMax)-(outMin)) / ((inMax)-(inMin)) + (outMin) \
+#define MAP(inNumber, inMin, inMax, outMin, outMax) ((inNumber)-(inMin)) * ((outMax)-(outMin)) / ((inMax)-(inMin)) + (outMin)
+
 #define WITHIN_RANGE(inNumber) (abs(inNumber) > 127 ? inNumber < -127 ? -127 : 127 : inNumber)
 
 #define INCHES_TRANSLATION_TO_ENCODER_PULSES(inches) (((WHEEL_DIAMETER)* PI)*((inches) / 360))

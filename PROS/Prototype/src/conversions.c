@@ -1,4 +1,5 @@
 #include "main.h"
+
 /*
 int_fast16_t MAP(int_fast16_t inNumber, int_fast16_t inMin, int_fast16_t inMax, int_fast16_t outMin, int_fast16_t outMax) {
 	return (inNumber - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
@@ -24,4 +25,3 @@ void rectifyOutputs(int_fast16_t *values, int_fast16_t speed, uint_fast16_t left
 	values[0] = (speed / (leftSideSensor - rightSideSensor)) * 0.01 + 1;
 	values[1] = (speed / (rightSideSensor - leftSideSensor)) * 0.01 + 1;
 }
-

@@ -2,7 +2,6 @@
 #define MAIN_H_
 
 #include <API.h>
-#include <cmath>
 
 #include "PID.h"
 #include "kalmanFilter.h"
@@ -22,7 +21,7 @@ extern "C" {
 
 	//-Functions---------------------------------------------------------------------------------------------------------------------//
 
-	static void resetValues();
+	void resetValues();
 	void autonomous();
 
 	/*pinMode()) and port states (digitalWrite()) of limit switches, push buttons,

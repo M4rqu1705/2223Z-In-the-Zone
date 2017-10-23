@@ -3,7 +3,7 @@
 
 #include <API.h>
 
-enum class lcdMenus : uint_fast8_t { main = 0, batteryVoltage = 1, backupBatteryVoltage = 2, autonomous = 3, allianceColor = 4, startingSide = 5 } currentMenu;
+enum class lcdMenus { main = 0, batteryVoltage = 1, backupBatteryVoltage = 2, autonomous = 3, allianceColor = 4, startingSide = 5 } currentMenu;
 
 bool lcdButtonsPressed[3] = { false, false, false }, lcdReady;
 
