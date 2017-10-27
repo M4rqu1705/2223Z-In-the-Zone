@@ -12,7 +12,7 @@ void pre_auton(){
 }
 
 task usercontrol(){
-	startTask(autonomous);
+	//startTask(autonomous);
 	while (true){
 		driveOperatorControl();
 		armsOperatorControl();
@@ -25,7 +25,7 @@ task usercontrol(){
 task autonomous(){
 
 	while(!driveDone){
-		drive(r,90, 50, false);
+		drive(r,90, 75, false);
 		delay(1);
 	}
 	resetValues();
@@ -33,7 +33,7 @@ task autonomous(){
 	writeDebugStreamLine("Turned right");
 
 	while(!driveDone){
-		drive(l,180, 50, false);
+		drive(l,180, 75, false);
 		delay(1);
 	}
 	resetValues();
@@ -41,7 +41,7 @@ task autonomous(){
 	writeDebugStreamLine("Turned left");
 
 	while(!driveDone){
-		drive(r,90, 50, false);
+		drive(r,90, 75, false);
 		delay(1);
 	}
 	resetValues();
@@ -49,7 +49,7 @@ task autonomous(){
 	writeDebugStreamLine("Turned right");
 
 	while(!driveDone){
-		drive(b,5, 50, false);
+		drive(b,5, 75, false);
 		delay(1);
 	}
 	resetValues();
@@ -57,7 +57,7 @@ task autonomous(){
 	writeDebugStreamLine("Moved backward");
 
 	while(!driveDone){
-		drive(f,10, 50, false);
+		drive(f,10, 75, false);
 		delay(1);
 	}
 	resetValues();
@@ -65,7 +65,7 @@ task autonomous(){
 	writeDebugStreamLine("Moved forward");
 
 	while(!driveDone){
-		drive(b,5, 50, false);
+		drive(b,5, 75, false);
 		delay(1);
 	}
 	resetValues();

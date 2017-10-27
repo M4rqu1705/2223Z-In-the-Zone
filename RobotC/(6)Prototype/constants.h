@@ -51,12 +51,12 @@
 #define JOYSTICK_MOGO Btn6D
 
 //-PID---------------------------------------------------------------------------------------------------------------------------//
-#define DRIVE_PID_KP_PRESET 1.7
-#define DRIVE_PID_KI_PRESET 1
-#define DRIVE_PID_KD_PRESET 2
+#define DRIVE_PID_KP_PRESET 0.75
+#define DRIVE_PID_KI_PRESET 0.5
+#define DRIVE_PID_KD_PRESET 5
 #define DRIVE_PID_ERROR_PRESET 0
 #define DRIVE_PID_INTEGRAL_PRESET 0
-#define DRIVE_PID_INTEGRAL_LIMIT_PRESET 1000
+#define DRIVE_PID_INTEGRAL_LIMIT_PRESET 20000
 #define DRIVE_PID_LAST_ERROR_PRESET 0
 
 #define ARM_PID_KP_PRESET 0.75
@@ -67,24 +67,7 @@
 #define ARM_PID_INTEGRAL_LIMIT_PRESET 50
 #define ARM_PID_LAST_ERROR_PRESET 0
 
-#define PID_DONE_THRESHOLD 5
-
-//-Kalman filter-----------------------------------------------------------------------------------------------------------------//
-#define DRIVE_FILTERS_KG_PRESET 0.5
-#define DRIVE_FILTERS_ESTIMATE_PRESET 0
-#define DRIVE_FILTERS_PREVIOUS_ESTIMATE_PRESET 0
-#define DRIVE_FILTERS_ERROR_ESTIMATE_PRESET 5
-#define DRIVE_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET 5
-#define DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET 5
-
-#define ARM_FILTERS_KG_PRESET 0.5
-#define ARM_FILTERS_ESTIMATE_PRESET 0
-#define ARM_FILTERS_PREVIOUS_ESTIMATE_PRESET 0
-#define ARM_FILTERS_ERROR_ESTIMATE_PRESET 5
-#define ARM_FILTERS_PREVIOUS_ERROR_ESTIMATE_PRESET 5
-#define ARM_FILTERS_ERROR_MEASUREMENT_PRESET 5
-
-//#define USING_KALMAN_FILTER true //Comment if false
+#define PID_DONE_THRESHOLD 2
 
 //-Others-------------------------------------------------------------------------------------------------------------------------//
 #define LCD_BACKLIGHT true
@@ -98,7 +81,7 @@
 #define DRIVE_WIDTH 13.0
 #define WHEEL_DIAMETER 3.25
 #define GYRO_FULL_ROTATION_TICKS 3600
-#define RECTIFY_CONSTANT_ENCODER 0.02
+#define RECTIFY_CONSTANT_ENCODER 0.01
 #define RECTIFY_CONSTANT_GYRO 1
 
 #define ARM_UP 1024
@@ -115,27 +98,4 @@
 //https://www.vexrobotics.com/276-2271.html
 
 #define DRIVERCONTROL_LOOP_DELAY 15
-
-/*
-
-
-#pragma config(Sensor, in1,    powerExpanderStatus, sensorAnalog)
-#pragma config(Sensor, in2,    potL,           sensorPotentiometer)
-#pragma config(Sensor, in3,    potR,           sensorPotentiometer)
-#pragma config(Sensor, in8,    gyro,           sensorGyro)
-#pragma config(Sensor, dgtl1,  encoderL,       sensorQuadEncoder)
-#pragma config(Sensor, dgtl3,  encoderR,       sensorQuadEncoder)
-#pragma config(Motor,  port1,           driveLB,       tmotorVex393_HBridge, openLoop, driveLeft, encoderPort, dgtl1)
-#pragma config(Motor,  port2,           driveLF,       tmotorVex393HighSpeed_MC29, openLoop, driveLeft, encoderPort, dgtl1)
-#pragma config(Motor,  port3,           mogoL,         tmotorVex393HighSpeed_MC29, openLoop)s
-#pragma config(Motor,  port4,           armL,          tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port5,           clawL,         tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port6,           clawR,         tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port7,           armR,          tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port8,           mogoR,         tmotorVex393HighSpeed_MC29, openLoop)
-#pragma config(Motor,  port9,           driveRF,       tmotorVex393HighSpeed_MC29, openLoop, reversed, driveRight, encoderPort, dgtl3)
-#pragma config(Motor,  port10,          driveRB,       tmotorVex393_HBridge, openLoop, reversed, driveRight, encoderPort, dgtl3)
-*/
-
-
 #endif

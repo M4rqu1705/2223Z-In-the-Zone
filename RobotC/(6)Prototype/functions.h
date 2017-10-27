@@ -18,10 +18,6 @@ toggleButton lcdButtonsPressed[3] = { false, false, false };
 float PIDdrive[7], PIDarmL[7], PIDarmR[7];    //Declare PID arrays for drive and arms
 short output;
 
-//Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters//
-float filterDrive[4], filterDriveL[4], filterDriveR[4], filterArmL[4], filterArmR[4];    //Declare Kalman Filter arrays
-int estimate;
-
 //Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive//
 float drivePowerOutput, driveTurnOutput;          //Declare Slewrate variables to store SLEWCHANGE
 signed short PIDoutput, driveOutputs[2];          //Declare shorts to store the outputs of the PID calculation and the individual drive sides output after rectifying the PID output
@@ -70,7 +66,6 @@ signed int ROUND(float inNumber){
 	if(inNumber>=0) return ceil(inNumber - 0.49);	//Retreived from http://www.cplusplus.com/forum/beginner/3600/
 	else return ceil(inNumber+0.49);
 }
-
 
 signed short MAP(signed short inNumber, signed short inMin, signed short inMax, signed short outMin, signed short outMax) {
 	return ((inNumber - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
@@ -160,26 +155,6 @@ void resetValues() {
 	mogoDone = false;
 
 	//Only include piece of code if USING_KALMAN_FILTER is defined in constants.h file
-#ifdef USING_KALMAN_FILTER
-	//Reset drive filter values
-	filterDrive[0] = DRIVE_FILTERS_KG_PRESET;	filterDrive[1] = DRIVE_FILTERS_ESTIMATE_PRESET;
-	filterDrive[2] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET; filterDrive[3] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
-
-	filterDriveL[0] = DRIVE_FILTERS_KG_PRESET;	filterDriveL[1] = DRIVE_FILTERS_ESTIMATE_PRESET;
-	filterDriveL[2] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET; filterDriveL[3] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
-
-	filterDriveR[0] = DRIVE_FILTERS_KG_PRESET;	filterDriveR[1] = DRIVE_FILTERS_ESTIMATE_PRESET;
-	filterDriveR[2] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET; filterDriveR[3] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
-
-	//Reset arm filter values
-	filterArmL[0] = DRIVE_FILTERS_KG_PRESET;	filterArmL[1] = DRIVE_FILTERS_ESTIMATE_PRESET;
-	filterArmL[2] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET; filterArmL[3] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
-
-	filterArmR[0] = DRIVE_FILTERS_KG_PRESET;	filterArmR[1] = DRIVE_FILTERS_ESTIMATE_PRESET;
-	filterArmR[2] = DRIVE_FILTERS_ERROR_ESTIMATE_PRESET; filterArmR[3] = DRIVE_FILTERS_ERROR_MEASUREMENT_PRESET;
-
-	estimate = 0;
-#endif
 }
 
 //Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize//
@@ -263,26 +238,6 @@ byte PID(float *values, int target, unsigned int sensorInput) {
 	return WITHIN_RANGE(output);
 }
 
-//Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters--Kalman Filters//
-int getSensor(float *values, unsigned int sensorInput) {
-	/*	values[] array format:
-	KG(0), estimate(1), errorEstimate(2), errorMeasurement(3) */
-
-	//Calculate Kalman Gain
-	values[0] = values[2] / (values[2] + values[3]);
-	if(values[0] < 0.1) values[0] = 0.5;	//Do not let Kalman Filter equal less than 0.1
-
-	//Calculate Estimate
-	values[1] = sensorInput + values[0] * (values[2]-sensorInput);
-
-	//Calculate Error in Estimate
-	values[2] = (1 - values[0]) * values[3];
-
-	estimate = ROUND(values[1]); //Convert float to int
-
-	return estimate;
-}
-
 //Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive//
 void driveOperatorControl() {
 
@@ -341,26 +296,29 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 	else if(orientation == f || orientation == b) pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
 
 	//Calculate PID and rectify robot if necessary
-	if(useGyro){
-#ifdef USING_KALMAN_FILTER
-		temp = (abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2;
-		PIDoutput = PID(PIDdrive, pulses, getSensor(filterDrive, temp));
-		rectifyDriveGyro(driveOutputs, PIDoutput, getSensor(filterDrive, SensorValue[SENSOR_GYRO]), );
-#else
-		PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
-		rectifyDriveGyro(driveOutputs, PIDoutput, SensorValue[SENSOR_GYRO]);
-#endif
+	/*if(useGyro){
+		if(orientation == f || orientation == b){
+			PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
+			rectifyDriveGyro(driveOutputs, PIDoutput, SensorValue[SENSOR_GYRO]);
+		}
+		else if (orientation == l || orientation == r){
+			PIDoutput = PID(PIDdrive, pulses, SensorValue[SENSOR_GYRO]);
+			driveOutputs[0] = PIDoutput;
+			driveOutputs[1] = PIDoutput;
+		}
 	}
 	else{
-#ifdef USING_KALMAN_FILTER
-		temp = (abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2;
-		PIDoutput = PID(PIDdrive, pulses, getSensor(filterDrive, temp));
-		rectifyOutputsEncoder(driveOutputs, PIDoutput, getSensor(filterDriveL, abs(SensorValue[SENSOR_ENCODER_L])), getSensor(filterDriveR, abs(SensorValue[SENSOR_ENCODER_R])));
-#else
 		PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
-		rectifyOutputsEncoder(driveOutputs, PIDoutput, abs(SensorValue[SENSOR_ENCODER_L]), abs(SensorValue[SENSOR_ENCODER_R]));
-#endif
-	}
+		if(orientation == f || orientation == b) rectifyOutputsEncoder(driveOutputs, PIDoutput, abs(SensorValue[SENSOR_ENCODER_L]), abs(SensorValue[SENSOR_ENCODER_R]));
+		else {
+			driveOutputs[0] = PIDoutput;
+			driveOutputs[1] = PIDoutput;
+		}
+	}*/
+
+	PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
+	driveOutputs[0] = PIDoutput;
+	driveOutputs[1] = PIDoutput;
 
 	//Make sure left and right orientation values are within a range of values between -speed to speed
 	driveOutputs[0] = MAP(WITHIN_RANGE(driveOutputs[0]), -127, 127, -speed, speed);
@@ -392,12 +350,7 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 	if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD) {
 		if(driveCounter<DRIVE_PID_CORRECTION_CYCLES) driveCounter++;
 		if(driveCounter==DRIVE_PID_CORRECTION_CYCLES){
-#ifdef USING_KALMAN_FILTER
-			temp = (abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2;
-			PIDoutput = PID(PIDdrive, pulses, getSensor(filterDrive, temp));
-#else
 			PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
-#endif
 			if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD){
 				driveDone = true;
 				SensorValue[SENSOR_GYRO] = 0;
@@ -412,37 +365,6 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 void armsControl(armsPositions state) {
 	//Based on state of variable 'state', set motors to different values
 
-#ifdef USING_KALMAN_FILTER
-	switch (state) {
-	case u:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_DOWN, getSensor(filterArmL, SensorValue[SENSOR_POT_L]));
-		motor [MOTOR_ARM_R] = PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R]));
-		if (PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R])) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R])) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
-		break;
-
-	case d:
-		motor [MOTOR_ARM_L] = PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L]));
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_DOWN, getSensor(filterArmR, SensorValue[SENSOR_POT_R]));
-		if (PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L])) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L])) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
-		break;
-
-	case lr:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L]));
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_LOADER, getSensor(filterArmR, SensorValue[SENSOR_POT_R]));
-		if (PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L])) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, getSensor(filterArmL, SensorValue[SENSOR_POT_L])) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
-		break;
-
-	case ll:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_LOADER, getSensor(filterArmL, SensorValue[SENSOR_POT_L]));
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R]));
-		if (PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R])) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, getSensor(filterArmR, SensorValue[SENSOR_POT_R])) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
-		break;
-	}
-#else
 	switch (state) {
 	case u:
 		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_DOWN, SensorValue[SENSOR_POT_L]);
@@ -472,7 +394,6 @@ void armsControl(armsPositions state) {
 		else armsDone = false;
 		break;
 	}
-#endif
 }
 
 void armsOperatorControl() {
