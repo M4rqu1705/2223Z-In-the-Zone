@@ -16,14 +16,14 @@ toggleButton lcdButtonsPressed[3] = { false, false, false };
 
 //PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID//
 float PIDdrive[7], PIDarmL[7], PIDarmR[7];    //Declare PID arrays for drive and arms
-short output;
+signed short output;
 
 //Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive//
-float drivePowerOutput, driveTurnOutput;          //Declare Slewrate variables to store SLEWCHANGE
-signed short PIDoutput, driveOutputs[2];          //Declare shorts to store the outputs of the PID calculation and the individual drive sides output after rectifying the PID output
-signed  byte joystickDriveInputs[2];              //Declare array to store joystick values (0 = powerOutput, 1 = turnOutput) so it is not necessary to retrieve the value more than once (efficiency purposes)
-bool driveDirectionNormal, driveDone;             //Declare booleans to indicate direction state during driver control and if the drive is done moving during autonomous
-enum direction { f = 0, b = 1, l = 2, r = 3 };    //Create enumerated type variable to indicate direciton
+float drivePowerOutput, driveTurnOutput;  //Declare Slewrate variables to store SLEWCHANGE
+signed short PIDoutput, driveOutputs[2];  //Declare shorts to store the outputs of the PID calculation and the individual drive sides output after rectifying the PID output
+signed  byte joystickDriveInputs[2];      //Declare array to store joystick values (0 = powerOutput, 1 = turnOutput) so it is not necessary to retrieve the value more than once (efficiency purposes)
+bool driveDirectionNormal, driveDone;     //Declare booleans to indicate direction state during driver control and if the drive is done moving during autonomous
+enum direction { f = 0, b, l, r };        //Create enumerated type variable to indicate direciton
 
 //Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms//
 bool armsDone;                                          //Declare booleans to indicate if the arm is done moving during autonomous
@@ -32,11 +32,11 @@ armsPositions currentArmPosition = d;
 
 //Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws//
 bool rightClawClosed, clawsDone;    //Declare booleans to indicate claw positions and if the claws are done moving during autonomous
-short clawLoutput, clawRoutput;     //Declare shorts to store the speed in which to move each on of the claws
+signed short clawLoutput, clawRoutput;     //Declare shorts to store the speed in which to move each on of the claws
 
 //Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake//
 bool mogoRetracted, mogoDone;      //Declare booleans to indicate if mobile goal is currently retracted or not (if, when activated, it will respectively extend or retract) and to indicate if the mobile goal intake is done moving during autonomous
-short mogoLoutput, mogoRoutput;    //Declare shorts to store the speed in which to move each side of the Mobile Goal intake
+signed short mogoLoutput, mogoRoutput;    //Declare shorts to store the speed in which to move each side of the Mobile Goal intake
 
 //LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD//
 #ifdef USING_LCD    //Only include code if USING_LCD is defined in the constants.h file
@@ -70,9 +70,9 @@ signed int ROUND(float inNumber){
 signed short MAP(signed short inNumber, signed short inMin, signed short inMax, signed short outMin, signed short outMax) {
 	return ((inNumber - inMin) * (outMax - outMin) / (inMax - inMin) + outMin);
 }
-//Retreived from
+//Retreived from https://www.arduino.cc/en/Reference/Map
 
-signed byte WITHIN_RANGE(signed short inNumber) {
+signed byte CLAMP(signed short inNumber) {
 	if(inNumber > 127) return 127;
 	else if (inNumber < -127) return -127;
 	return inNumber;
@@ -87,16 +87,16 @@ signed short DEGREES_ROTATION_TO_GYRO_TICKS(float targetDegrees) {
 }
 
 signed short DEGREES_ROTATION_TO_ENCODER_PULSES(float targetDegrees) {
-	return ROUND(((targetDegrees*PI*(DRIVE_WIDTH/2))/180)*(360/(WHEEL_DIAMETER*PI)));
+	return ROUND((targetDegrees*DRIVE_WIDTH)/WHEEL_DIAMETER);
 }
-//Retreived from
+//Retreived from https://en.wikipedia.org/wiki/Arc_(geometry)#Length_of_an_arc_of_a_circle
 
-void rectifyOutputsEncoder(short *values, signed byte speed, int leftSideSensor, int rightSideSensor) {
-	if((leftSideSensor - rightSideSensor) * RECTIFY_CONSTANT_ENCODER + 1!=0) values[0] = ROUND(speed / ((leftSideSensor - rightSideSensor) * RECTIFY_CONSTANT_ENCODER + 1));
-	if((rightSideSensor - leftSideSensor) * RECTIFY_CONSTANT_ENCODER + 1!=0) values[1] = ROUND(speed / ((rightSideSensor - leftSideSensor) * RECTIFY_CONSTANT_ENCODER + 1));
+void rectifyOutputsEncoder(signed short *values, signed byte speed, signed short leftSideSensor, signed short rightSideSensor) {
+	values[0] = speed - (leftSideSensor - rightSideSensor)*RECTIFY_CONSTANT_ENCODER;
+	values[1] = speed - (rightSideSensor - leftSideSensor)*RECTIFY_CONSTANT_ENCODER;
 }
 
-void rectifyDriveGyro(short *values, signed byte speed, int gyroSensor){
+void rectifyDriveGyro(short *values, signed byte speed, signed short gyroSensor){
 	values[0] = speed - ((gyroSensor)*RECTIFY_CONSTANT_GYRO);
 	values[1] = speed + ((gyroSensor)*RECTIFY_CONSTANT_GYRO);
 }
@@ -153,36 +153,37 @@ void resetValues() {
 
 	//Even if claws previously not done, reset it anyway to make sure the next time it enters the loop, it will run
 	mogoDone = false;
-
-	//Only include piece of code if USING_KALMAN_FILTER is defined in constants.h file
 }
 
 //Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize//
 void initialize(){
+	//Only include piece of code if USING_LCD is defined
 #ifdef USING_LCD
-	clearLCDLine(0);
-	clearLCDLine(1);
-	bLCDBacklight = LCD_BACKLIGHT;
+	clearLCDLine(0);                  //Clear LCD
+	clearLCDLine(1);                  //Clear LCD
+	bLCDBacklight = LCD_BACKLIGHT;    //Turn backlight on or off based on LCD_BACKLIGHT constant
 
-	currentMenu = mainMenu;
-	currentCode = mogoAndCones;
-	currentColor = red;
-	currentSide = rightSide;
+	currentMenu = mainMenu;        //Preset to main menu
+	currentCode = mogoAndCones;    //Preset autonomous to Mobile Goal and Cones
+	currentColor = red;            //Preset autonomous alliance color to red
+	currentSide = rightSide;       //Preset autonomous starting side to right side
+	//None of the LCD buttons have been previously pressed
 	lcdButtonsPressed[0] = false;
 	lcdButtonsPressed[1] = false;
 	lcdButtonsPressed[2] = false;
 
-	if (bIfiRobotDisabled){
+	if (bIfiRobotDisabled){    //Display that Gyro is calibrating only if robot is disabled
 		lcdReady = false;
 		displayLCDCenteredString(0, "Calibrating Gyro");
 		displayLCDString(1, 0, "...");
 	}
-	else {
+	else {                     //If robot is starting up again enabled (maybe it disconnected from the field) don't calibrate gyro and make robot just start again
 		lcdReady = true;
 	}
 	bLCDBacklight = false;
 #endif
 
+	//Initialize all motors and sensors using constants from constants.h
 	motorType[MOTOR_MOGO_L] = MOTOR_MOGO_L_TYPE;
 	motorType[MOTOR_DRIVE_LF] = MOTOR_DRIVE_LF_TYPE;
 	motorType[MOTOR_DRIVE_LB] = MOTOR_DRIVE_LB_TYPE;
@@ -200,42 +201,51 @@ void initialize(){
 	SensorType[SENSOR_POT_L] = sensorPotentiometer;
 	SensorType[SENSOR_POT_R] = sensorPotentiometer;
 
-	if(bIfiRobotDisabled){
-		SensorType[SENSOR_GYRO] = sensorNone;
+	if(bIfiRobotDisabled){                    //Only calibrate Gyro if robot is disabled
+		SensorType[SENSOR_GYRO] = sensorNone;   //Reset SENSOR_GYRO port
 		wait1Msec(500);
-		SensorType[SENSOR_GYRO] = sensorGyro;
-		wait1Msec(1500);
+		SensorType[SENSOR_GYRO] = sensorGyro;   //Assign gyro sensor to SENSOR_GYRO port
+		wait1Msec(1500);                        //Wait for it to calibrate
 
 		//SensorScale[in8] = 260;		//Adjust SensorScale to correct the scaling for your SENSOR_GYRO
 		SensorFullCount[in8] = GYRO_FULL_ROTATION_TICKS;	//Adjust SensorFullCount to set the "rollover" point. A value of 3600 sets the rollover point to +/-3600
 	}
 	resetValues();
 
+	//Only include piece of code if USING_LCD is defined
 #ifdef USING_LCD
 	do{
 		if(bIfiRobotDisabled)	lcdSelect();
 		else break;
 	}while (!lcdReady);
 
+	//Clear the LCD
 	clearLCDLine(0);
 	clearLCDLine(1);
-	displayLCDCenteredString(0, "     2223-Z     ");
+	displayLCDCenteredString(0, "     2223-Z     ");    //Output 2223-Z on the screen, signaling that the lcd is done
 #endif
 }
 
 //PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID//
-byte PID(float *values, int target, unsigned int sensorInput) {
-	/*values[] array format: KP(0),  KI(1), KD(2), error(3), integral(4), integralLimit(5), lastError(6)	*/
+byte PID(float *values, signed short target, signed int sensorInput) {
+	//values[] array format: KP(0),  KI(1), KD(2), error(3), integral(4), integralLimit(5), lastError(6)
 
-	values[3] = target - sensorInput;
+	//Calculate error
+	values[3] = (float)(target - sensorInput);
+
+	//Calculate integral if within the integralLimit range
 	values[4] += (abs(values[4]) + abs(values[3]) < values[5]) ? values[3] : 0;
+	//In the case that error is 0, reset the integral
 	if (values[3] == 0) values[4] = 0;
 
+	//Calculate the output adding KP by error, KI by integral and KD by derivative
+	//Just so the Integral doesn't grow too fast, map an exagerated number to fit values from -127 to 127
+	//Calculate the derivative here so there is no need to store it in a variable
 	output = values[0] * values[3] + MAP((values[1] * values[4]), -(values[5]), values[5], -127, 127) + values[2] * (values[3]-values[6]);
 
 	values[6] = values[3];
 
-	return WITHIN_RANGE(output);
+	return CLAMP(output);
 }
 
 //Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive//
@@ -277,14 +287,13 @@ void driveOperatorControl() {
 	}
 
 	//Make sure left and right side values are within a range of values between -127 to 127
-	driveOutputs[0] = WITHIN_RANGE(driveOutputs[0]);
-	driveOutputs[1] = WITHIN_RANGE(driveOutputs[1]);
+	driveOutputs[0] = CLAMP(driveOutputs[0]);
+	driveOutputs[1] = CLAMP(driveOutputs[1]);
 
 	//Move motors using calculated values for left and right side
 	motor[MOTOR_DRIVE_LF] = motor[MOTOR_DRIVE_LB] = driveOutputs[0];
 	motor[MOTOR_DRIVE_RF] = motor[MOTOR_DRIVE_RB] = driveOutputs[1];
 }
-
 
 void drive(direction orientation, float pulses, signed byte speed, bool useGyro = false) {
 	//Recalculate pulses to convert them to degrees of rotation
@@ -296,33 +305,35 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 	else if(orientation == f || orientation == b) pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
 
 	//Calculate PID and rectify robot if necessary
-	/*if(useGyro){
-		if(orientation == f || orientation == b){
+	if(useGyro){
+		if(orientation == f || orientation == b){    //Calculate PID using encoder values and rectify with gyro
 			PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
 			rectifyDriveGyro(driveOutputs, PIDoutput, SensorValue[SENSOR_GYRO]);
 		}
-		else if (orientation == l || orientation == r){
+		else if (orientation == l || orientation == r){    //Calculate PID using gyro values and don't rectify
 			PIDoutput = PID(PIDdrive, pulses, SensorValue[SENSOR_GYRO]);
 			driveOutputs[0] = PIDoutput;
 			driveOutputs[1] = PIDoutput;
 		}
 	}
 	else{
+		//Calculate PID using encoder values
 		PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
+		//Rectify with encoders only if moving forward or backwards
 		if(orientation == f || orientation == b) rectifyOutputsEncoder(driveOutputs, PIDoutput, abs(SensorValue[SENSOR_ENCODER_L]), abs(SensorValue[SENSOR_ENCODER_R]));
 		else {
 			driveOutputs[0] = PIDoutput;
 			driveOutputs[1] = PIDoutput;
 		}
-	}*/
+	}
 
-	PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
-	driveOutputs[0] = PIDoutput;
-	driveOutputs[1] = PIDoutput;
+	//PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
+	//driveOutputs[0] = PIDoutput;
+	//driveOutputs[1] = PIDoutput;
 
 	//Make sure left and right orientation values are within a range of values between -speed to speed
-	driveOutputs[0] = MAP(WITHIN_RANGE(driveOutputs[0]), -127, 127, -speed, speed);
-	driveOutputs[1] = MAP(WITHIN_RANGE(driveOutputs[1]), -127, 127, -speed, speed);
+	driveOutputs[0] = MAP(CLAMP(driveOutputs[0]), -127, 127, -speed, speed);
+	driveOutputs[1] = MAP(CLAMP(driveOutputs[1]), -127, 127, -speed, speed);
 
 	//Move motors based on PID values, direction in which to move
 	switch (orientation) {
@@ -347,13 +358,16 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 		break;
 
 	}
+
+	//Check if drive is done
 	if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD) {
-		if(driveCounter<DRIVE_PID_CORRECTION_CYCLES) driveCounter++;
-		if(driveCounter==DRIVE_PID_CORRECTION_CYCLES){
+		if(driveCounter<DRIVE_PID_CORRECTION_CYCLES) driveCounter++;    //Sinchronous counter that doesn't affect other processes
+			if(driveCounter==DRIVE_PID_CORRECTION_CYCLES){
+			//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still withing the threshold, it means that the drive was done
 			PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
 			if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD){
 				driveDone = true;
-				SensorValue[SENSOR_GYRO] = 0;
+				if(useGyro)SensorValue[SENSOR_GYRO] = 0;
 			}
 		}
 		else driveDone = false;
@@ -367,29 +381,41 @@ void armsControl(armsPositions state) {
 
 	switch (state) {
 	case u:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_DOWN, SensorValue[SENSOR_POT_L]);
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]);
+		//Move motors based on PID calculated values
+		motor[MOTOR_ARM_L] = CLAMP(PID(PIDarmL, ARM_DOWN, SensorValue[SENSOR_POT_L]));
+		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]));
+
+		//Check if arm is in position within the threshold
 		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsDone = true;
 		else armsDone = false;
 		break;
 
 	case d:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]);
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_DOWN, SensorValue[SENSOR_POT_R]);
+		//Move motors based on PID calculated values
+		motor[MOTOR_ARM_L] = CLAMP(PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]));
+		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_DOWN, SensorValue[SENSOR_POT_R]));
+
+		//Check if arm is in position within the threshold
 		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsDone = true;
 		else armsDone = false;
 		break;
 
 	case lr:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]);
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_LOADER, SensorValue[SENSOR_POT_R]);
+		//Move motors based on PID calculated values
+		motor[MOTOR_ARM_L] = CLAMP(PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]));
+		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_LOADER, SensorValue[SENSOR_POT_R]));
+
+		//Check if arm is in position within the threshold
 		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsDone = true;
 		else armsDone = false;
 		break;
 
 	case ll:
-		motor[MOTOR_ARM_L] = PID(PIDarmL, ARM_LOADER, SensorValue[SENSOR_POT_L]);
-		motor[MOTOR_ARM_R] = PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]);
+		//Move motors based on PID calculated values
+		motor[MOTOR_ARM_L] = CLAMP(PID(PIDarmL, ARM_LOADER, SensorValue[SENSOR_POT_L]));
+		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]));
+
+		//Check if arm is in position within the threshold
 		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsDone = true;
 		else armsDone = false;
 		break;
@@ -397,7 +423,7 @@ void armsControl(armsPositions state) {
 }
 
 void armsOperatorControl() {
-	//Button toggle
+	//Button toggle for "normal button"
 	if (vexRT[JOYSTICK_ARM] == 1) {
 		if (!armsButtonPressed) {
 			armsButtonPressed = true;
@@ -407,6 +433,7 @@ void armsOperatorControl() {
 	}
 	else armsButtonPressed = false;
 
+	//Button toggle for "loader button"
 	if (vexRT[JOYSTICK_ARM_LOADER] == 1) {
 		if (!armsLoaderButtonPressed) {
 			armsLoaderButtonPressed = true;
@@ -434,6 +461,7 @@ void armsOperatorControl() {
 
 //Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws//
 void clawsControl(bool state) {
+	//Reevaluate the claw's output per side based on the current state of 'state'
 	if (state) {
 		clawLoutput = -CLAW_SPEED;
 		clawRoutput = CLAW_SPEED;
@@ -443,12 +471,14 @@ void clawsControl(bool state) {
 		clawRoutput = -CLAW_SPEED;
 	}
 
+	//If CLAWS_CYCLES time has not gone by, keep moving claws
 	if (clawsCounter < CLAWS_CYCLES) {
 		motor[MOTOR_CLAW_L] = clawLoutput;
 		motor[MOTOR_CLAW_R] = clawRoutput;
 		clawsCounter+=1;
 		clawsDone = false;
 	}
+	//If CLAWS_CYLES time has not gone by, stop moving claws and make clawsDone true
 	else {
 		motor[MOTOR_CLAW_L] = 0;
 		motor[MOTOR_CLAW_R] = 0;
@@ -456,8 +486,8 @@ void clawsControl(bool state) {
 	}
 }
 
-
 void clawsOperatorControl() {
+	//Toggle button to change the claw's position
 	if (vexRT[JOYSTICK_CLAWS] == 1) {
 		if (!clawsButtonPressed) {
 			clawsButtonPressed = true;
@@ -467,6 +497,7 @@ void clawsOperatorControl() {
 	}
 	else clawsButtonPressed = false;
 
+	//Call clawsControl function with updated state of claws
 	clawsControl(rightClawClosed);
 }
 

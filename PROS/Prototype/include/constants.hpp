@@ -1,54 +1,47 @@
-#ifndef constants.h
-#define constants.h
-
-#pragma systemfile
+#ifndef CONSTANTS_HPP_
+#define CONSTANTS_HPP_
 
 //-Motor ports-------------------------------------------------------------------------------------------------------------------//
-#define MOTOR_MOGO_L port3
-#define MOTOR_DRIVE_LF port2
-#define MOTOR_DRIVE_LB port1
-#define MOTOR_ARM_L port4
-#define MOTOR_CLAW_L port5
-#define MOTOR_CLAW_R port6
-#define MOTOR_ARM_R port7
-#define MOTOR_DRIVE_RB port10
-#define MOTOR_DRIVE_RF port9
-#define MOTOR_MOGO_R port8
-
-#define MOTOR_MOGO_L_TYPE tmotorVex393_HBridge
-#define MOTOR_DRIVE_LF_TYPE tmotorVex393HighSpeed_MC29
-#define MOTOR_DRIVE_LB_TYPE tmotorVex393HighSpeed_MC29
-#define MOTOR_ARM_L_TYPE tmotorVex393_HBridge
-#define MOTOR_CLAW_L_TYPE tmotorVex393_HBridge
-#define MOTOR_CLAW_R_TYPE tmotorVex393_HBridge
-#define MOTOR_ARM_R_TYPE tmotorVex393_HBridge
-#define MOTOR_DRIVE_RB_TYPE tmotorVex393HighSpeed_MC29
-#define MOTOR_DRIVE_RF_TYPE tmotorVex393HighSpeed_MC29
-#define MOTOR_MOGO_R_TYPE tmotorVex393_HBridge
+#define MOTOR_MOGO_L 3
+#define MOTOR_DRIVE_LF 2
+#define MOTOR_DRIVE_LB 1
+#define MOTOR_ARM_L 4
+#define MOTOR_CLAW_L 5
+#define MOTOR_CLAW_R 6
+#define MOTOR_ARM_R 7
+#define MOTOR_DRIVE_RB 10
+#define MOTOR_DRIVE_RF 9
+#define MOTOR_MOGO_R 8
 
 //-Sensor ports------------------------------------------------------------------------------------------------------------------//
-#define POWER_EXPANDER_STATUS in1
+#define POWER_EXPANDER_STATUS 1
 
-#define SENSOR_POT_L in2
-#define SENSOR_POT_R in3
+#define SENSOR_POT_L 2
+#define SENSOR_POT_R 3
 
-#define SENSOR_GYRO in8
+#define SENSOR_GYRO 8
 
-#define SENSOR_ENCODER_L dgtl1
-#define SENSOR_ENCODER_R dgtl3
-#define SENSOR_ENCODER_L_INVE	RTED false
+#define SENSOR_ENCODER_L 1
+#define SENSOR_ENCODER_R 3
+#define SENSOR_ENCODER_L_INVERTED false
 #define SENSOR_ENCODER_R_INVERTED true
 
 //-Joystick ports----------------------------------------------------------------------------------------------------------------//
-#define JOYSTICK_DRIVE_F Ch2
-#define JOYSTICK_DRIVE_S Ch4
-#define JOYSTICK_DRIVE_INVERT Btn8U
+#define JOYSTICK_DRIVE_F 2
+#define JOYSTICK_DRIVE_S 4
+#define JOYSTICK_DRIVE_INVERT 8
+#define JOYSTICK_DRIVE_INVERT_BUTTON JOY_UP
 
-#define JOYSTICK_ARM Btn5U
-#define JOYSTICK_ARM_LOADER Btn5D
+#define JOYSTICK_ARM 5
+#define JOYSTICK_ARM_BUTTON JOY_UP
+#define JOYSTICK_ARM_LOADER 5
+#define JOYSTICK_ARM_LOADER_BUTTON JOY_DOWN
 
-#define JOYSTICK_CLAWS Btn6U
-#define JOYSTICK_MOGO Btn6D
+#define JOYSTICK_CLAWS 6
+#define JOYSTICK_CLAWS_BUTTON JOY_UP
+
+#define JOYSTICK_MOGO 6
+#define JOYSTICK_MOGO_BUTTON JOY_DOWN
 
 //-PID---------------------------------------------------------------------------------------------------------------------------//
 #define DRIVE_PID_KP_PRESET 0.75
@@ -70,8 +63,9 @@
 #define PID_DONE_THRESHOLD 2
 
 //-Others-------------------------------------------------------------------------------------------------------------------------//
+#define LCD_PORT uart2
 #define LCD_BACKLIGHT true
-//#define USING_LCD true	//Comment if false
+#define USING_LCD false
 
 #define DRIVE_THRESHOLD 15
 #define DRIVE_PID_CORRECTION_CYCLES 10
@@ -80,6 +74,7 @@
 
 #define DRIVE_WIDTH 13.0
 #define WHEEL_DIAMETER 3.25
+#define PI 3.141592653589793
 #define GYRO_FULL_ROTATION_TICKS 3600
 #define RECTIFY_CONSTANT_ENCODER 1
 #define RECTIFY_CONSTANT_GYRO 1
@@ -98,4 +93,10 @@
 //https://www.vexrobotics.com/276-2271.html
 
 #define DRIVERCONTROL_LOOP_DELAY 15
+
+#include <API.hpp>
+
+typedef uint_fast8_t counterType;                      //Create datatype designed for counters called counter
+typedef bool toggleButton;                          //Create datatype designed for button toggles
+
 #endif
