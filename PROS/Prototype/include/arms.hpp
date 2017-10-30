@@ -3,6 +3,7 @@
 
 #include <API.hpp>
 #include <utils.hpp>
+#include <PID.hpp>
 
 namespace arms {
 

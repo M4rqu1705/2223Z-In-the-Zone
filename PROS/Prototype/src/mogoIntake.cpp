@@ -1,4 +1,4 @@
-#include <main.hpp>
+#include <mogoIntake.hpp>
 
 namespace mobileGoalIntake{
 void changePositionTo(bool state) {

@@ -1,6 +1,4 @@
-#include <main.hpp>
-
-#include <cmath>
+#include <utils.hpp>
 
 int_fast32_t ROUND(float inNumber) {
 	if (inNumber >= 0) return ceil(inNumber - 0.49);	//Retreived from http://www.cplusplus.com/forum/beginner/3600/

@@ -2,16 +2,8 @@
 #define MAIN_HPP_
 
 #include <API.hpp>
-
 #include <constants.hpp>
-#include <utils.hpp>
-#include <lcd.hpp>
-#include <PID.hpp>
-
-#include <drive.hpp>
-#include <mogoIntake.hpp>
-#include <arms.hpp>
-#include <claws.hpp>
+//#include <lcd.hpp>
 
 #ifdef __cplusplus
 extern "C" {

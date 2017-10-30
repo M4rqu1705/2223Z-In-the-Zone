@@ -1,4 +1,4 @@
-#include <main.hpp>
+#include <arms.hpp>
 
 namespace arms {
 	void changePositionTo(position state) {

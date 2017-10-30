@@ -1,6 +1,7 @@
-#include <main.hpp>
+#include <claws.hpp>
 
 namespace claws {
+
 	void changePositionTo(bool state) {
 		//Reevaluate the claw's output per side based on the current state of 'state'
 		if (state) {
