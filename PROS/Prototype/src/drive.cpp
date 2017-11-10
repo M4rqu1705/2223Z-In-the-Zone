@@ -1,6 +1,32 @@
-#include <drive.hpp>
+#include "drive.h"
 
-namespace drive {
+using namespace drive;
+
+	void init(bool reset){
+		counter = 0;
+
+		invertButtonPressed = false;
+
+		slewOutputs[0] = 0; slewOutputs[1] = 0;
+		PIDoutput = 0;
+		joystickInputs[0] = 0; joystickInputs[1] = 0;
+		outputs[0] = 0; outputs[1] = 0;
+
+		directionNormal = true;
+		notDone = true;
+
+		if(reset){
+			encoderReset(drive::encoderL);	encoderReset(drive::encoderR);
+			gyroReset(drive::driveGyro);
+		}
+		else{
+			drive::encoderL = encoderInit(SENSOR_ENCODER_L, (SENSOR_ENCODER_L + 1), SENSOR_ENCODER_L_INVERTED);
+			drive::encoderR = encoderInit(SENSOR_ENCODER_R, (SENSOR_ENCODER_R + 1), SENSOR_ENCODER_R_INVERTED);
+		}
+
+
+	}
+
 	void operatorControl() {
 
 		//Button toggle
@@ -22,25 +48,18 @@ namespace drive {
 
 		//Slewrate control. Assign value to output incrementing or decreasing values using SLEW_GAIN
 		//If direction inverted, decrease values where normally increased and vice versa
-		if (powerOutput + SLEW_GAIN < joystickInputs[0]) powerOutput += SLEW_GAIN;
-		else if (powerOutput - SLEW_GAIN > joystickInputs[0])	powerOutput -= SLEW_GAIN;
-
-		if (turnOutput + SLEW_GAIN < joystickInputs[1]) turnOutput += SLEW_GAIN;
-		else if (turnOutput - SLEW_GAIN > joystickInputs[1]) turnOutput -= SLEW_GAIN;
+		slewOutputs[0] += CLAMP(SLEW_GAIN * SIGN(joystickInputs[0], directionNormal? 1 : -1));
+		slewOutputs[1] += CLAMP(SLEW_GAIN * SIGN(joystickInputs[1], directionNormal? 1 : -1));
 
 		//Calculate "arcade drive" values for left and right side
 		if (directionNormal) {
-			outputs[0] = ROUND(turnOutput) + ROUND(powerOutput);
-			outputs[1] = ROUND(turnOutput) - ROUND(powerOutput);
+			outputs[0] = CLAMP(ROUND(slewOutputs[1]) + ROUND(slewOutputs[0]));
+			outputs[1] = CLAMP(ROUND(slewOutputs[1]) - ROUND(slewOutputs[0]));
 		}
 		else {
-			outputs[0] = ROUND(turnOutput) - ROUND(powerOutput);
-			outputs[1] = ROUND(turnOutput) + ROUND(powerOutput);
+			outputs[0] = CLAMP(ROUND(slewOutputs[1]) - ROUND(slewOutputs[0]));
+			outputs[1] = CLAMP(ROUND(slewOutputs[1]) + ROUND(slewOutputs[0]));
 		}
-
-		//Make sure left and right side values are within a range of values between -127 to 127
-		outputs[0] = CLAMP(outputs[0]);
-		outputs[1] = CLAMP(outputs[1]);
 
 		//Move motors using calculated values for left and right side
 		motorSet(MOTOR_DRIVE_LF, outputs[0]);
@@ -56,23 +75,25 @@ namespace drive {
 			else pulses = DEGREES_ROTATION_TO_ENCODER_PULSES(pulses);
 		}
 		//Recaluclate pulses to convert them to inches of movement
-		else if (orientation == forward || orientation == backward) pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
+		else if (orientation == forward || orientation == backward){
+			 pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
+		 }
 
 		//Calculate PID and rectify robot if necessary
 		if (useGyro) {
 			if (orientation == forward || orientation == backward) {    //Calculate PID using encoder values and rectify with gyro
-				PIDoutput = pid::PID(pid::PIDdrive, pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
+				PIDoutput = drivePID.calculatePID(pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
 				rectifyDriveGyro(outputs, PIDoutput, gyroGet(driveGyro));
 			}
 			else if (orientation == turnLeft || orientation == turnRight) {    //Calculate PID using gyro values and don't rectify
-				PIDoutput = pid::PID(pid::PIDdrive, pulses, gyroGet(driveGyro));
+				PIDoutput = drivePID.calculatePID(pulses, gyroGet(driveGyro));
 				outputs[0] = PIDoutput;
 				outputs[1] = PIDoutput;
 			}
 		}
 		else {
 			//Calculate PID using encoder values
-			PIDoutput = pid::PID(pid::PIDdrive, pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
+			PIDoutput = drivePID.calculatePID(pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
 			//Rectify with encoders only if moving forward or backwards
 			if (orientation == forward || orientation == backward) rectifyOutputsEncoder(outputs, PIDoutput, abs(encoderGet(encoderL)), abs(encoderGet(encoderR)));
 			else {
@@ -126,25 +147,16 @@ namespace drive {
 			if (counter < DRIVE_PID_CORRECTION_CYCLES) counter++;    //Sinchronous counter that doesn't affect other processes
 			if (counter == DRIVE_PID_CORRECTION_CYCLES) {
 				//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still withing the threshold, it means that the drive was done
-				if (useGyro) {
-					if (orientation == forward || orientation == backward) {    //Calculate PID using encoder values and rectify with gyro
-						PIDoutput = pid::PID(pid::PIDdrive, pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
-					}
-					else if (orientation == turnLeft || orientation == turnRight) {    //Calculate PID using gyro values and don't rectify
-						PIDoutput = pid::PID(pid::PIDdrive, pulses, gyroGet(driveGyro));
-					}
-					else {
-						PIDoutput = pid::PID(pid::PIDdrive, pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
-					}
-					}
-					if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD) {
-						notDone = false;
-						if (useGyro) gyroReset(driveGyro);
-					}
+				PIDoutput = drivePID.calculatePID(pulses, ((abs(encoderGet(encoderL)) + abs(encoderGet(encoderR))) / 2));
+				if (useGyro && (orientation == turnLeft || orientation == turnRight)) {    //Calculate PID using gyro values and don't rectify
+						PIDoutput = drivePID.calculatePID(pulses, gyroGet(driveGyro));
 				}
+				if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD) notDone = false;
 				else notDone = true;
+				counter = 0;
 			}
-			else counter = 0;
+			else{
+				notDone = true;
+			}
 		}
-
 	}

@@ -1,4 +1,4 @@
-#include <utils.hpp>
+#include "utils.h"
 
 int_fast32_t ROUND(float inNumber) {
 	if (inNumber >= 0) return ceil(inNumber - 0.49);	//Retreived from http://www.cplusplus.com/forum/beginner/3600/
@@ -14,6 +14,12 @@ int_fast8_t CLAMP(int_fast16_t inNumber) {
 	if (inNumber > 127) return 127;
 	else if (inNumber < -127) return -127;
 	return inNumber;
+}
+
+int_fast8_t SIGN(int_fast8_t inNumber, float multiplier){
+		if (inNumber>0) return 1;
+		if (inNumber<0) return -1;
+		return 0;
 }
 
 uint_fast16_t INCHES_TRANSLATION_TO_ENCODER_PULSES(float inches) {

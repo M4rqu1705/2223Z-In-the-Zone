@@ -22,20 +22,20 @@ signed short output;
 float drivePowerOutput, driveTurnOutput;  //Declare Slewrate variables to store SLEWCHANGE
 signed short PIDoutput, driveOutputs[2];  //Declare shorts to store the outputs of the PID calculation and the individual drive sides output after rectifying the PID output
 signed  byte joystickDriveInputs[2];      //Declare array to store joystick values (0 = powerOutput, 1 = turnOutput) so it is not necessary to retrieve the value more than once (efficiency purposes)
-bool driveDirectionNormal, driveDone;     //Declare booleans to indicate direction state during driver control and if the drive is done moving during autonomous
+bool driveDirectionNormal, driveNotDone;     //Declare booleans to indicate direction state during driver control and if the drive is done moving during autonomous
 enum direction { f = 0, b, l, r };        //Create enumerated type variable to indicate direciton
 
 //Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms//
-bool armsDone;                                          //Declare booleans to indicate if the arm is done moving during autonomous
+bool armsNotDone;                                          //Declare booleans to indicate if the arm is done moving during autonomous
 enum armsPositions { d = 0, u = 1, lr = 2, ll = 3 };    //Declare enumerated type variable to indicate arm positions
 armsPositions currentArmPosition = d;
 
 //Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws--Claws//
-bool rightClawClosed, clawsDone;    //Declare booleans to indicate claw positions and if the claws are done moving during autonomous
+bool rightClawClosed, clawsNotDone;    //Declare booleans to indicate claw positions and if the claws are done moving during autonomous
 signed short clawLoutput, clawRoutput;     //Declare shorts to store the speed in which to move each on of the claws
 
 //Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake//
-bool mogoRetracted, mogoDone;      //Declare booleans to indicate if mobile goal is currently retracted or not (if, when activated, it will respectively extend or retract) and to indicate if the mobile goal intake is done moving during autonomous
+bool mogoRetracted, mogoNotDone;      //Declare booleans to indicate if mobile goal is currently retracted or not (if, when activated, it will respectively extend or retract) and to indicate if the mobile goal intake is done moving during autonomous
 signed short mogoLoutput, mogoRoutput;    //Declare shorts to store the speed in which to move each side of the Mobile Goal intake
 
 //LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD//
@@ -134,7 +134,7 @@ void resetValues() {
 	PIDdrive[5] = DRIVE_PID_INTEGRAL_LIMIT_PRESET;	PIDdrive[6] = DRIVE_PID_LAST_ERROR_PRESET;
 
 	//Even if drive previously not done, reset it anyway to make sure the next time it enters the loop, it will run
-	driveDone = false;
+	driveNotDone = true;
 
 	//Reset arm PID arrays
 	PIDarmL[0] = ARM_PID_KP_PRESET;	PIDarmL[1] = ARM_PID_KI_PRESET; PIDarmL[2] = ARM_PID_KD_PRESET;
@@ -146,13 +146,13 @@ void resetValues() {
 	PIDarmR[5] = ARM_PID_INTEGRAL_LIMIT_PRESET;	PIDarmR[6] = ARM_PID_LAST_ERROR_PRESET;
 
 	//Even if arm previously not done, reset it anyway to make sure the next time it enters the loop, it will run
-	armsDone = false;
+	armsNotDone = true;
 
 	//Even if claw previously not done, reset it anyway to make sure the next time it enters the loop, it will run
-	clawsDone = false;
+	clawsNotDone = true;
 
 	//Even if claws previously not done, reset it anyway to make sure the next time it enters the loop, it will run
-	mogoDone = false;
+	mogoNotDone = true;
 }
 
 //Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize//
@@ -366,11 +366,11 @@ void drive(direction orientation, float pulses, signed byte speed, bool useGyro 
 			//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still withing the threshold, it means that the drive was done
 			PIDoutput = PID(PIDdrive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
 			if (PIDoutput < PID_DONE_THRESHOLD && PIDoutput > -PID_DONE_THRESHOLD){
-				driveDone = true;
+				driveNotDone = false;
 				if(useGyro)SensorValue[SENSOR_GYRO] = 0;
 			}
 		}
-		else driveDone = false;
+		else driveNotDone = true;
 	}
 	else driveCounter = 0;
 }
@@ -386,8 +386,8 @@ void armsControl(armsPositions state) {
 		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]));
 
 		//Check if arm is in position within the threshold
-		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
+		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsNotDone = false;
+		else armsNotDone = true;
 		break;
 
 	case d:
@@ -396,8 +396,8 @@ void armsControl(armsPositions state) {
 		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_DOWN, SensorValue[SENSOR_POT_R]));
 
 		//Check if arm is in position within the threshold
-		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
+		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsNotDone = false;
+		else armsNotDone = true;
 		break;
 
 	case lr:
@@ -406,8 +406,8 @@ void armsControl(armsPositions state) {
 		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_LOADER, SensorValue[SENSOR_POT_R]));
 
 		//Check if arm is in position within the threshold
-		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
+		if (PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) < PID_DONE_THRESHOLD && PID(PIDarmL, ARM_UP, SensorValue[SENSOR_POT_L]) > -PID_DONE_THRESHOLD) armsNotDone = false;
+		else armsNotDone = true;
 		break;
 
 	case ll:
@@ -416,8 +416,8 @@ void armsControl(armsPositions state) {
 		motor[MOTOR_ARM_R] = CLAMP(PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]));
 
 		//Check if arm is in position within the threshold
-		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsDone = true;
-		else armsDone = false;
+		if (PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) < PID_DONE_THRESHOLD && PID(PIDarmR, ARM_UP, SensorValue[SENSOR_POT_R]) > -PID_DONE_THRESHOLD) armsNotDone = false;
+		else armsNotDone = true;
 		break;
 	}
 }
@@ -476,13 +476,13 @@ void clawsControl(bool state) {
 		motor[MOTOR_CLAW_L] = clawLoutput;
 		motor[MOTOR_CLAW_R] = clawRoutput;
 		clawsCounter+=1;
-		clawsDone = false;
+		clawsNotDone = true;
 	}
-	//If CLAWS_CYLES time has not gone by, stop moving claws and make clawsDone true
+	//If CLAWS_CYLES time has not gone by, stop moving claws and make clawsNotDone false
 	else {
 		motor[MOTOR_CLAW_L] = 0;
 		motor[MOTOR_CLAW_R] = 0;
-		clawsDone = true;
+		clawsNotDone = false;
 	}
 }
 
@@ -516,12 +516,12 @@ void mobileGoalControl(bool state) {
 		motor[MOTOR_MOGO_L] = mogoLoutput;
 		motor[MOTOR_MOGO_R] = mogoRoutput;
 		mogoCounter+=1;
-		mogoDone = false;
+		mogoNotDone = true;
 	}
 	else if (mogoCounter == MOGO_CYCLES) {
 		motor[MOTOR_MOGO_L] = 0;
 		motor[MOTOR_MOGO_R] = 0;
-		mogoDone = true;
+		mogoNotDone = false;
 	}
 }
 

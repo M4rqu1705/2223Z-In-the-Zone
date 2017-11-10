@@ -24,7 +24,7 @@ task usercontrol(){
 
 task autonomous(){
 
-	while(!driveDone){
+	while(!driveNotDone){
 		drive(r,90, 75, false);
 		delay(1);
 	}
@@ -32,7 +32,7 @@ task autonomous(){
 	delay(200);
 	writeDebugStreamLine("Turned right");
 
-	while(!driveDone){
+	while(driveNotDone){
 		drive(l,180, 75, false);
 		delay(1);
 	}
@@ -40,7 +40,7 @@ task autonomous(){
 	delay(200);
 	writeDebugStreamLine("Turned left");
 
-	while(!driveDone){
+	while(driveNotDone){
 		drive(r,90, 75, false);
 		delay(1);
 	}
@@ -48,7 +48,7 @@ task autonomous(){
 	delay(200);
 	writeDebugStreamLine("Turned right");
 
-	while(!driveDone){
+	while(driveNotDone){
 		drive(b,5, 75, false);
 		delay(1);
 	}
@@ -56,7 +56,7 @@ task autonomous(){
 	delay(200);
 	writeDebugStreamLine("Moved backward");
 
-	while(!driveDone){
+	while(driveNotDone){
 		drive(f,10, 75, false);
 		delay(1);
 	}
@@ -64,7 +64,7 @@ task autonomous(){
 	delay(200);
 	writeDebugStreamLine("Moved forward");
 
-	while(!driveDone){
+	while(driveNotDone){
 		drive(b,5, 75, false);
 		delay(1);
 	}
