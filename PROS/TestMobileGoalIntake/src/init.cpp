@@ -10,7 +10,7 @@
  * obtained from http://sourceforge.net/projects/freertos/files/ or on request.
  */
 
-#include "main.hpp"
+#include "main.h"
 
 /*
  * Runs pre-initialization code. This function will be started in kernel mode one time while the
@@ -38,31 +38,4 @@ void initializeIO() {
  * can be implemented in this task if desired.
  */
 void initialize() {
-  drive::reset(true);
-  PID::reset();
-}
-
-
-namespace drive{
-	void reset(bool init){
-		counter = 0;
-		invertButtonPressed = false;
-
-		slewOutputs[LEFT] = 0;	slewOutputs[RIGHT] = 0;
-		PIDoutput = 0;
-		joystickInputs[LEFT] = 0; joystickInputs[RIGHT] = 0;
-		outputs[LEFT] = 0;	outputs[RIGHT] = 0;
-		
-		directionNormal = true;
-		notDone = true;
-		
-		if(init){
-			encoderL = encoderInit(SENSOR_ENCODER_L, (SENSOR_ENCODER_L + 1), SENSOR_ENCODER_L_INVERTED);
-			encoderR = encoderInit(SENSOR_ENCODER_R, (SENSOR_ENCODER_R + 1), SENSOR_ENCODER_R_INVERTED);
-		}
-		else{
-			encoderReset(encoderL);	encoderReset(encoderR);
-			gyroReset(driveGyro);
-		}
-	}
 }

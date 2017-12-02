@@ -1,16 +1,10 @@
-#ifndef MAIN_H_
-
-// This prevents multiple inclusion, which isn't bad for this file but is good practice
-#define MAIN_H_
+#ifndef MAIN_HPP_
+#define MAIN_HPP_
 
 #include "API.h"
 #include "commons.h"
 
-#include "utils.hpp"
-
-#include "PID.hpp"
-
-#include "drive.hpp"
+#include "utils.h"
 
 // Allow usage of this file in C++ programs
 // #ifdef __cplusplus
@@ -18,31 +12,36 @@
 
 // #endif
 
+#ifndef DRIVE_H_
+#define DRIVE_H_
 
-// A function prototype looks exactly like its declaration, but with a semicolon instead of
-// actual code. If a function does not match a prototype, compile errors will occur.
+namespace drive {
+	unsigned short counter;
+	bool invertButtonPressed;
 
-// Prototypes for initialization, operator control and autonomous
+	//PID drivePID(DRIVE_PID_KP_PRESET, DRIVE_PID_KI_PRESET, DRIVE_PID_KD_PRESET, DRIVE_PID_INTEGRAL_LIMIT_PRESET);
 
-/**
- * Runs the user autonomous code. This function will be started in its own task with the default
- * priority and stack size whenever the robot is enabled via the Field Management System or the
- * VEX Competition Switch in the autonomous mode. If the robot is disabled or communications is
- * lost, the autonomous task will be stopped by the kernel. Re-enabling the robot will restart
- * the task, not re-start it from where it left off.
- *
- * Code running in the autonomous task cannot access information from the VEX Joystick. However,
- * the autonomous function can be invoked from another task if a VEX Competition Switch is not
- * available, and it can access joystick information if called in this way.
- *
- * The autonomous task may exit, unlike operatorControl() which should never exit. If it does
- * so, the robot will await a switch to another mode or disable/enable cycle.
- */
+	float slewOutputs[2];  //Declare Slewrate variables to store SLEWCHANGE
+	signed short PIDoutput;  //Declare shorts to store the outputs of the PID calculation and the individual drive sides output after rectifying the PID output
+	signed char joystickInputs[2], outputs[2];      //Declare array to store joystick values (0 = powerOutput, 1 = turnOutput) so it is not necessary to retrieve the value more than once (efficiency purposes)
+	bool directionNormal, notDone;     //Declare booleans to indicate direction state during driver control and if the drive is done moving during autonomous
+	enum direction : signed char { forward, backward, turnLeft, turnRight };        //Create enumerated type variable to indicate direciton
+
+	Gyro driveGyro;
+	Encoder encoderL;
+	Encoder encoderR;
+
+	void reset(bool init = false);
+
+	void operatorControl();
+	void move(direction orientation, float pulses, signed char speed, bool useGyro=false);
+}
+
+#endif
+
+
 void autonomous();
 /**
- * Runs pre-initialization code. This function will be started in kernel mode one time while the
- * VEX Cortex is starting up. As the scheduler is still paused, most API functions will fail.
- *
  * The purpose of this function is solely to set the default pin modes (pinMode()) and port
  * states (digitalWrite()) of limit switches, push buttons, and solenoids. It can also safely
  * configure a UART port (usartOpen()) but cannot set up an LCD (lcdInit()).
