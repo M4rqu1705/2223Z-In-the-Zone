@@ -11,9 +11,9 @@ namespace drive{
 }
 
 namespace mobileGoal{
-	signed char motorOutputs[2] = {0};
+	signed char motorOutput = 0;
 
-	float PID[7] = {3 ,1 ,3, 1000, 0, 0, 0 };
+	float PID[7] = {KP_PRESET ,KI_PRESET ,KD_PRESET,INTEGRAL_MAX_PRESET, 0, 0, 0 };
 
 	bool toggleRetractButton = false;
 	bool toggleExtendButton = false;
@@ -21,10 +21,10 @@ namespace mobileGoal{
 
 	void retractEqualsFalse(){
 		retract = false;
-		PID[0] = 3;
-		PID[1] = 1;
-		PID[2] = 3;
-		PID[3] = 1000;
+		PID[0] = KP_PRESET;
+		PID[1] = KI_PRESET;
+		PID[2] = KD_PRESET;
+		PID[3] = INTEGRAL_MAX_PRESET;
 		PID[4] = 0;
 		PID[5] = 0;
 		PID[6] = 0;
@@ -32,10 +32,10 @@ namespace mobileGoal{
 
 	void retractEqualsTrue(){
 		retract = true;
-		PID[0] = 3;
-		PID[1] = 1;
-		PID[2] = 3;
-		PID[3] = 1000;
+		PID[0] = KP_PRESET;
+		PID[1] = KI_PRESET;
+		PID[2] = KD_PRESET;
+		PID[3] = INTEGRAL_MAX_PRESET;
 		PID[4] = 0;
 		PID[5] = 0;
 		PID[6] = 0;
@@ -64,29 +64,27 @@ void operatorControl() {
 
 
 		if(mobileGoal::retract){
-			mobileGoal::motorOutputs[0] = calculatePID(mobileGoal::PID, MOGO_POT_RETRACTED, analogRead(SENSOR_MOGO_POT));
-			mobileGoal::motorOutputs[1] = -calculatePID(mobileGoal::PID, MOGO_POT_RETRACTED, analogRead(SENSOR_MOGO_POT));
+			mobileGoal::motorOutput = calculatePID(mobileGoal::PID, MOGO_POT_RETRACTED, analogRead(SENSOR_MOGO_POT));
 		}
 		else{
-			mobileGoal::motorOutputs[0] = calculatePID(mobileGoal::PID, MOGO_POT_EXTENDED, analogRead(SENSOR_MOGO_POT));
-			mobileGoal::motorOutputs[1] = -calculatePID(mobileGoal::PID, MOGO_POT_EXTENDED, analogRead(SENSOR_MOGO_POT));
+			mobileGoal::motorOutput = calculatePID(mobileGoal::PID, MOGO_POT_EXTENDED, analogRead(SENSOR_MOGO_POT));
 		}
-
-		motorSet(MOTOR_MOGO_L, mobileGoal::motorOutputs[0]);
-		motorSet(MOTOR_MOGO_R, mobileGoal::motorOutputs[1]);
 
 		for(int c = 0; c<7; c++){
-			printf("%f, ", mobileGoal::PID[c]);
+			printf("%d, ", ROUND(mobileGoal::PID[c]));
 		}
-		printf("\n");
+		printf(" Potentiometer = %d\n", analogRead(SENSOR_MOGO_POT));
 
 		//Set motor speeds based on calculated values
-			motorSet(MOTOR_DRIVE_LB, -drive::motorOutputs[0]);
+			motorSet(MOTOR_DRIVE_LB, drive::motorOutputs[0]);
 			motorSet(MOTOR_DRIVE_LF, drive::motorOutputs[0]);
 			motorSet(MOTOR_DRIVE_RF, drive::motorOutputs[1]);
-			motorSet(MOTOR_DRIVE_RB, -drive::motorOutputs[1]);
+			motorSet(MOTOR_DRIVE_RB, drive::motorOutputs[1]);
+
+			motorSet(MOTOR_MOGO_L, mobileGoal::motorOutput);
+			motorSet(MOTOR_MOGO_R, -mobileGoal::motorOutput);
 
 
-		delay(20);	//Delay 20 milliseconds so the processor doesn't overheat, but still can update the motors at a constant rate
+		delay(AUTON_LOOP_DELAY);	//Delay 20 milliseconds so the processor doesn't overheat, but still can update the motors at a constant rate
 	}
 }

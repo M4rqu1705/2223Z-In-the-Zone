@@ -22,10 +22,13 @@ const signed char MOTOR_DRIVE_RB = 10;
 const signed char MOTOR_MOGO_L = 4;
 const signed char MOTOR_MOGO_R = 7;
 
-const signed char SENSOR_MOGO_POT = 4;
+const signed char SENSOR_MOGO_POT = 2;
 
-const signed char MOGO_MOTOR_SPEED = 127;
-const signed short MOGO_POT_RETRACTED = 1265;
-const signed short MOGO_POT_EXTENDED = 3100;
+const signed short MOGO_POT_RETRACTED = 1050;
+const signed short MOGO_POT_EXTENDED = 2600;
+
+const float KP_PRESET = 0.25, KI_PRESET = .01, KD_PRESET = 10, INTEGRAL_MAX_PRESET = 1000;
+
+const unsigned char AUTON_LOOP_DELAY = 15;
 
 #endif
