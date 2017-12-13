@@ -26,20 +26,8 @@ typedef struct{
 	bool retract;               //Boolean to indicate in which state will the intake of the Mobile Goal be.
 }robotMobileGoalIntake;
 
-enum possibleArmsPositions {rightUp = 0, leftUp, rightLoader, leftLoader};
-typedef struct{
-	bool upButtonPressed;
-	bool downButtonPressed;
-	bool notDone;
-	unsigned byte counter;
-	float PIDL[9], PIDR[9];
-	signed byte outputs[2];
-	possibleArmsPositions newPosition;
-}robotArms;
-
 driveStruct drive;
 robotMobileGoalIntake mobileGoalIntake;
-robotArms arms;
 
 bool lcdButtonsPressed[3] = {false, false, false};
 
@@ -113,33 +101,6 @@ void resetValues() {
 	mobileGoalIntake.PID[8] = 0;	//PID output
 
 	mobileGoalIntake.retract = true;
-
-	arms.upButtonPressed = false;
-	arms.downButtonPressed = false;
-	arms.notDone = true;
-
-	arms.PIDL[0] = PID_ARMS_KP_PRESET;
-	arms.PIDL[1] = PID_ARMS_KI_PRESET;
-	arms.PIDL[2] = PID_ARMS_KD_PRESET;
-	arms.PIDL[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-	arms.PIDL[4] = PID_ARMS_ERROR_PRESET;
-	arms.PIDL[5] = PID_ARMS_LAST_ERROR_PRESET;
-	arms.PIDL[6] = PID_ARMS_INTEGRAL_PRESET;
-	arms.PIDL[7] = PID_ARMS_CORRECTION_CYCLES;
-	arms.PIDL[8] = 0;	//PID output
-
-	arms.PIDR[0] = PID_ARMS_KP_PRESET;
-	arms.PIDR[1] = PID_ARMS_KI_PRESET;
-	arms.PIDR[2] = PID_ARMS_KD_PRESET;
-	arms.PIDR[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-	arms.PIDR[4] = PID_ARMS_ERROR_PRESET;
-	arms.PIDR[5] = PID_ARMS_LAST_ERROR_PRESET;
-	arms.PIDR[6] = PID_ARMS_INTEGRAL_PRESET;
-	arms.PIDR[7] = PID_ARMS_CORRECTION_CYCLES;
-	arms.PIDR[8] = 0;	//PID output
-
-	arms.outputs[0] = 0;
-	arms.outputs[1] = 0;
 }
 
 //Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize//
@@ -229,11 +190,12 @@ void driveOperatorControl() {
 	if (drive.slewRateOutputs[0] + SLEW_GAIN < drive.joystickInputs[0]) drive.slewRateOutputs[0] += SLEW_GAIN;
 	else if (drive.slewRateOutputs[0] - SLEW_GAIN > drive.joystickInputs[0])	drive.slewRateOutputs[0] -= SLEW_GAIN;
 	else if (drive.joystickInputs[0] == 0) drive.slewRateOutputs[0] = 0;
-	CLAMP(drive.slewRateOutputs[0]);
 
 	if (drive.slewRateOutputs[1] + SLEW_GAIN < drive.joystickInputs[1]) drive.slewRateOutputs[1] += SLEW_GAIN;
 	else if (drive.slewRateOutputs[1] - SLEW_GAIN > drive.joystickInputs[1]) drive.slewRateOutputs[1] -= SLEW_GAIN;
 	else if (drive.joystickInputs[1] == 0) drive.slewRateOutputs[1] = 0;
+
+	CLAMP(drive.slewRateOutputs[0]);
 	CLAMP(drive.slewRateOutputs[1]);
 
 	//Calculate "arcade drive" values for left and right side
@@ -306,95 +268,6 @@ void move(direction orientation, float pulses, signed byte speed) {
 	}
 	else drive.counter = 0;
 }
-
-//Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms--Arms//
-void moveArms(possibleArmsPositions desiredState){
-	if(desiredState == rightUp){
-		calculatePID(arms, ARM_LEFT_UP, ARM_RIGHT_UP, SensorValue[SENSOR_POT_L], SensorValue[SENSOR_POT_R]);
-	}
-	else if(desiredState == leftUp){
-		calculatePID(arms, ARM_LEFT_DOWN, ARM_RIGHT_DOWN, SensorValue[SENSOR_POT_L], SensorValue[SENSOR_POT_R]);
-	}
-
-	motor[MOTOR_ARM_LI] = motor[MOTOR_ARM_LO] = arms.PIDL[8];
-	motor[MOTOR_ARM_RI] = motor[MOTOR_ARM_RO] = arms.PIDR[8];
-
-	//Check if arms are done
-	if (arms.PIDL[8] < PID_DONE_THRESHOLD && arms.PIDL[8] > -PID_DONE_THRESHOLD && arms.PIDR[8] < PID_DONE_THRESHOLD && arms.PIDR[8] > -PID_DONE_THRESHOLD) {
-		if(arms.counter<PID_ARMS_CORRECTION_CYCLES) arms.counter++;    //Sinchronous counter that doesn't affect other processes
-			if(arms.counter==PID_ARMS_CORRECTION_CYCLES){
-			//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still within the threshold, it means that the drive was done
-			if(desiredState == rightUp){
-				calculatePID(arms, ARM_LEFT_UP, ARM_RIGHT_UP, SensorValue[SENSOR_POT_L], SensorValue[SENSOR_POT_R]);
-			}
-			else if(desiredState == leftUp){
-				calculatePID(arms, ARM_LEFT_DOWN, ARM_RIGHT_DOWN, SensorValue[SENSOR_POT_L], SensorValue[SENSOR_POT_R]);
-			}
-			if(arms.PIDL[8] < PID_DONE_THRESHOLD && arms.PIDL[8] > -PID_DONE_THRESHOLD && arms.PIDR[8] < PID_DONE_THRESHOLD && arms.PIDR[8] > -PID_DONE_THRESHOLD) arms.notDone = false;
-			else arms.notDone = true;
-		}
-	}
-	else arms.counter = 0;
-}
-
-void armsOperatorControl(){
-	if(vexRT[JOYSTICK_ARM_UP] == 1) {
-		if (!arms.upButtonPressed) {
-			arms.upButtonPressed = true;
-			arms.newPosition = rightUp;
-
-			arms.PIDL[0] = PID_ARMS_KP_PRESET;
-			arms.PIDL[1] = PID_ARMS_KI_PRESET;
-			arms.PIDL[2] = PID_ARMS_KD_PRESET;
-			arms.PIDL[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-			arms.PIDL[4] = PID_ARMS_ERROR_PRESET;
-			arms.PIDL[5] = PID_ARMS_LAST_ERROR_PRESET;
-			arms.PIDL[6] = PID_ARMS_INTEGRAL_PRESET;
-			arms.PIDL[7] = PID_ARMS_CORRECTION_CYCLES;
-			arms.PIDL[8] = 0;	//PID output
-			arms.PIDR[0] = PID_ARMS_KP_PRESET;
-			arms.PIDR[1] = PID_ARMS_KI_PRESET;
-			arms.PIDR[2] = PID_ARMS_KD_PRESET;
-			arms.PIDR[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-			arms.PIDR[4] = PID_ARMS_ERROR_PRESET;
-			arms.PIDR[5] = PID_ARMS_LAST_ERROR_PRESET;
-			arms.PIDR[6] = PID_ARMS_INTEGRAL_PRESET;
-			arms.PIDR[7] = PID_ARMS_CORRECTION_CYCLES;
-			arms.PIDR[8] = 0;	//PID output
-		}
-	}
-	else arms.upButtonPressed = false;
-
-	if(vexRT[JOYSTICK_ARM_DOWN] == 1) {
-		if (!arms.downButtonPressed) {
-			arms.downButtonPressed = true;
-			arms.newPosition = leftUp;
-
-			arms.PIDL[0] = PID_ARMS_KP_PRESET;
-			arms.PIDL[1] = PID_ARMS_KI_PRESET;
-			arms.PIDL[2] = PID_ARMS_KD_PRESET;
-			arms.PIDL[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-			arms.PIDL[4] = PID_ARMS_ERROR_PRESET;
-			arms.PIDL[5] = PID_ARMS_LAST_ERROR_PRESET;
-			arms.PIDL[6] = PID_ARMS_INTEGRAL_PRESET;
-			arms.PIDL[7] = PID_ARMS_CORRECTION_CYCLES;
-			arms.PIDL[8] = 0;	//PID output
-			arms.PIDR[0] = PID_ARMS_KP_PRESET;
-			arms.PIDR[1] = PID_ARMS_KI_PRESET;
-			arms.PIDR[2] = PID_ARMS_KD_PRESET;
-			arms.PIDR[3] = PID_ARMS_INTEGRAL_MAX_PRESET;
-			arms.PIDR[4] = PID_ARMS_ERROR_PRESET;
-			arms.PIDR[5] = PID_ARMS_LAST_ERROR_PRESET;
-			arms.PIDR[6] = PID_ARMS_INTEGRAL_PRESET;
-			arms.PIDR[7] = PID_ARMS_CORRECTION_CYCLES;
-			arms.PIDR[8] = 0;	//PID output
-		}
-	}
-	else arms.downButtonPressed = false;
-
-	moveArms(arms.newPosition);
-}
-
 
 //Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake//
 void moveMobileGoal(bool retract){
