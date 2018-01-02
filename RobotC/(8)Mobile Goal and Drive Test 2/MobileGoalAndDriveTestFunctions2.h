@@ -1,35 +1,39 @@
-#ifndef MobileGoalAndDriveTestFunctions.h
-#define MobileGoalAndDriveTestFunctions.h
+#ifndef MobileGoalAndDriveTestFunctions2.h
+#define MobileGoalAndDriveTestFunctions2.h
 
 #pragma systemfile
 
 //**======================================================**Previously on .h files**======================================================**//
+
 enum direction {Forward = 0, Backward, TurnLeft, TurnRight };
 typedef struct{
-	bool invertButtonPressed;       //Boolean to store if the joystick drive invert button was pressed in the previous cycle. Used in driver control
-	bool directionNormal;           //Variable to store the current direction with which the robot will move. Used in driver control
-	bool notDone;                   //Variable to indicate if the drive is done or not. Used in autonomous
-	unsigned byte counter;          //Variable to count asynchronously to check if drive is done or not. Used in autonomous
-	float PID[9];                   //Array to store values to pass to the PID function. Used in autonomous
-	signed byte joystickInputs[2];  //Array to store the joystick analgo inputs. 0 is forward input, 1 is side input. Used to not call for the current joystick values various times
-	double slewRateOutputs[2];      //Array to store the slew increase or decrease. Used in operator control
-	signed byte outputs[2];         //Array to store the future outputs of the motors. 0 is left, 1 is right. Used in both autonomous and user control
-}driveStruct;
+	bool invertButtonPressed;              //Boolean to store if the joystick drive invert button was pressed in the previous cycle. Used in driver control
+	bool directionNormal;                  //Variable to store the current direction with which the robot will move. Used in driver control
+	bool notDone;                          //Variable to indicate if the drive is done or not. Used in autonomous
+	unsigned byte counter;                 //Variable to count asynchronously to check if drive is done or not. Used in autonomous
+	float PID[10];                          //Array to store values to pass to the PID function. Used in autonomous
+	signed byte joystickInputs[2];         //Array to store the joystick analgo inputs. 0 is forward input, 1 is side input. Used to not call for the current joystick values various times
+	double slewRateOutputs[2];             //Array to store the slew increase or decrease. Used in operator control
+	signed byte outputs[2];                //Array to store the future outputs of the motors. 0 is left, 1 is right. Used in both autonomous and user control
+}robotDriveStruct;
 
 typedef struct{
 	bool retractButtonPressed;  //Boolean to store if the joystick retract button was pressed in the previous cycle. Used in driver control
 	bool extendButtonPressed;   //Boolean to store if the joystick extend button was pressed in the previous cycle. Used in driver control
+	bool retract;               //Boolean to indicate in which state will the intake of the Mobile Goal be.
 	bool notDone;               //Boolean to indicate if the mobile goal intake is done moving or not. Used in operator control
 	unsigned byte counter;      //Variable to count asynchronously to check if the intake is done or not. Used in autonomous
-	double PID[9];              //Array to store the values to pass to the PID function. Used in autonomous and operator control
+	double PID[10];              //Array to store the values to pass to the PID function. Used in autonomous and operator control
 	signed byte output;         //Variable to store the future output of the intake of the Mobile Goal. Used in both autonomous and operator control
-	bool retract;               //Boolean to indicate in which state will the intake of the Mobile Goal be.
 }robotMobileGoalIntake;
 
-driveStruct drive;
+robotDriveStruct drive;
 robotMobileGoalIntake mobileGoalIntake;
 
 //Function prototypes
+void initialize();
+void resetValues();
+
 void driveOperatorControl();
 void move(direction orientation, float pulses, signed byte speed);
 
@@ -66,50 +70,6 @@ void lcdSelect();    //Function prototype for the lcdSelect() function which wil
 #include "utils.h"
 
 //Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset--Reset//
-void resetValues() {
-	//Stop all motors
-	motor[1] = motor[2] = motor[3] = motor[4] = motor[5] = motor[6] = motor[7] = motor[8] = motor[9] = motor[10] = 0;
-
-	drive.invertButtonPressed = false;
-	drive.directionNormal = true;
-	drive.notDone = true;
-
-	drive.counter = 0;
-
-	drive.PID[0] = PID_DRIVE_KP_PRESET;
-	drive.PID[1] = PID_DRIVE_KI_PRESET;
-	drive.PID[2] = PID_DRIVE_KD_PRESET;
-	drive.PID[3] = PID_DRIVE_INTEGRAL_MAX_PRESET;
-	drive.PID[4] = PID_DRIVE_ERROR_PRESET;
-	drive.PID[5] = PID_DRIVE_LAST_ERROR_PRESET;
-	drive.PID[6] = PID_DRIVE_INTEGRAL_PRESET;
-	drive.PID[7] = PID_DRIVE_CORRECTION_CYCLES;
-	drive.PID[8] = 0;	//PID output
-
-	drive.joystickInputs[0] = 0;
-	drive.joystickInputs[1] = 0;
-	drive.slewRateOutputs[0] = 0;
-	drive.slewRateOutputs[1] = 0;
-	drive.outputs[0] = 0;
-	drive.outputs[0] = 0;
-
-
-	mobileGoalIntake.retractButtonPressed = false;
-	mobileGoalIntake.extendButtonPressed = false;
-	mobileGoalIntake.notDone = true;
-
-	mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_KP_PRESET;
-	mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_KI_PRESET;
-	mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_KD_PRESET;
-	mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_INTEGRAL_MAX_PRESET;
-	mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_ERROR_PRESET;
-	mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_LAST_ERROR_PRESET;
-	mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_INTEGRAL_PRESET;
-	mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
-	mobileGoalIntake.PID[8] = 0;	//PID output
-
-	mobileGoalIntake.retract = true;
-}
 
 //Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize--Initialize//
 void initialize(){
@@ -159,6 +119,7 @@ void initialize(){
 	SensorType[SENSOR_POT_L] = sensorPotentiometer;
 	SensorType[SENSOR_POT_R] = sensorPotentiometer;
 	resetValues();
+	clearDebugStream();
 
 	//Only include piece of code if USING_LCD is defined
 #ifdef USING_LCD
@@ -174,11 +135,59 @@ void initialize(){
 #endif
 }
 
+void resetValues() {
+	//Stop all motors
+	motor[1] = motor[2] = motor[3] = motor[4] = motor[5] = motor[6] = motor[7] = motor[8] = motor[9] = motor[10] = 0;
+
+	drive.invertButtonPressed = false;
+	drive.directionNormal = true;
+	drive.notDone = true;
+
+	drive.counter = 0;
+
+	drive.PID[0] = PID_DRIVE_KP_PRESET;
+	drive.PID[1] = PID_DRIVE_KI_PRESET;
+	drive.PID[2] = PID_DRIVE_KD_PRESET;
+	drive.PID[3] = PID_DRIVE_INTEGRAL_MAX_PRESET;
+	drive.PID[4] = PID_DRIVE_ERROR_PRESET;
+	drive.PID[5] = PID_DRIVE_LAST_ERROR_PRESET;
+	drive.PID[6] = PID_DRIVE_INTEGRAL_PRESET;
+	drive.PID[7] = PID_DRIVE_CORRECTION_CYCLES;
+	drive.PID[8] = PID_DRIVE_DONE_THRESHOLD;
+	drive.PID[9] = 0;	//PID output
+
+	drive.joystickInputs[0] = 0;
+	drive.joystickInputs[1] = 0;
+	drive.slewRateOutputs[0] = 0;
+	drive.slewRateOutputs[1] = 0;
+	drive.outputs[0] = 0;
+	drive.outputs[0] = 0;
+
+	mobileGoalIntake.retractButtonPressed = false;
+	mobileGoalIntake.extendButtonPressed = false;
+	mobileGoalIntake.notDone = true;
+	mobileGoalIntake.retract = true;
+
+	mobileGoalIntake.counter = 0;
+	mobileGoalIntake.output = 0;
+
+	mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_EXTEND_KP_PRESET;
+	mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_EXTEND_KI_PRESET;
+	mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_EXTEND_KD_PRESET;
+	mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_EXTEND_INTEGRAL_MAX_PRESET;
+	mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_EXTEND_ERROR_PRESET;
+	mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_EXTEND_LAST_ERROR_PRESET;
+	mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_EXTEND_INTEGRAL_PRESET;
+	mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
+	mobileGoalIntake.PID[8] = PID_MOBILE_GOAL_DONE_THRESHOLD;
+	mobileGoalIntake.PID[9] = 0;	//PID output
+}
+
 //Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive--Drive//
 void driveOperatorControl() {
 
 	//Button toggle
-	if (vexRT[JOYSTICK_DRIVE_INVERT] == 1) {
+	if ((bool)(vexRT[JOYSTICK_DRIVE_INVERT])) {
 		if (!drive.invertButtonPressed) {
 			drive.invertButtonPressed = true;
 			drive.directionNormal = !drive.directionNormal;
@@ -203,17 +212,17 @@ void driveOperatorControl() {
 	else if (drive.slewRateOutputs[1] - SLEW_GAIN > drive.joystickInputs[1]) drive.slewRateOutputs[1] -= SLEW_GAIN;
 	else if (drive.joystickInputs[1] == 0) drive.slewRateOutputs[1] = 0;
 
-	CLAMP(drive.slewRateOutputs[0]);
-	CLAMP(drive.slewRateOutputs[1]);
+	drive.slewRateOutputs[0] = CLAMP(drive.slewRateOutputs[0]);
+	drive.slewRateOutputs[1] = CLAMP(drive.slewRateOutputs[1]);
 
-	//Calculate "arcade drive" values for left and right side
-	if(drive.directionNormal){
-		drive.outputs[0] = CLAMP(ROUND(drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
-		drive.outputs[1] = -CLAMP(ROUND(drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
+	if(!drive.directionNormal){
+		//Calculate "arcade drive" values for left and right side
+		drive.outputs[0] = CLAMP(ROUND(-drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
+		drive.outputs[1] = -CLAMP(ROUND(-drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
 	}
 	else{
-		drive.outputs[0] = CLAMP(ROUND(drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
-		drive.outputs[1] = -CLAMP(ROUND(drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
+		drive.outputs[0] = CLAMP(ROUND(drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
+		drive.outputs[1] = -CLAMP(ROUND(drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
 	}
 
 	//Move motors using calculated values for left and right side
@@ -228,12 +237,12 @@ void move(direction orientation, float pulses, signed byte speed) {
 	else if(orientation == Forward || orientation == Backward) pulses = INCHES_TRANSLATION_TO_ENCODER_PULSES(pulses);
 
 	//Calculate PID and rectify robot if necessary
-	calculatePID(drive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
+	calculatePID(drive.PID, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
 	//Rectify with encoders only if moving forward or backwards
-	if(orientation == Forward || orientation == Backward) rectifyOutputsEncoder(drive.outputs, drive.PID[8], abs(SensorValue[SENSOR_ENCODER_L]), abs(SensorValue[SENSOR_ENCODER_R]));
+	if(orientation == Forward || orientation == Backward) rectifyOutputsEncoder(drive.outputs, drive.PID[9], abs(SensorValue[SENSOR_ENCODER_L]), abs(SensorValue[SENSOR_ENCODER_R]));
 	else {
-		drive.outputs[0] = drive.PID[8];
-		drive.outputs[1] = drive.PID[8];
+		drive.outputs[0] = drive.PID[9];
+		drive.outputs[1] = drive.PID[9];
 	}
 
 	//Make sure left and right orientation values are within a range of values between -speed to speed
@@ -265,90 +274,88 @@ void move(direction orientation, float pulses, signed byte speed) {
 	}
 
 	//Check if drive is done
-	if (drive.PID[8] < PID_DONE_THRESHOLD && drive.PID[8] > -PID_DONE_THRESHOLD) {
-		if(drive.counter<PID_DRIVE_CORRECTION_CYCLES) drive.counter++;    //Sinchronous counter that doesn't affect other processes
-			if(drive.counter==PID_DRIVE_CORRECTION_CYCLES){
-			//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still within the threshold, it means that the drive was done
-			calculatePID(drive, pulses, ((abs(SensorValue[SENSOR_ENCODER_L]) + abs(SensorValue[SENSOR_ENCODER_R])) / 2));
-			if (drive.PID[8] < PID_DONE_THRESHOLD && drive.PID[8] > -PID_DONE_THRESHOLD)drive.notDone = false;
-			else drive.notDone = true;
-		}
-	}
-	else drive.counter = 0;
+	checkIfDone(drive);
 }
 
 //Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake//
-void moveMobileGoal(bool retract){
-	if(retract){
-		calculatePID(mobileGoalIntake, MOBILE_GOAL_RETRACTED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
+
+void mobileGoalOperatorControl(bool simple){
+	if(simple){
+
+		if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_EXTEND] == 1){
+			if(SensorValue[SENSOR_POT_MOGO] < MOBILE_GOAL_EXTENDED_INTAKE) motor[MOTOR_MOBILE_GOAL] = ROUND(MOBILE_GOAL_MAX_OUTPUT*0.9);
+			else motor[MOTOR_MOBILE_GOAL] = 0;
+		}
+
+		else if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_RETRACT] == 1){
+			if(SensorValue[SENSOR_POT_MOGO] > MOBILE_GOAL_RETRACTED_INTAKE) motor[MOTOR_MOBILE_GOAL] = -ROUND(MOBILE_GOAL_MAX_OUTPUT*0.9);
+			else motor[MOTOR_MOBILE_GOAL] = 0;
+		}
+
+		else motor[MOTOR_MOBILE_GOAL] = 0;
 	}
+
 	else{
-		calculatePID(mobileGoalIntake, MOBILE_GOAL_EXTENDED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
-	}
+		if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_EXTEND] == 1) {
+			motor[MOTOR_MOBILE_GOAL] = -127;
+			if (!mobileGoalIntake.extendButtonPressed) {
+				mobileGoalIntake.extendButtonPressed = true;
+				mobileGoalIntake.retract = false;
 
-	motor[MOTOR_MOBILE_GOAL] = mobileGoalIntake.PID[8];
+				mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_EXTEND_KP_PRESET;
+				mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_EXTEND_KI_PRESET;
+				mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_EXTEND_KD_PRESET;
+				mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_EXTEND_INTEGRAL_MAX_PRESET;
+				mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_EXTEND_ERROR_PRESET;
+				mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_EXTEND_LAST_ERROR_PRESET;
+				mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_EXTEND_INTEGRAL_PRESET;
+				mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
+				mobileGoalIntake.PID[8] = PID_MOBILE_GOAL_DONE_THRESHOLD;
+				mobileGoalIntake.PID[9] = 0;	//PID output
+			}
+			calculatePID(mobileGoalIntake.PID, MOBILE_GOAL_EXTENDED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
+			motor[MOTOR_MOBILE_GOAL] = mobileGoalIntake.PID[9];
+		}
+		else if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_RETRACT] == 1) {
+			motor[MOTOR_MOBILE_GOAL] = 127;
+			if (!mobileGoalIntake.retractButtonPressed) {
+				mobileGoalIntake.retractButtonPressed = true;
+				mobileGoalIntake.retract = true;
 
-	//Check if intake is done
-	if (mobileGoalIntake.PID[8] < PID_DONE_THRESHOLD && mobileGoalIntake.PID[8] > -PID_DONE_THRESHOLD) {
-		if(mobileGoalIntake.counter<PID_MOBILE_GOAL_CORRECTION_CYCLES) mobileGoalIntake.counter++;    //Sinchronous counter that doesn't affect other processes
-			if(mobileGoalIntake.counter==PID_ARMS_CORRECTION_CYCLES){
-			//If DRIVE_PID_CORRECTION_CYCLES time has passed since last time the robot was in position and it is still within the threshold, it means that the drive was done
-			if(retract){
-				calculatePID(mobileGoalIntake, MOBILE_GOAL_RETRACTED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
+				mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_RETRACT_KP_PRESET;
+				mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_RETRACT_KI_PRESET;
+				mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_RETRACT_KD_PRESET;
+				mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_RETRACT_INTEGRAL_MAX_PRESET;
+				mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_RETRACT_ERROR_PRESET;
+				mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_RETRACT_LAST_ERROR_PRESET;
+				mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_RETRACT_INTEGRAL_PRESET;
+				mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
+				mobileGoalIntake.PID[8] = PID_MOBILE_GOAL_DONE_THRESHOLD;
+				mobileGoalIntake.PID[9] = 0; //PID output
 			}
-			else{
-				calculatePID(mobileGoalIntake, MOBILE_GOAL_EXTENDED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
-			}
-			if(mobileGoalIntake.PID[8] < PID_DONE_THRESHOLD && mobileGoalIntake.PID[8] > -PID_DONE_THRESHOLD) mobileGoalIntake.notDone = false;
-			else mobileGoalIntake.notDone = true;
+			calculatePID(mobileGoalIntake.PID, MOBILE_GOAL_RETRACTED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
+			motor[MOTOR_MOBILE_GOAL] = mobileGoalIntake.PID[9];
+		}
+		else {
+			mobileGoalIntake.retractButtonPressed = false;
+			mobileGoalIntake.extendButtonPressed = false;
+			motor[MOTOR_MOBILE_GOAL] = 0;
 		}
 	}
-	else mobileGoalIntake.counter = 0;
 }
 
-
-void mobileGoalOperatorControl(){
-	if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_EXTEND] == 1) {
-		motor[MOTOR_MOBILE_GOAL] = -100;
-		/*if (!mobileGoalIntake.extendButtonPressed) {
-			mobileGoalIntake.extendButtonPressed = true;
-			mobileGoalIntake.retract = false;
-
-			mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_KP_PRESET;
-			mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_KI_PRESET;
-			mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_KD_PRESET;
-			mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_INTEGRAL_MAX_PRESET;
-			mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_ERROR_PRESET;
-			mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_LAST_ERROR_PRESET;
-			mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_INTEGRAL_PRESET;
-			mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
-			mobileGoalIntake.PID[8] = 0;	//PID output
-		}*/
+void moveMobileGoal(bool retract){
+	if(retract){
+		calculatePID(mobileGoalIntake.PID, MOBILE_GOAL_RETRACTED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
+	}
+	else{
+		calculatePID(mobileGoalIntake.PID, MOBILE_GOAL_EXTENDED_INTAKE, SensorValue[SENSOR_POT_MOGO]);
 	}
 
-	else if(vexRT[JOYSTICK_MOBILE_GOAL_INTAKE_RETRACT] == 1) {
-		motor[MOTOR_MOBILE_GOAL] = 127;
-		/*if (!mobileGoalIntake.retractButtonPressed) {
-			mobileGoalIntake.retractButtonPressed = true;
-			mobileGoalIntake.retract = true;
+	motor[MOTOR_MOBILE_GOAL] = mobileGoalIntake.PID[9];
 
-			mobileGoalIntake.PID[0] = PID_MOBILE_GOAL_KP_PRESET;
-			mobileGoalIntake.PID[1] = PID_MOBILE_GOAL_KI_PRESET;
-			mobileGoalIntake.PID[2] = PID_MOBILE_GOAL_KD_PRESET;
-			mobileGoalIntake.PID[3] = PID_MOBILE_GOAL_INTEGRAL_MAX_PRESET;
-			mobileGoalIntake.PID[4] = PID_MOBILE_GOAL_ERROR_PRESET;
-			mobileGoalIntake.PID[5] = PID_MOBILE_GOAL_LAST_ERROR_PRESET;
-			mobileGoalIntake.PID[6] = PID_MOBILE_GOAL_INTEGRAL_PRESET;
-			mobileGoalIntake.PID[7] = PID_MOBILE_GOAL_CORRECTION_CYCLES;
-			mobileGoalIntake.PID[8] = 0; //PID output
-		}*/
-	}
-	else {
-		//mobileGoalIntake.retractButtonPressed = false;
-		motor[MOTOR_MOBILE_GOAL] = 0;
-	}
-
-	//moveMobileGoal(mobileGoalIntake.retract);
+	//Check if intake is done
+	checkIfDone(mobileGoalIntake);
 }
 
 #endif

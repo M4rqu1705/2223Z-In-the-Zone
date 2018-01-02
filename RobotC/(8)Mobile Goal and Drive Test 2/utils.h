@@ -38,48 +38,49 @@ void rectifyOutputsEncoder(signed byte *values, signed byte speed, signed int le
 
 //PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID--PID//
 
-void calculatePID(driveStruct &inStruct, signed int target, signed int sensorInput){
-	//PID array format: KP(0), KI(1), KD(2), integralMax(3), error(4), lastError(5), integral(6), pidOutput(8)
+void calculatePID(float *values, signed int target, signed int sensorInput){
+	//PID array format: KP(0), KI(1), KD(2), integralMax(3), error(4), lastError(5),
+	//integral(6), correctionCycles(7), correctionThreshold(8), pidOutput(9)
 
 	//Calculate error
-	inStruct.PID[4] = (float)(target - sensorInput);
+	values[4] = (float)(target - sensorInput);
 
 	//Calculate integral if within the integralLimit range
-	if(fabs(inStruct.PID[6]+inStruct.PID[4]*(.001/LOOPS_DELAY))<=inStruct.PID[3]){
-		inStruct.PID[6]+=(inStruct.PID[4]*(.001/LOOPS_DELAY));
+	if(fabs(values[6]+values[4]*(.001/LOOPS_DELAY))<=values[3]){
+		values[6]+=(values[4]*(.001/LOOPS_DELAY));
 	}
-	if(inStruct.PID[4] == 0) inStruct.PID[6] = 0;
+	if(values[4] == 0) values[6] = 0;
 
 
-	inStruct.PID[8] =	inStruct.PID[0]*inStruct.PID[4] +
-	inStruct.PID[1]*inStruct.PID[6] +
-	inStruct.PID[2]*((inStruct.PID[4] - inStruct.PID[5])/LOOPS_DELAY*.001);
+	values[9] =	values[0]*values[4] +
+	values[1]*values[6] +
+	values[2]*((values[4] - values[5])/LOOPS_DELAY*.001);
 
-	inStruct.PID[5] = inStruct.PID[4];
+	values[5] = values[4];
 
-	inStruct.PID[8] = CLAMP(inStruct.PID[8]);
+	values[9] = CLAMP(values[9]);
 }
 
-void calculatePID(robotMobileGoalIntake &inStruct, signed int target, signed int sensorInput){
-	//PID array format: KP(0), KI(1), KD(2), integralMax(3), error(4), lastError(5), integral(6), pidOutput(8)
-
-	//Calculate error
-	inStruct.PID[4] = (float)(target - sensorInput);
-
-	//Calculate integral if within the integralLimit range
-	if(fabs(inStruct.PID[6]+inStruct.PID[4]*(.001/LOOPS_DELAY))<=inStruct.PID[3]){
-		inStruct.PID[6]+=(inStruct.PID[4]*(.001/LOOPS_DELAY));
+void checkIfDone(robotDriveStruct &values){
+	if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8]){
+		if(values.counter<values.PID[7]) values.counter++;
+		if(values.counter == values.PID[7]){
+			if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8])	values.notDone = false;
+			else values.notDone = true;
+		}
 	}
-	if(inStruct.PID[4] == 0) inStruct.PID[6] = 0;
+	else values.counter = 0;
+}
 
-
-	inStruct.PID[8] =	inStruct.PID[0]*inStruct.PID[4] +
-	inStruct.PID[1]*inStruct.PID[6] +
-	inStruct.PID[2]*((inStruct.PID[4] - inStruct.PID[5])/LOOPS_DELAY*.001);
-
-	inStruct.PID[5] = inStruct.PID[4];
-
-	inStruct.PID[8] = CLAMP(inStruct.PID[8]);
+void checkIfDone(robotMobileGoalIntake &values){
+	if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8]){
+		if(values.counter < values.PID[7]) values.counter++;
+		if(values.counter == values.PID[7]){
+			if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8])	values.notDone = false;
+			else values.notDone = true;
+		}
+	}
+	else values.counter = 0;
 }
 
 #endif
