@@ -2,8 +2,8 @@
 #pragma competitionControl(Competition)
 
 #include "Vex_Competition_Includes.c"
-#include "commons.h"
-#include "MobileGoalAndDriveTestFunctions2.h"
+#include "driveArmMobileGoalTestCommons.h"
+#include "driveArmMobileGoalTestFunctions.h"
 
 void pre_auton(){
 	bStopTasksBetweenModes = true;
@@ -13,9 +13,11 @@ void pre_auton(){
 
 task usercontrol(){
 	//startTask(autonomous);
+
 	while (true){
-		driveOperatorControl();
-		mobileGoalOperatorControl(false);
+		driveOperatorControl(false);
+		armOperatorControl(true, false);
+		mobileGoalOperatorControl(false, false);
 		delay(LOOPS_DELAY);
 	}
 }
