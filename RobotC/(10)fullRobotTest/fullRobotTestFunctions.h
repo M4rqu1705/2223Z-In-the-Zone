@@ -11,7 +11,7 @@ typedef struct{
 
 }joystickToggleButtonStruct;
 
-enum direction {Forward = 0, Backward, TurnLeft, TurnRight };
+enum driveDirectionEnum {Forward = 0, Backward, TurnLeft, TurnRight };
 typedef struct{
 	joystickToggleButtonStruct directionNormal;   //Struct to toggle change direction button
 	bool notDone;                     //Variable to indicate if the drive is done or not. Used in autonomous
@@ -39,22 +39,33 @@ typedef struct{
 	signed byte output;
 }robotArmStruct;
 
+enum clawStatesEnum {open, close, hold};
+typedef struct{
+	joystickToggleButtonStruct clawOpen;
+	bool notDone;
+	unsigned byte counter;
+	signed byte output;
+}robotClawStruct;
+
 robotDriveStruct drive;
 robotMobileGoalIntakeStruct mobileGoalIntake;
 robotArmStruct arm;
+robotClawStruct claw;
 
 //Function prototypes
 void initialize();
 void resetValues();
 
 void driveOperatorControl(bool test = false);
-void move(direction orientation, float pulses, signed byte speed);
+void move(driveDirectionEnum orientation, float pulses, signed byte speed);
 
 void moveArm(unsigned byte position);
 void armOperatorControl(bool test=false, bool simple, bool analog = false);
 
 void moveMobileGoal(bool retract);
 void mobileGoalOperatorControl(bool test=false, bool simple);
+
+void moveClaw(bool openClaw, signed byte speed = META_clawSpeed);
 
 //LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD--LCD//
 //#include "fullRobotLCD.h"
@@ -124,12 +135,15 @@ void resetValues() {
 	drive.PID[7] = PID_correctionCyclesDrive;
 	drive.PID[8] = PID_doneThresholdDrive;
 	drive.PID[9] = 0;	//PID output
+
 	drive.joystickInputs[0] = 0;
 	drive.joystickInputs[1] = 0;
 	drive.slewRateOutputs[0] = 0;
 	drive.slewRateOutputs[1] = 0;
 	drive.outputs[0] = 0;
 	drive.outputs[0] = 0;
+	SensorValue[SENSOR_encoderL] = 0;
+	SensorValue[SENSOR_encoderR] = 0;
 
 	arm.armUp.buttonPressed[0] = false;
 	arm.armUp.buttonPressed[1] = false;
@@ -168,6 +182,13 @@ void resetValues() {
 	mobileGoalIntake.PID[9] = 0;	//PID output
 
 	mobileGoalIntake.output = 0;
+
+	claw.clawOpen.buttonPressed[0] = false;
+	claw.clawOpen.buttonPressed[1] = false;
+	claw.clawOpen.state = 0;
+	claw.notDone = true;
+	claw.counter = 0;
+	claw.output = 0;
 
 }
 
@@ -236,45 +257,54 @@ void driveOperatorControl(bool test){
 	}
 }
 
-void move(direction orientation, float pulses, signed byte speed) {
+void move(driveDirectionEnum orientation, float pulses, signed byte speed) {
 	//Recalculate pulses to convert them to degrees of rotation
 	if (orientation == TurnLeft || orientation == TurnRight) pulses = DEGREEStoPULSES(pulses);
 	//Recaluclate pulses to convert them to inches of movement
 	else if(orientation == Forward || orientation == Backward) pulses = INCHEStoPULSES(pulses);
-
+	//writeDebugStream("Calculated Pulses = %f", pulses);
 	//Calculate PID and rectify robot if necessary
 	calculatePID(drive.PID, pulses, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR])) / 2));
+	//writeDebugStream("\tCalculated PID = %f", drive.PID[9]);
 	//Rectify with encoders only if moving forward or backwards
-	if(orientation == Forward || orientation == Backward) rectifyOutputsEncoder(drive.outputs, drive.PID[9], abs(SensorValue[SENSOR_encoderL]), abs(SensorValue[SENSOR_encoderR]));
-	else {
-		drive.outputs[0] = drive.PID[9];
-		drive.outputs[1] = drive.PID[9];
-	}
+	//if(orientation == Forward || orientation == Backward) rectifyOutputsEncoder(drive.outputs, drive.PID[9], abs(SensorValue[SENSOR_encoderL]), abs(SensorValue[SENSOR_encoderR]));
+	//else {
+	//	drive.outputs[0] = drive.PID[9];
+	//	drive.outputs[1] = drive.PID[9];
+	//}
 
 	//Make sure left and right orientation values are within a range of values between -speed to speed
-	drive.outputs[0] = MAP(drive.outputs[0], 127, -127, speed, -speed);
-	drive.outputs[1] = MAP(drive.outputs[1], 127, -127, speed, -speed);
-
+	drive.outputs[0] = MAP(drive.PID[9], 127, -127, speed, -speed);
+	drive.outputs[1] = MAP(drive.PID[9], 127, -127, speed, -speed);
+	//writeDebugStream("\tdrive.outputs = {%d, %d}\n", drive.outputs[0], drive.outputs[1]);
 	//Move motors based on PID values, direction in which to move
 	switch (orientation) {
 	case Forward:
-		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
-		motor[MOTOR_driveRF] = motor[MOTOR_driveLM] = motor[MOTOR_driveRB] = drive.outputs[1];
+		motor[MOTOR_driveLF] = motor[MOTOR_driveLB] = -drive.outputs[0];
+		motor[MOTOR_driveRF] = motor[MOTOR_driveRB] = -drive.outputs[1];
+		motor[MOTOR_driveLM] = (-drive.outputs[0]*0.75);
+		motor[MOTOR_driveRM] = (-drive.outputs[1]*0.75);
 		break;
 
 	case Backward:
-		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = -drive.outputs[0];
-		motor[MOTOR_driveRF] = motor[MOTOR_driveLM] = motor[MOTOR_driveRB] = -drive.outputs[1];
+		motor[MOTOR_driveLF] = motor[MOTOR_driveLB] = drive.outputs[0];
+		motor[MOTOR_driveRF] = motor[MOTOR_driveRB] = drive.outputs[1];
+		motor[MOTOR_driveLM] = (drive.outputs[0]*0.75);
+		motor[MOTOR_driveRM] = (drive.outputs[1]*0.75);
 		break;
 
 	case TurnLeft:
-		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = -drive.outputs[0];
-		motor[MOTOR_driveRF] = motor[MOTOR_driveLM] = motor[MOTOR_driveRB] = drive.outputs[1];
+		motor[MOTOR_driveLF] = motor[MOTOR_driveLB] = -drive.outputs[0];
+		motor[MOTOR_driveRF] = motor[MOTOR_driveRB] = drive.outputs[1];
+		motor[MOTOR_driveLM] = (-drive.outputs[0]*0.75);
+		motor[MOTOR_driveRM] = (drive.outputs[1]*0.75);
 		break;
 
 	case TurnRight:
-		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
-		motor[MOTOR_driveRF] = motor[MOTOR_driveLM] = motor[MOTOR_driveRB] = -drive.outputs[1];
+		motor[MOTOR_driveLF] = motor[MOTOR_driveLB] = drive.outputs[0];
+		motor[MOTOR_driveRF] = motor[MOTOR_driveRB] = -drive.outputs[1];
+		motor[MOTOR_driveLM] = (drive.outputs[0]*0.75);
+		motor[MOTOR_driveRM] = (-drive.outputs[1]*0.75);
 		break;
 
 	}
@@ -334,8 +364,17 @@ void armOperatorControl(bool test, bool simple, bool analog){
 	}
 	else{
 		if(analog){
+
+			if(vexRT[JOYSTICK_clawOpen] == 1){
+				motor[MOTOR_claw] = META_clawSpeed;
+			}
+			else if(vexRT[JOYSTICK_clawClose] == 1){
+				motor[MOTOR_claw] = -META_clawSpeed;
+			}
+			else motor[MOTOR_claw] = 0;
+
 			arm.joystickInput = vexRT[JOYSTICK_armAnalog];
-			if(arm.joystickInput <= META_armOpControlThreshold && arm.joystickInput >= META_armOpControlThreshold) arm.joystickInput = 0;
+			if(arm.joystickInput <= META_armOpControlThreshold && arm.joystickInput >= -META_armOpControlThreshold) arm.joystickInput = 0;
 
 			if(arm.joystickInput == 0){
 				arm.PID[0] = PID_KParm;
@@ -353,12 +392,12 @@ void armOperatorControl(bool test, bool simple, bool analog){
 			}
 			else if(arm.joystickInput > 0){
 				calculatePID(arm.PID, META_armUp, SensorValue[SENSOR_potArm]);
-				arm.PID[9] = MAP(arm.PID[9], 127, -127, abs(arm.joystickInput), -abs(arm.joystickInput));
+				//arm.PID[9] = MAP(arm.PID[9], 127, -127, abs(arm.joystickInput), -abs(arm.joystickInput));
 				motor[MOTOR_arm] = arm.PID[9];
 			}
 			else if(arm.joystickInput < 0){
 				calculatePID(arm.PID, META_armDown, SensorValue[SENSOR_potArm]);
-				arm.PID[9] = MAP(arm.PID[9], 127, -127, abs(arm.joystickInput), -abs(arm.joystickInput));
+				//arm.PID[9] = MAP(arm.PID[9], 127, -127, abs(arm.joystickInput), -abs(arm.joystickInput));
 				motor[MOTOR_arm] = arm.PID[9];
 			}
 		}
@@ -412,7 +451,23 @@ void armOperatorControl(bool test, bool simple, bool analog){
 }
 
 void moveArm(unsigned byte position){
+	switch(position){
+	case 0:
+		calculatePID(arm.PID, META_armDown, SensorValue[SENSOR_potArm]);
+		break;
 
+	case 1:
+		calculatePID(arm.PID, META_armUp, SensorValue[SENSOR_potArm]);
+		break;
+
+	case 2:
+		calculatePID(arm.PID, META_armUp, SensorValue[SENSOR_potArm]);
+		break;
+	}
+
+	motor[MOTOR_arm] = arm.PID[9];
+
+	checkIfArmDone(arm);
 }
 
 //Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake -- Mobile Goal Intake//
@@ -494,6 +549,31 @@ void moveMobileGoal(bool retract){
 
 	//Check if intake is done
 	checkIfMogoDone(mobileGoalIntake);
+}
+// Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws -- Claws //
+
+void moveClaw(clawStatesEnum openClaw, signed byte speed){
+	switch(openClaw){
+	case open:
+	case close:
+		if(openClaw == open) claw.output = speed;
+		else if(openClaw == close) claw.output = -speed;
+
+		if(claw.counter < META_clawCycles){
+			claw.counter++;
+			motor[MOTOR_claw] = claw.output;
+			claw.notDone = true;
+		}
+		else{
+			motor[MOTOR_claw] = 0;
+			claw.notDone = false;
+		}
+		break;
+	case hold:
+		motor[MOTOR_claw] = claw.output = speed;
+		break;
+	}
+	delay(20);
 }
 
 #endif

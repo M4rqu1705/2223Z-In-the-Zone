@@ -31,15 +31,42 @@ task autonomous(){
 	resetValues();
 	clearDebugStream();
 
-	if(mobileGoalIntake.notDone){
-		moveMobileGoal(0);
+	while(claw.notDone && arm.notDone){
+		moveClaw(close, 50);
+		moveArm(1);
 	}
 	resetValues();
-	writeDebugStreamLine("Extended Mobile Goal Intake");
 
-	if(mobileGoalIntake.notDone){
+	while(drive.notDone && mobileGoalIntake.notDone && arm.notDone){
+		move(Forward, 12, 75);
+		moveMobileGoal(0);
+		moveArm(0);
+	}
+	resetValues();
+
+	while(drive.notDone){
+		move(Forward, 12, 50);
+	}
+	resetValues();
+
+	while(mobileGoalIntake.notDone){
 		moveMobileGoal(1);
 	}
 	resetValues();
-	writeDebugStreamLine("Retracted Mobile Goal Intake");
+
+	while(drive.notDone){
+		move(TurnRight, 180, 50);
+	}
+	resetValues();
+
+	while(drive.notDone){
+		move(Forward, 5, 75);
+	}
+	resetValues();
+
+	while(drive.notDone && mobileGoalIntake.notDone){
+		move(Backward, 5, 50);
+		moveMobileGoal(0);
+	}
+	resetValues();
 }

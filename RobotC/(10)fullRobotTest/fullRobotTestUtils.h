@@ -48,14 +48,14 @@ void calculatePID(float *values, signed int target, signed int sensorInput){
 	if(fabs(values[6]+(values[4]*0.001*LOOPS_DELAY))<=values[3]){
 		values[6]+=(values[4]*0.001*LOOPS_DELAY);
 	}
-	if(values[4] == 0) values[6] = 0;
+	if(values[4] <= 0 + values[8] && values[4] >= 0 - values[8]) values[6] = 0;
 
-	writeDebugStream("Values = ");
+	/*writeDebugStream("Values = ");
 	for(int C = 0; C<10; C++){
 		writeDebugStream("%f, ", values[C]);
 	}
 	writeDebugStreamLine("");
-	datalogAddValue(0, sensorInput);
+	datalogAddValue(0, sensorInput);*/
 
 	values[9] =	values[0]*values[4] + values[1]*values[6] + values[2]*((values[4] - values[5])/(LOOPS_DELAY*0.05));
 	values[5] = values[4];
@@ -74,6 +74,17 @@ void checkIfDriveDone(robotDriveStruct &values){
 }
 
 void checkIfMogoDone(robotMobileGoalIntakeStruct &values){
+	if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8]){
+		if(values.counter < (unsigned byte)values.PID[7]) values.counter++;
+		if(values.counter == (unsigned byte)values.PID[7]){
+			if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8])	values.notDone = false;
+			else values.notDone = true;
+		}
+	}
+	else values.counter = 0;
+}
+
+void checkIfArmDone(robotArmStruct &values){
 	if(values.PID[9] <= values.PID[8] && values.PID[9] >= -values.PID[8]){
 		if(values.counter < (unsigned byte)values.PID[7]) values.counter++;
 		if(values.counter == (unsigned byte)values.PID[7]){

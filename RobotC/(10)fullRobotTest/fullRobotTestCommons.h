@@ -63,32 +63,32 @@
 KP = P constant, KI = I constant, KD = D constant, integralMax = limit for the integral so it doesn't overflow,
 doneThreshold = threshold to give flexibility when determining "ifDone", correctionCycles = how much time to wait to determine "ifDone"
 */
-#define PID_KPdrive 0.75
-#define PID_KIdrive 0.5
-#define PID_KDdrive 5
+double PID_KPdrive = 0.75;
+double PID_KIdrive = 0.5;
+double PID_KDdrive =95;
 #define PID_integralMaxDrive 127
 #define PID_doneThresholdDrive 2
 #define PID_correctionCyclesDrive 10
 
 double PID_KParm = 0.25;
-double PID_KIarm = 1.0;
-double PID_KDarm = 20;
+double PID_KIarm = 0.05;
+double PID_KDarm = 0.0;
 #define PID_integralMaxArm 127
 #define PID_doneThresholdArm 2
 #define PID_correctionCyclesArm 10
 
-double PID_KPmogoExtend = 0.1;
-double PID_KImogoExtend = 0.65;
-double PID_KDmogoExtend = 2.5;
+double PID_KPmogoExtend = 0.25;
+double PID_KImogoExtend = 0.0;
+double PID_KDmogoExtend = 3.0;
 #define PID_integralMaxMogoExtend 127
-#define PID_doneThresholdMogoExtend 2
+#define PID_doneThresholdMogoExtend 5
 #define PID_correctionCyclesMogoExtend 10
 
-double PID_KPmogoRetract = 0.7;
-double PID_KImogoRetract = 0.3;
-double PID_KDmogoRetract = 1.5;
+double PID_KPmogoRetract = 1;
+double PID_KImogoRetract = 0.5;
+double PID_KDmogoRetract = 4.0;
 #define PID_integralMaxMogoRetract 127
-#define PID_doneThresholdMogoRetract 2
+#define PID_doneThresholdMogoRetract 5
 #define PID_correctionCyclesMogoRetract 10
 
 //Information----Information----Information----Information----Information----Information----Information----Information//
@@ -103,16 +103,16 @@ double PID_KDmogoRetract = 1.5;
 // = 254/(floor(maxTime / DRIVERCONTROL_LOOP_DELAY))
 #define META_slewGainThreshold 2
 
-#define META_mogoExtended 2745
-#define META_mogoRetracted 1200
+#define META_mogoExtended 2710
+#define META_mogoRetracted 1050
 #define META_mogoMaxOutput 127
 
-#define META_armOpControlThreshold 15
-#define META_armUp 2500
+#define META_armOpControlThreshold 50
+#define META_armUp 2375
 #define META_armDown 0
 
 #define META_clawSpeed 50
-#define META_clawCorrectionCycles 5
+#define META_clawCycles 10
 
 #define META_lcdBacklight true
 //#define META_usingLCD true //Comment if false

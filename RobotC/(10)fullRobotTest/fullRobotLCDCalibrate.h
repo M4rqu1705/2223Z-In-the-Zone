@@ -4,11 +4,12 @@
 #pragma systemfile
 
 #ifdef META_usingLCD    //Only include code if META_usingLCD is defined in the constants.h file
-enum PIDconstantsEnum {mogoIntakeSubsExtendKP, mogoIntakeSubsExtendKI, mogoIntakeSubsExtendKD,
+enum PIDconstantsEnum {driveSubsKP, driveSubsKI, driveSubsKD,
+	mogoIntakeSubsExtendKP, mogoIntakeSubsExtendKI, mogoIntakeSubsExtendKD,
 	mogoIntakeSubsRetractKP, mogoIntakeSubsRetractKI, mogoIntakeSubsRetractKD,
 	armSubsKP, armSubsKI, armSubsKD};
 
-PIDconstantsEnum lcdCurrentConstant = mogoIntakeSubsExtendKP;
+PIDconstantsEnum lcdCurrentConstant = driveSubsKP;
 
 bool lcdButtonsPressed[3];
 string lcdOutput;    //Declare variable in which the formatted string containing a variable LCD output will be stored
@@ -18,9 +19,9 @@ void lcdInit(){
 	clearLCDLine(1);                  //Clear LCD
 	bLCDBacklight = META_LCDbacklight;    //Turn backlight on or off based on META_LCDbacklight constant
 
-	PIDconstantsEnum lcdCurrentConstant = mogoIntakeSubsExtendKP;
-	displayLCDCenteredString(0, "MogoRetractKP");
-	sprintf(lcdOutput, "%1.2f", PID_KPmogoRetract);
+	PIDconstantsEnum lcdCurrentConstant = driveSubsKP;
+	displayLCDCenteredString(0, "Drive KP");
+	sprintf(lcdOutput, "%1.2f", PID_KPdrive);
 	displayLCDCenteredString(1, lcdOutput);
 
 	//None of the LCD buttons have been previously pressed
@@ -67,6 +68,24 @@ void lcdCalibrate(){		//It is in reality used for calibrating PID
 				displayLCDCenteredString(1, lcdOutput);
 				break;
 			case mogoIntakeSubsRetractKD:
+				lcdCurrentConstant = driveSubsKP;
+				displayLCDCenteredString(0, "Drive KP");
+				sprintf(lcdOutput, "%1.2f", PID_KPdrive);
+				displayLCDCenteredString(1, lcdOutput);
+			break;
+			case driveSubsKP:
+				lcdCurrentConstant = driveSubsKI;
+				displayLCDCenteredString(0, "Drive KI");
+				sprintf(lcdOutput, "%1.2f", PID_KIdrive);
+				displayLCDCenteredString(1, lcdOutput);
+			break;
+			case driveSubsKI:
+				lcdCurrentConstant = driveSubsKD;
+				displayLCDCenteredString(0, "Drive KD");
+				sprintf(lcdOutput, "%1.2f", PID_KDdrive);
+				displayLCDCenteredString(1, lcdOutput);
+			break;
+			case driveSubsKD:
 				lcdCurrentConstant = armSubsKP;
 				displayLCDCenteredString(0, "Arm KP");
 				sprintf(lcdOutput, "%1.2f", PID_KParm);
@@ -127,6 +146,21 @@ void lcdCalibrate(){		//It is in reality used for calibrating PID
 				sprintf(lcdOutput, "%1.2f", PID_KDmogoRetract);
 				displayLCDCenteredString(1, lcdOutput);
 				break;
+			case driveSubsKP:
+				PID_KPdrive -= 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KPdrive);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
+			case driveSubsKI:
+				PID_KIdrive -= 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KIdrive);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
+			case driveSubsKD:
+				PID_KDdrive -= 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KDdrive);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
 			case armSubsKP:
 				PID_KParm -= 0.05;
 				sprintf(lcdOutput, "%1.2f", PID_KParm);
@@ -178,6 +212,21 @@ void lcdCalibrate(){		//It is in reality used for calibrating PID
 			case mogoIntakeSubsRetractKD:
 				PID_KDmogoRetract += 0.05;
 				sprintf(lcdOutput, "%1.2f", PID_KDmogoRetract);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
+			case driveSubsKP:
+				PID_KPdrive += 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KPdrive);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
+			case driveSubsKI:
+				PID_KIdrive += 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KIdrive);
+				displayLCDCenteredString(1, lcdOutput);
+				break;
+			case driveSubsKD:
+				PID_KDdrive += 0.05;
+				sprintf(lcdOutput, "%1.2f", PID_KDdrive);
 				displayLCDCenteredString(1, lcdOutput);
 				break;
 			case armSubsKP:
