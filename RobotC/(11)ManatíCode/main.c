@@ -6,8 +6,8 @@
 #pragma competitionControl(Competition)
 
 #include "Vex_Competition_Includes.c"
-#include "fullRobotTestCommons.h"
-#include "fullRobotTestFunctions.h"
+#include "commons.h"
+#include "functions.h"
 
 void pre_auton(){
 	bStopTasksBetweenModes = true;
@@ -21,7 +21,7 @@ task usercontrol(){
 		driveOperatorControl(false);
 		armOperatorControl(false, false, true);
 		mobileGoalOperatorControl(false, false);
-		lcdCalibrate();
+		//lcdCalibrate();
 		delay(LOOPS_DELAY);
 	}
 }

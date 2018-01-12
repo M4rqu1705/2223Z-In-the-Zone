@@ -1,5 +1,5 @@
-#ifndef fullRobotTestCommons.h
-#define fullRobotTestCommons.h
+#ifndef commons.h
+#define commons.h
 
 #pragma systemfile
 
