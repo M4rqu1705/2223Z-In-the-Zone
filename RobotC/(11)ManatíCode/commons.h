@@ -1,5 +1,5 @@
-#ifndef commons.h
-#define commons.h
+#ifndef fullRobotTestCommons.h
+#define fullRobotTestCommons.h
 
 #pragma systemfile
 
@@ -51,6 +51,7 @@
 
 #define JOYSTICK_armUp Btn5U
 #define JOYSTICK_armDown Btn5D
+#define JOYSTICK_armPID Btn8D
 #define JOYSTICK_armAnalog Ch2
 
 #define JOYSTICK_mogoExtend Btn6D
@@ -65,14 +66,14 @@ doneThreshold = threshold to give flexibility when determining "ifDone", correct
 */
 double PID_KPdrive = 0.75;
 double PID_KIdrive = 0.5;
-double PID_KDdrive =95;
+double PID_KDdrive = 95;
 #define PID_integralMaxDrive 127
-#define PID_doneThresholdDrive 2
+#define PID_doneThresholdDrive 15
 #define PID_correctionCyclesDrive 10
 
-double PID_KParm = 0.25;
+double PID_KParm = 0.2;
 double PID_KIarm = 0.05;
-double PID_KDarm = 0.0;
+double PID_KDarm = 0.3;
 #define PID_integralMaxArm 127
 #define PID_doneThresholdArm 2
 #define PID_correctionCyclesArm 10
@@ -81,7 +82,7 @@ double PID_KPmogoExtend = 0.25;
 double PID_KImogoExtend = 0.0;
 double PID_KDmogoExtend = 3.0;
 #define PID_integralMaxMogoExtend 127
-#define PID_doneThresholdMogoExtend 5
+#define PID_doneThresholdMogoExtend 15
 #define PID_correctionCyclesMogoExtend 10
 
 double PID_KPmogoRetract = 1;
@@ -100,10 +101,11 @@ double PID_KDmogoRetract = 4.0;
 #define META_encoderLInverted false
 #define META_encoderRInverted true
 #define META_slewGain 16.933333333333333333333333333333
+#define PI 3.14159265358
 // = 254/(floor(maxTime / DRIVERCONTROL_LOOP_DELAY))
 #define META_slewGainThreshold 2
 
-#define META_mogoExtended 2710
+#define META_mogoExtended 2700
 #define META_mogoRetracted 1050
 #define META_mogoMaxOutput 127
 
@@ -117,12 +119,14 @@ double PID_KDmogoRetract = 4.0;
 #define META_lcdBacklight true
 //#define META_usingLCD true //Comment if false
 
-#define META_powerExpanderInputDivisor 45.6
+#define META_powerExpanderInputDivisor 70
 //Use Divisors of 45.6 or 70
 //https://www.vexrobotics.com/276-2271.html
 
 #define META_usingLCD true
 #define META_LCDbacklight true
+
+bool META_armNotUsePID = false;
 
 #define LOOPS_DELAY 20
 #endif

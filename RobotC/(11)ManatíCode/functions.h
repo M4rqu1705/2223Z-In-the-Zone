@@ -5,7 +5,7 @@
 
 //**======================================================**Previously on .h files**======================================================**//
 
-//Struct that serves as template for every joystick toggle button 
+//Struct that serves as template for every joystick toggle button
 typedef struct{
 	bool buttonPressed[2];     //Boolean to store if the joystick drive invert button was pressed in the previous cycle. Used in driver control
 	signed byte state;         //Variable to store the current state of the button meaning either direction, retract or others
@@ -30,7 +30,7 @@ typedef struct{
 	double PID[10];                         //Array to store the values to pass to the PID function. Used in autonomous and operator control
 	signed byte output;                     //Variable to store the future output of the intake of the Mobile Goal. Used in both autonomous and operator control
 }robotMobileGoalIntakeStruct;
- 
+
 typedef struct{
 	joystickToggleButtonStruct armUp;   //Struct to toggle arm up and down buttons
 	bool notDone;                       //Boolean to indicate if the arm is done moving or not. Used in operator control
@@ -275,9 +275,7 @@ void move(driveDirectionEnum orientation, float pulses, signed byte speed) {
 	//}
 
 	//Make sure left and right orientation values are within a range of values between -speed to speed
-	drive.outputs[0] = MAP(drive.PID[9], 127, -127, speed, -speed);
-	drive.outputs[1] = MAP(drive.PID[9], 127, -127, speed, -speed);
-	//writeDebugStream("\tdrive.outputs = {%d, %d}\n", drive.outputs[0], drive.outputs[1]);
+	drive.outputs[0] = drive.outputs[1] = MAP(drive.PID[9], 127, -127, speed, -speed);
 	//Move motors based on PID values, direction in which to move
 	switch (orientation) {
 	case Forward:
@@ -312,7 +310,9 @@ void move(driveDirectionEnum orientation, float pulses, signed byte speed) {
 
 	//Check if drive is done
 	checkIfDriveDone(drive);
+	writeDebugStreamLine("pulses=%d, drive.notDone=%d, PID[9]=%d", pulses, drive.notDone, drive.PID[9]);
 }
+//Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm//
 //Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm//
 void armOperatorControl(bool test, bool simple, bool analog){
 	if(test){
@@ -335,12 +335,20 @@ void armOperatorControl(bool test, bool simple, bool analog){
 	}
 	else if(simple){
 		if(analog){
+			if(vexRT[JOYSTICK_armPID] == 1){
+				if(arm.armUp.buttonPressed[0] == false){
+					arm.armUp.buttonPressed[0] = true;
+					META_armNotUsePID = false;
+				}
+			}
+			else arm.armUp.buttonPressed[0] = false;
+
 			arm.joystickInput = vexRT[JOYSTICK_armAnalog];
 			if(arm.joystickInput <= META_armOpControlThreshold && arm.joystickInput >= META_armOpControlThreshold) arm.joystickInput = 0;
 
-			if(SensorValue[SENSOR_potArm] > META_armDown && SensorValue[SENSOR_potArm] <= META_armUp) motor[MOTOR_arm] = arm.joystickInput;
-			else if(SensorValue[SENSOR_potArm] <= META_armDown && arm.joystickInput>0) motor[MOTOR_arm] = arm.joystickInput;
-			else if(SensorValue[SENSOR_potArm] > META_armUp && arm.joystickInput < 0) motor[MOTOR_arm] = arm.joystickInput;
+			if(SensorValue[SENSOR_potArm] > 0 && SensorValue[SENSOR_potArm] <= 4094) motor[MOTOR_arm] = arm.joystickInput;
+			else if(SensorValue[SENSOR_potArm] <= 0 && arm.joystickInput>0) motor[MOTOR_arm] = arm.joystickInput;
+			else if(SensorValue[SENSOR_potArm] > 4094 && arm.joystickInput < 0) motor[MOTOR_arm] = arm.joystickInput;
 			else motor[MOTOR_arm] = 0;
 
 			if(vexRT[JOYSTICK_clawOpen] == 1){
@@ -365,6 +373,15 @@ void armOperatorControl(bool test, bool simple, bool analog){
 	}
 	else{
 		if(analog){
+
+			if(vexRT[JOYSTICK_armPID] == 1){
+				if(arm.armUp.buttonPressed[0] == false){
+					arm.armUp.buttonPressed[0] = true;
+					META_armNotUsePID = true;
+				}
+			}
+			else arm.armUp.buttonPressed[0] = false;
+
 
 			if(vexRT[JOYSTICK_clawOpen] == 1){
 				motor[MOTOR_claw] = META_clawSpeed;

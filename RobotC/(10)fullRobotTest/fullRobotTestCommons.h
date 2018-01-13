@@ -51,6 +51,7 @@
 
 #define JOYSTICK_armUp Btn5U
 #define JOYSTICK_armDown Btn5D
+#define JOYSTICK_armPID Btn8D
 #define JOYSTICK_armAnalog Ch2
 
 #define JOYSTICK_mogoExtend Btn6D
@@ -70,9 +71,9 @@ double PID_KDdrive =95;
 #define PID_doneThresholdDrive 2
 #define PID_correctionCyclesDrive 10
 
-double PID_KParm = 0.25;
+double PID_KParm = 0.2;
 double PID_KIarm = 0.05;
-double PID_KDarm = 0.0;
+double PID_KDarm = 0.3;
 #define PID_integralMaxArm 127
 #define PID_doneThresholdArm 2
 #define PID_correctionCyclesArm 10
@@ -123,6 +124,8 @@ double PID_KDmogoRetract = 4.0;
 
 #define META_usingLCD true
 #define META_LCDbacklight true
+
+bool META_armNotUsePID = false;
 
 #define LOOPS_DELAY 20
 #endif

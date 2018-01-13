@@ -334,12 +334,20 @@ void armOperatorControl(bool test, bool simple, bool analog){
 	}
 	else if(simple){
 		if(analog){
+			if(vexRT[JOYSTICK_armPID] == 1){
+				if(arm.armUp.buttonPressed[0] == false){
+					arm.armUp.buttonPressed[0] = true;
+					META_armNotUsePID = false;
+				}
+			}
+			else arm.armUp.buttonPressed[0] = false;
+
 			arm.joystickInput = vexRT[JOYSTICK_armAnalog];
 			if(arm.joystickInput <= META_armOpControlThreshold && arm.joystickInput >= META_armOpControlThreshold) arm.joystickInput = 0;
 
-			if(SensorValue[SENSOR_potArm] > META_armDown && SensorValue[SENSOR_potArm] <= META_armUp) motor[MOTOR_arm] = arm.joystickInput;
-			else if(SensorValue[SENSOR_potArm] <= META_armDown && arm.joystickInput>0) motor[MOTOR_arm] = arm.joystickInput;
-			else if(SensorValue[SENSOR_potArm] > META_armUp && arm.joystickInput < 0) motor[MOTOR_arm] = arm.joystickInput;
+			if(SensorValue[SENSOR_potArm] > 0 && SensorValue[SENSOR_potArm] <= 4094) motor[MOTOR_arm] = arm.joystickInput;
+			else if(SensorValue[SENSOR_potArm] <= 0 && arm.joystickInput>0) motor[MOTOR_arm] = arm.joystickInput;
+			else if(SensorValue[SENSOR_potArm] > 4094 && arm.joystickInput < 0) motor[MOTOR_arm] = arm.joystickInput;
 			else motor[MOTOR_arm] = 0;
 
 			if(vexRT[JOYSTICK_clawOpen] == 1){
@@ -364,6 +372,15 @@ void armOperatorControl(bool test, bool simple, bool analog){
 	}
 	else{
 		if(analog){
+
+			if(vexRT[JOYSTICK_armPID] == 1){
+				if(arm.armUp.buttonPressed[0] == false){
+					arm.armUp.buttonPressed[0] = true;
+					META_armNotUsePID = true;
+				}
+			}
+			else arm.armUp.buttonPressed[0] = false;
+
 
 			if(vexRT[JOYSTICK_clawOpen] == 1){
 				motor[MOTOR_claw] = META_clawSpeed;

@@ -19,7 +19,7 @@ task usercontrol(){
 	//startTask(autonomous);
 	while (true){
 		driveOperatorControl(false);
-		armOperatorControl(false, false, true);
+		armOperatorControl(false, META_armNotUsePID, true);
 		mobileGoalOperatorControl(false, false);
 		lcdCalibrate();
 		delay(LOOPS_DELAY);

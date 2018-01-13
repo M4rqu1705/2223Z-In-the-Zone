@@ -25,7 +25,7 @@ void lcdInit(){
 	bLCDBacklight = META_LCDbacklight;    //Turn backlight on or off based on META_LCDbacklight constant
 
 	currentMenu = mainMenu;        //Preset to main menu
-	currentCode = twentyPointMogo;    //Preset autonomous to Mobile Goal and Cones
+	currentCode = fivePointMogo;    //Preset autonomous to Mobile Goal and Cones
 	currentColorRed = true;            //Preset autonomous alliance color to red
 	currentSideRight = true;       //Preset autonomous starting side to right side
 

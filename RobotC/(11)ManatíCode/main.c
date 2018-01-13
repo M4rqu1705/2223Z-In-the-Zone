@@ -13,13 +13,23 @@ void pre_auton(){
 	bStopTasksBetweenModes = true;
 	bDisplayCompetitionStatusOnLcd = false;
 	initialize();
+#ifdef META_usingLCD
+	do{
+		if(bIfiRobotDisabled)	lcdSelect();
+		else break;
+	}while (!lcdReady);
+
+	//Clear the LCD
+	clearLCDLine(0);
+	clearLCDLine(1);
+	displayLCDCenteredString(0, "     2223-Z     ");    //Output 2223-Z on the screen, signaling that the lcd is done
+#endif
 }
 
 task usercontrol(){
-	//startTask(autonomous);
 	while (true){
 		driveOperatorControl(false);
-		armOperatorControl(false, false, true);
+		armOperatorControl(false, META_armNotUsePID, true);
 		mobileGoalOperatorControl(false, false);
 		//lcdCalibrate();
 		delay(LOOPS_DELAY);
@@ -27,45 +37,292 @@ task usercontrol(){
 }
 
 task autonomous(){
-	resetValues();
 	clearDebugStream();
+	resetValues();
 
-	while(claw.notDone && arm.notDone){
-		moveClaw(close, 50);
+	while(arm.notDone && claw.notDone){
+		move(Forward, 0, 0);
 		moveArm(1);
+		moveClaw(close, META_clawSpeed);
 	}
 	resetValues();
 
-	while(drive.notDone && mobileGoalIntake.notDone && arm.notDone){
-		move(Forward, 12, 75);
+	while(arm.notDone){
+		move(Forward, 0, 0);
 		moveMobileGoal(0);
 		moveArm(0);
 	}
 	resetValues();
 
-	while(drive.notDone){
-		move(Forward, 12, 50);
-	}
-	resetValues();
+	if(currentSideRight){
+		switch(currentCode){
+		case twentyPointMogo:
 
-	while(mobileGoalIntake.notDone){
-		moveMobileGoal(1);
-	}
-	resetValues();
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
 
-	while(drive.notDone){
-		move(TurnRight, 180, 50);
-	}
-	resetValues();
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
 
-	while(drive.notDone){
-		move(Forward, 5, 75);
-	}
-	resetValues();
+			while(drive.notDone){
+				move(Backward, 35, 60);
+			}
+			resetValues();
 
-	while(drive.notDone && mobileGoalIntake.notDone){
-		move(Backward, 5, 50);
-		moveMobileGoal(0);
+			while(drive.notDone){
+				move(TurnLeft, 145, 75);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Forward, 30, 55);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnLeft, 95, 75);
+			}
+			resetValues();
+
+			PID_KIdrive = 1;
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 22.5, 90);
+				moveMobileGoal(0);
+			}
+			resetValues();
+			PID_KIdrive = 0.5;
+
+			while(drive.notDone){
+				move(Backward, 26, 100);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+		case tenPointMogo:
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 35, 60);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnLeft, 145, 75);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Forward, 30, 55);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnLeft, 95, 75);
+			}
+			resetValues();
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 10, 90);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 12, 100);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+
+		case fivePointMogo:
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 30, 60);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnLeft, 180, 75);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 6, 127);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+		}
 	}
+	else{
+		switch(currentCode){
+		case twentyPointMogo:
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 35, 60);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnRight, 145, 75);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Forward, 30, 55);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnRight, 95, 75);
+			}
+			resetValues();
+
+			PID_KIdrive = 1;
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 22.5, 90);
+				moveMobileGoal(0);
+			}
+			resetValues();
+			PID_KIdrive = 0.5;
+
+			while(drive.notDone){
+				move(Backward, 26, 100);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+		case tenPointMogo:
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 35, 60);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnRight, 145, 75);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Forward, 30, 55);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnRight, 95, 75);
+			}
+			resetValues();
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 6, 90);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 12, 100);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+
+		case fivePointMogo:
+
+			while(drive.notDone || mobileGoalIntake.notDone){
+				move(Forward, 41.5, 60);
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 30, 60);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(TurnRight, 180, 75);
+			}
+			resetValues();
+
+			while(mobileGoalIntake.notDone){
+				moveMobileGoal(0);
+			}
+			resetValues();
+
+			while(drive.notDone){
+				move(Backward, 6, 127);
+				moveMobileGoal(1);
+			}
+			resetValues();
+
+			break;
+		}
+	}
+
 	resetValues();
+	//Program Finishes
 }
