@@ -4,7 +4,9 @@ import numpy as np
 #Replace array.append with return
 
 distance = 10.0
+distanceDivisor = 14.0
 speed = 50.0
+speedDivisor = 5.0
 array = []
  
 for x in np.arange(0.0,distance*1.0, 0.1):
