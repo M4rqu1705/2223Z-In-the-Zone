@@ -1,109 +1,115 @@
-#ifndef COMMONS.h
-#define COMMONS.h
+#ifndef COMMONS_H_
+#define COMMONS_H_
 
 #pragma systemfile
 
-//-Motor ports-------------------------------------------------------------------------------------------------------------------//
-//L = Left, R = Right, F = Front, M = Middle, B = Back
-#define MOTOR_driveLB port1
-#define MOTOR_claw port2
-#define MOTOR_arm port3
-#define MOTOR_driveLF port4
-#define MOTOR_driveLM port5
-#define MOTOR_driveRM port6
-#define MOTOR_driveRF port7
-#define MOTOR_mogoIntake port9
-#define MOTOR_driveRB port10
+//Motors and sensors setup
+#define MOTOR_driveLF port1
+#define MOTOR_driveLM port2
+#define MOTOR_driveLB port3
 
-#define MOTORTYPE_driveLB tmotorVex393TurboSpeed_HBridge
-#define MOTORTYPE_claw tmotorVex393_HBridge
-#define MOTORTYPE_arm tmotorVex393HighSpeed_MC29
-#define MOTORTYPE_driveLF tmotorVex393TurboSpeed_HBridge
-#define MOTORTYPE_driveLM tmotorVex393TurboSpeed_HBridge
-#define MOTORTYPE_driveRM tmotorVex393TurboSpeed_HBridge
-#define MOTORTYPE_driveRF tmotorVex393TurboSpeed_HBridge
-#define MOTORTYPE_mogoIntake tmotorVex393_HBridge
-#define MOTORTYPE_driveRB tmotorVex393TurboSpeed_HBridge
+#define MOTOR_mobileGoalL port4
+#define MOTOR_coneIntake port5
+#define MOTOR_arm port6
+#define MOTOR_mobileGoalR port7
 
-#define MOTORINVERT_driveLB false
-#define MOTORINVERT_claw false
-#define MOTORINVERT_arm false
-#define MOTORINVERT_driveLF false
-#define MOTORINVERT_driveLM false
-#define MOTORINVERT_driveRM true
-#define MOTORINVERT_driveRF true
-#define MOTORINVERT_mogoIntake false
-#define MOTORINVERT_driveRB true
+#define MOTOR_driveRB port8
+#define MOTOR_driveRM port9
+#define MOTOR_driveRF port10
 
-//Sensor ports----Sensor ports----Sensor ports----Sensor ports----Sensor ports----Sensor ports----Sensor ports----Sensor ports//
-#define SENSOR_powerExpanderStatus in1
-
+#define SENSOR_powerExpander in1
 #define SENSOR_potMogo in2
 #define SENSOR_potArm in3
-
 #define SENSOR_encoderL dgtl1
 #define SENSOR_encoderR dgtl3
+#define SENSOR_gyro in8
 
-//Joystick ports----Joystick ports----Joystick ports----Joystick ports----Joystick ports----Joystick ports----Joystick ports//
+//Joystick setup
 #define JOYSTICK_driveF Ch3
 #define JOYSTICK_driveS Ch4
-#define JOYSTICK_driveInvert Btn7D
+#define JOYSTICK_arm Ch2
+#define JOYSTICK_mobileGoalE Btn6D
+#define JOYSTICK_mobileGoalR Btn6U
+#define JOYSTICK_coneIntakeP Btn5U
+#define JOYSTICK_coneIntakeD Btn5D
 
-#define JOYSTICK_armUp Btn5U
-#define JOYSTICK_armDown Btn5D
-#define JOYSTICK_armPID Btn8D
-#define JOYSTICK_armAnalog Ch2
-
-#define JOYSTICK_mogoExtend Btn6D
-#define JOYSTICK_mogoRetract Btn6U
-
-#define JOYSTICK_clawOpen JOYSTICK_armUp
-#define JOYSTICK_clawClose JOYSTICK_armDown
-
-/*PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID//
-KP = P constant, KI = I constant, KD = D constant, integralMax = limit for the integral so it doesn't overflow,
-doneThreshold = threshold to give flexibility when determining "ifDone", correctionCycles = how much time to wait to determine "ifDone"
-*/
-double PID_KPdrive = 0.75;
-double PID_KIdrive = 0.5;
-double PID_KDdrive = 95;
+//PID variables setup
+//Drive without Mobile Goal
+double PID_KPdriveUnloaded = 0.75;
+double PID_KIdriveUnloaded = 0.5;
+double PID_KDdriveUnloaded = 95;
 #define PID_integralMaxDrive 127
-#define PID_doneThresholdDrive 25
-#define PID_correctionCyclesDrive 50
+#define PID_correctionCyclesDriveUnloaded 50
+#define PID_correctionThresholdDriveUnloaded 10
+unsigned byte PID_timeoutDriveUnloaded = 50;
 
-double PID_KParm = 0.2;
-double PID_KIarm = 0.05;
-double PID_KDarm = 0.3;
+//Drive with Mobile Goal
+double PID_KPdriveLoaded = 0.75;
+double PID_KIdriveLoaded = 0.5;
+double PID_KDdriveLoaded = 95;
+#define PID_correctionCyclesMobileGoalLoaded 50
+#define PID_correctionThresholdDriveLoaded 10
+unsigned byte PID_timeoutDriveLoaded = 50;
+
+//Mobile Goal intake retracts without Mobile Goal
+double PID_KPmobileGoalIntakeUnloadedRetract = 0.75;
+double PID_KImobileGoalIntakeUnloadedRetract = 0.5;
+double PID_KDmobileGoalIntakeUnloadedRetract = 95;
+#define PID_integralMaxMobileGoalIntake 127
+#define PID_correctionCyclesMobileGoalIntakeUnloadedRetract 50
+#define PID_correctionThresholdMobileGoalIntakeUnloadedRetract 10
+unsigned byte PID_timeoutMobileGoalIntakeUnloadedRetract = 50;
+
+//Mobile Goal Intake retracts with Mobile Goal
+double PID_KPmobileGoalIntakeLoadedRetract = 0.75;
+double PID_KImobileGoalIntakeLoadedRetract = 0.5;
+double PID_KDmobileGoalIntakeLoadedRetract = 95;
+#define PID_correctionCyclesMobileGoalLoadedRetract 50
+#define PID_correctionThresholdMobileGoalIntakeLoadedRetract 10
+unsigned byte PID_timeoutMobileGoalIntakeLoadedRetract = 50;
+
+//Mobile Goal intake extends without Mobile Goal
+double PID_KPmobileGoalIntakeUnloadedExtend = 0.75;
+double PID_KImobileGoalIntakeUnloadedExtend = 0.5;
+double PID_KDmobileGoalIntakeUnloadedExtend = 95;
+#define PID_correctionCyclesMobileGoalUnloadedExtend 50
+#define PID_correctionThresholdMobileGoalIntakeUnloadedExtend 10
+unsigned byte PID_timeoutMobileGoalIntakeUnloadedExtend = 50;
+
+//Mobile Goal Intake extends with Mobile Goal
+double PID_KPmobileGoalIntakeLoadedExtend = 0.75;
+double PID_KImobileGoalIntakeLoadedExtend = 0.5;
+double PID_KDmobileGoalIntakeLoadedExtend = 95;
+#define PID_correctionCyclesMobileGoalLoadedExtend 50
+#define PID_correctionThresholdMobileGoalIntakeLoadedExtend 10
+unsigned byte PID_timeoutMobileGoalIntakeLoadedExtend = 50;
+
+//Arm rises with cone
+double PID_KParmUp = 0.75;
+double PID_KIarmUp = 0.5;
+double PID_KDarmUp = 95;
 #define PID_integralMaxArm 127
-#define PID_doneThresholdArm 2
-#define PID_correctionCyclesArm 100
+#define PID_correctionCyclesArmUp 50
+#define PID_correctionThresholdArmUp 10
+unsigned byte PID_timeoutArmUp = 50;
 
-double PID_KPmogoExtend = 0.25;
-double PID_KImogoExtend = 0.0;
-double PID_KDmogoExtend = 3.0;
-#define PID_integralMaxMogoExtend 127
-#define PID_doneThresholdMogoExtend 15
-#define PID_correctionCyclesMogoExtend 10
+//Arm lowers without cone
+double PID_KParmDown = 0.75;
+double PID_KIarmDown = 0.5;
+double PID_KDarmDown = 95;
+#define PID_correctionCyclesArmDown 50
+#define PID_correctionThresholdArmDown 10
+unsigned byte PID_timeoutArmDown = 50;
 
-double PID_KPmogoRetract = 1;
-double PID_KImogoRetract = 0.5;
-double PID_KDmogoRetract = 4.0;
-#define PID_integralMaxMogoRetract 127
-#define PID_doneThresholdMogoRetract 5
-#define PID_correctionCyclesMogoRetract 10
-
-//Information----Information----Information----Information----Information----Information----Information----Information//
-
+//Information needed for calculations
 #define META_driveOpControlThreshold 20
 #define META_driveWidth 13.0
 #define META_driveWheelDiameter 3.25
-#define META_driveEncoderRectifyConstant 1
 #define META_encoderLInverted false
 #define META_encoderRInverted true
-#define META_slewGain 16.933333333333333333333333333333
-#define PI 3.14159265358
-// = 254/(floor(maxTime / DRIVERCONTROL_LOOP_DELAY))
+#define META_slewGain 16.93333333333333333
 #define META_slewGainThreshold 2
+#define PI 3.141592653589793
 
 #define META_mogoExtended 2725
 #define META_mogoRetracted 1050
@@ -113,20 +119,17 @@ double PID_KDmogoRetract = 4.0;
 #define META_armUp 2375
 #define META_armDown 0
 
-#define META_clawSpeed 40
-#define META_clawCycles 10
+#define META_coneIntakeSpeed 100
+#define META_coneIntakeCycles 100
 
 #define META_lcdBacklight true
-//#define META_usingLCD true //Comment if false
+//#define META_usingLCD //comment if will not use LCD
 
 #define META_powerExpanderInputDivisor 70
-//Use Divisors of 45.6 or 70
-//https://www.vexrobotics.com/276-2271.html
+//Use divisors of 45.6 or
 
-#define META_usingLCD true
-#define META_LCDbacklight true
+#define META_loopsDelay 20
 
-bool META_armNotUsePID = false;
+#define META_scaleFactor 1
 
-#define LOOPS_DELAY 20
 #endif
