@@ -4,36 +4,34 @@
 #pragma systemfile
 
 typedef struct {
-	double KP;
-	double KI;
-	double KD;
+	float KP;
+	float KI;
+	float KD;
 	signed int error;
 	signed int lastError;
-	double integral;
-	unsigned byte integralMax;
-	unsigned byte cyclesCounter;
-	unsigned byte correctionCycles;
-	unsigned byte correctionThreshold;
-	unsigned byte timeoutCounter;
-	unsigned byte timeout;
-	signed byte output;
+	float integral;
+	ubyte integralMax;
+	ubyte cyclesCounter;
+	ubyte correctionCycles;
+	ubyte correctionThreshold;
+	ubyte timeoutCounter;
+	ubyte timeout;
+	byte output;
 
 	bool notDone;
 }TEMPLATE_PID;
 
 typedef struct {
-	double distanceMultiplier[2];
-	double offset;
+	float distanceMultiplier[2];
+	float offset;
 }TEMPLATE_motionProfile;
 
-
-enum ENUM_driveDirection{Forward = 0, Backward, PointTurnLeft, PointTurnRight, SwingTurnLeft, SwingTurnRight};
 enum ENUM_driveMode{None = 0, PID, MotionProfiling, MotionProfilingAndPID, Gyro };
 
 typedef struct{
-	signed byte joystickInputs[2];
-	double slewRateOutputs[2];
-	signed byte outputs[2];
+	byte joystickInputs[2];
+	float slewRateOutputs[2];
+	byte outputs[2];
 	TEMPLATE_PID PID;
 	TEMPLATE_motionProfile motionProfile;
 }TEMPLATE_drive;
@@ -42,14 +40,14 @@ typedef struct{
 	bool retractButtonPressed;
 	bool extendButtonPressed;
 	bool intakeState;
-	signed byte output;
+	byte output;
 	TEMPLATE_PID PID;
 	TEMPLATE_motionProfile motionProfile;
 }TEMPLATE_mobileGoalIntake;
 
 typedef struct{
-	signed byte joystickInput;
-	signed byte output;
+	byte joystickInput;
+	byte output;
 	TEMPLATE_PID PID;
 	TEMPLATE_motionProfile motionProfile;
 }TEMPLATE_arm;
@@ -58,8 +56,8 @@ typedef struct{
 	bool pickUpButtonPressed;
 	bool depositButtonPressed;
 	bool notDone;
-	unsigned byte counter;
-	signed byte output;
+	ubyte counter;
+	byte output;
 }TEMPLATE_coneIntake;
 
 TEMPLATE_drive drive;
@@ -74,13 +72,13 @@ void initialize();
 void resetValues();
 
 void driveOperatorControl(bool simple = false);
-void moveDrive(ENUM_driveDirection direction, double pulses, signed byte speed, ENUM_driveMode mode);
+void driveForward(ENUM_driveMode mode, float pulses, signed byte speed);
 
 void mobileGoalOperatorControl(bool simple = false);
 void moveMobileGoal(bool retract, bool loaded = false);
 
 void armOperatorControl(bool simple = false);
-void moveArm(unsigned byte position, bool loaded = false);
+void moveArm(ubyte position, bool loaded = false);
 
 void coneIntakeOperatorControl();
 void moveIntake(bool pickUp, signed byte speed = META_coneIntakeSpeed);
@@ -131,8 +129,8 @@ void initialize(){
 	motorType[MOTOR_driveRM] = tmotorVex393TurboSpeed_HBridge;
 	motorType[MOTOR_driveRF] = tmotorVex393TurboSpeed_HBridge;
 
-	bMotorReflected[MOTOR_driveLF] = true;
-	bMotorReflected[MOTOR_driveLM] = true;
+	bMotorReflected[MOTOR_driveLF] = false;
+	bMotorReflected[MOTOR_driveLM] = false;
 	bMotorReflected[MOTOR_driveLB] = true;
 
 	bMotorReflected[MOTOR_mobileGoalL] = true;
@@ -140,7 +138,7 @@ void initialize(){
 	bMotorReflected[MOTOR_arm] = true;
 	bMotorReflected[MOTOR_mobileGoalR] = true;
 
-	bMotorReflected[MOTOR_driveRB] = true;
+	bMotorReflected[MOTOR_driveRB] = false;
 	bMotorReflected[MOTOR_driveRM] = true;
 	bMotorReflected[MOTOR_driveRF] = true;
 
@@ -238,6 +236,8 @@ void resetValues(){
 	coneIntake.counter = 0;
 	coneIntake.output = 0;
 
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+
 }
 
 void driveOperatorControl(bool simple){
@@ -247,8 +247,8 @@ void driveOperatorControl(bool simple){
 
 	if(simple){
 		//Calculate output by first doing the operation and then clamping it while converting them to a signed byte
-		drive.outputs[0] = (MATH_clamp(-drive.joystickInputs[0] + drive.joystickInputs[1]));
-		drive.outputs[1] = (MATH_clamp(-drive.joystickInputs[0] - drive.joystickInputs[1]));
+		drive.outputs[0] = (MATH_clamp(drive.joystickInputs[0] + drive.joystickInputs[1]));
+		drive.outputs[1] = (MATH_clamp(drive.joystickInputs[0] - drive.joystickInputs[1]));
 
 		//Assign calculated output values
 		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
@@ -258,39 +258,68 @@ void driveOperatorControl(bool simple){
 
 		//Check if joystick values are within a threshold or the will be removed
 		if(MATH_withinThreshold(drive.joystickInputs[0], META_driveOpControlThreshold, -META_driveOpControlThreshold)) drive.joystickInputs[0] = 0;
-
 		if(MATH_withinThreshold(drive.joystickInputs[1], META_driveOpControlThreshold, -META_driveOpControlThreshold)) drive.joystickInputs[1] = 0;
+
 
 		//Apply Slew rate control where the outputs will increase linearly and slowly
 		if(drive.slewRateOutputs[0] + META_slewGain < drive.joystickInputs[0] + META_slewGainThreshold) drive.slewRateOutputs[0] += META_slewGain;
 		else if(drive.slewRateOutputs[0] - META_slewGain > drive.joystickInputs[0] - META_slewGainThreshold) drive.slewRateOutputs[0] -= META_slewGain;
-		else if(drive.joystickInputs[0] == 0  || drive.joystickInputs[1] == 0) drive.slewRateOutputs[0] = 0;
+		else if(drive.joystickInputs[0] == 0) drive.slewRateOutputs[0] = 0;
 
 
 		if(drive.slewRateOutputs[1] + META_slewGain < drive.joystickInputs[1] + META_slewGainThreshold) drive.slewRateOutputs[1] += META_slewGain;
 		else if(drive.slewRateOutputs[1] - META_slewGain > drive.joystickInputs[1] - META_slewGainThreshold) drive.slewRateOutputs[1] -= META_slewGain;
-		else if(drive.joystickInputs[0] == 0  || drive.joystickInputs[1] == 0) drive.slewRateOutputs[1] = 0;
+		else if(drive.joystickInputs[1] == 0) drive.slewRateOutputs[1] = 0;
 
 		drive.slewRateOutputs[0] = MATH_clamp(drive.slewRateOutputs[0]);
 		drive.slewRateOutputs[1] = MATH_clamp(drive.slewRateOutputs[1]);
 
 		//Calculate outputs for each side
-		drive.outputs[0] = MATH_clamp(MATH_round(-drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
-		drive.outputs[1] = MATH_clamp(MATH_round(-drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
+		drive.outputs[0] = MATH_clamp(MATH_round(drive.slewRateOutputs[0] + drive.slewRateOutputs[1]));
+		drive.outputs[1] = MATH_clamp(MATH_round(drive.slewRateOutputs[0] - drive.slewRateOutputs[1]));
 
 		//Move motors
 		motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
 		motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
 
 	}
+}
 
-	/*void moveDrive(ENUM_driveDirection direction, double pulses, signed byte speed, ENUM_driveMode mode){
+void driveForward(ENUM_driveMode mode, float pulses, signed byte speed){
+	pulses = MATH_inchesToPulses(pulses);
 
+	writeDebugStream("Converted Pulses=%f\t", pulses);
+
+	//{None, PID, MotionProfiling, MotionProfilingAndPID, Gyro };
+	switch(mode){
+	case PID:
+		MATH_calculatePID(drive.PID, pulses, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2));
+		drive.outputs[0] = drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		break;
+	case MotionProfiling:
+		break;
+	case MotionProfilingAndPID:
+		break;
+	default:
+		if(pulses > ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2)){
+			drive.outputs[0] = drive.outputs[1] = speed;
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
 	}
 
-	void moveDrive(ENUM_driveDirection direction, double turnRadius, double turnDegrees, signed byte speed, ENUM_driveMode mode){
+	writeDebugStreamLine("Sensors = %f, Outputs = %d",((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) ,drive.outputs[0]);
 
-	}*/
+	//Move motors
+	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
+	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
+
 }
+
+/*void moveDrive(ENUM_driveMode mode, float turnRadius, float turnDegrees, signed byte speed){
+
+}*/
 
 #endif

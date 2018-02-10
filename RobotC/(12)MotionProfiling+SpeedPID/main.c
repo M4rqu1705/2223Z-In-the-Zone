@@ -13,6 +13,7 @@ void pre_auton(){
 }
 
 task usercontrol(){
+	//startTask(autonomous);
 	while (true){
 		driveOperatorControl(false);
 		delay(META_loopsDelay);
@@ -21,5 +22,12 @@ task usercontrol(){
 }
 
 task autonomous(){
+	//resetValues();
+	initialize();
 
+	drive.PID.timeout = 200;
+	while(drive.PID.notDone){
+		driveForward(PID, 24, 127);
+		delay(META_loopsDelay);
+	}
 }

@@ -4,18 +4,18 @@
 #pragma systemfile
 
 //Motors and sensors setup
-#define MOTOR_driveLF port1
-#define MOTOR_driveLM port2
-#define MOTOR_driveLB port3
+#define MOTOR_driveLF port4
+#define MOTOR_driveLM port9
+#define MOTOR_driveLB port10
 
-#define MOTOR_mobileGoalL port4
-#define MOTOR_coneIntake port5
-#define MOTOR_arm port6
-#define MOTOR_mobileGoalR port7
+#define MOTOR_mobileGoalL port5
+#define MOTOR_coneIntake port3
+#define MOTOR_arm port8
+#define MOTOR_mobileGoalR port6
 
-#define MOTOR_driveRB port8
-#define MOTOR_driveRM port9
-#define MOTOR_driveRF port10
+#define MOTOR_driveRB port1
+#define MOTOR_driveRM port2
+#define MOTOR_driveRF port7
 
 #define SENSOR_powerExpander in1
 #define SENSOR_potMogo in2
@@ -26,7 +26,7 @@
 
 //Joystick setup
 #define JOYSTICK_driveF Ch3
-#define JOYSTICK_driveS Ch4
+#define JOYSTICK_driveS Ch1
 #define JOYSTICK_arm Ch2
 #define JOYSTICK_mobileGoalE Btn6D
 #define JOYSTICK_mobileGoalR Btn6U
@@ -35,68 +35,68 @@
 
 //PID variables setup
 //Drive without Mobile Goal
-double PID_KPdriveUnloaded = 0.75;
-double PID_KIdriveUnloaded = 0.5;
-double PID_KDdriveUnloaded = 95;
+float PID_KPdriveUnloaded = 0.5;
+float PID_KIdriveUnloaded = 0.;
+float PID_KDdriveUnloaded = 0.05;
 #define PID_integralMaxDrive 127
-#define PID_correctionCyclesDriveUnloaded 50
-#define PID_correctionThresholdDriveUnloaded 10
-unsigned byte PID_timeoutDriveUnloaded = 50;
+#define PID_correctionCyclesDriveUnloaded 20
+#define PID_correctionThresholdDriveUnloaded 15
+unsigned byte PID_timeoutDriveUnloaded = 100;
 
 //Drive with Mobile Goal
-double PID_KPdriveLoaded = 0.75;
-double PID_KIdriveLoaded = 0.5;
-double PID_KDdriveLoaded = 95;
-#define PID_correctionCyclesMobileGoalLoaded 50
-#define PID_correctionThresholdDriveLoaded 10
-unsigned byte PID_timeoutDriveLoaded = 50;
+float PID_KPdriveLoaded = 0.5;
+float PID_KIdriveLoaded = 0;
+float PID_KDdriveLoaded = 0;
+#define PID_correctionCyclesDriveLoaded 20
+#define PID_correctionThresholdDriveLoaded 15
+unsigned byte PID_timeoutDriveLoaded = 100;
 
 //Mobile Goal intake retracts without Mobile Goal
-double PID_KPmobileGoalIntakeUnloadedRetract = 0.75;
-double PID_KImobileGoalIntakeUnloadedRetract = 0.5;
-double PID_KDmobileGoalIntakeUnloadedRetract = 95;
+float PID_KPmobileGoalIntakeUnloadedRetract = 0.75;
+float PID_KImobileGoalIntakeUnloadedRetract = 0.5;
+float PID_KDmobileGoalIntakeUnloadedRetract = 95;
 #define PID_integralMaxMobileGoalIntake 127
 #define PID_correctionCyclesMobileGoalIntakeUnloadedRetract 50
 #define PID_correctionThresholdMobileGoalIntakeUnloadedRetract 10
 unsigned byte PID_timeoutMobileGoalIntakeUnloadedRetract = 50;
 
 //Mobile Goal Intake retracts with Mobile Goal
-double PID_KPmobileGoalIntakeLoadedRetract = 0.75;
-double PID_KImobileGoalIntakeLoadedRetract = 0.5;
-double PID_KDmobileGoalIntakeLoadedRetract = 95;
+float PID_KPmobileGoalIntakeLoadedRetract = 0.75;
+float PID_KImobileGoalIntakeLoadedRetract = 0.5;
+float PID_KDmobileGoalIntakeLoadedRetract = 95;
 #define PID_correctionCyclesMobileGoalLoadedRetract 50
 #define PID_correctionThresholdMobileGoalIntakeLoadedRetract 10
 unsigned byte PID_timeoutMobileGoalIntakeLoadedRetract = 50;
 
 //Mobile Goal intake extends without Mobile Goal
-double PID_KPmobileGoalIntakeUnloadedExtend = 0.75;
-double PID_KImobileGoalIntakeUnloadedExtend = 0.5;
-double PID_KDmobileGoalIntakeUnloadedExtend = 95;
+float PID_KPmobileGoalIntakeUnloadedExtend = 0.75;
+float PID_KImobileGoalIntakeUnloadedExtend = 0.5;
+float PID_KDmobileGoalIntakeUnloadedExtend = 95;
 #define PID_correctionCyclesMobileGoalUnloadedExtend 50
 #define PID_correctionThresholdMobileGoalIntakeUnloadedExtend 10
 unsigned byte PID_timeoutMobileGoalIntakeUnloadedExtend = 50;
 
 //Mobile Goal Intake extends with Mobile Goal
-double PID_KPmobileGoalIntakeLoadedExtend = 0.75;
-double PID_KImobileGoalIntakeLoadedExtend = 0.5;
-double PID_KDmobileGoalIntakeLoadedExtend = 95;
+float PID_KPmobileGoalIntakeLoadedExtend = 0.75;
+float PID_KImobileGoalIntakeLoadedExtend = 0.5;
+float PID_KDmobileGoalIntakeLoadedExtend = 95;
 #define PID_correctionCyclesMobileGoalLoadedExtend 50
 #define PID_correctionThresholdMobileGoalIntakeLoadedExtend 10
 unsigned byte PID_timeoutMobileGoalIntakeLoadedExtend = 50;
 
 //Arm rises with cone
-double PID_KParmUp = 0.75;
-double PID_KIarmUp = 0.5;
-double PID_KDarmUp = 95;
+float PID_KParmUp = 0.75;
+float PID_KIarmUp = 0.5;
+float PID_KDarmUp = 95;
 #define PID_integralMaxArm 127
 #define PID_correctionCyclesArmUp 50
 #define PID_correctionThresholdArmUp 10
 unsigned byte PID_timeoutArmUp = 50;
 
 //Arm lowers without cone
-double PID_KParmDown = 0.75;
-double PID_KIarmDown = 0.5;
-double PID_KDarmDown = 95;
+float PID_KParmDown = 0.75;
+float PID_KIarmDown = 0.5;
+float PID_KDarmDown = 95;
 #define PID_correctionCyclesArmDown 50
 #define PID_correctionThresholdArmDown 10
 unsigned byte PID_timeoutArmDown = 50;
@@ -107,8 +107,9 @@ unsigned byte PID_timeoutArmDown = 50;
 #define META_driveWheelDiameter 3.25
 #define META_encoderLInverted false
 #define META_encoderRInverted true
-#define META_slewGain 16.93333333333333333
-#define META_slewGainThreshold 2
+#define META_slewGain 12.7
+// = 254/(floor(maxTime / DRIVERCONTROL_LOOP_DELAY))
+#define META_slewGainThreshold 10
 #define PI 3.141592653589793
 
 #define META_mogoExtended 2725
