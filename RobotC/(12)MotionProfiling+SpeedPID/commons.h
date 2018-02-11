@@ -35,12 +35,12 @@
 
 //PID variables setup
 //Drive without Mobile Goal
-float PID_KPdriveUnloaded = 0.5;
-float PID_KIdriveUnloaded = 0.;
-float PID_KDdriveUnloaded = 0.05;
+float PID_KPdriveUnloaded = 0.25;
+float PID_KIdriveUnloaded = 0.5;
+float PID_KDdriveUnloaded = 0.005;
 #define PID_integralMaxDrive 127
 #define PID_correctionCyclesDriveUnloaded 20
-#define PID_correctionThresholdDriveUnloaded 15
+#define PID_correctionThresholdDriveUnloaded 5
 unsigned byte PID_timeoutDriveUnloaded = 100;
 
 //Drive with Mobile Goal

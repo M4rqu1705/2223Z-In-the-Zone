@@ -9,27 +9,32 @@ int MATH_map(int inNumber, int inMax, int inMin, int outMax, int outMin){
 	//Retrieved from https://www.arduino.cc/reference/en/language/functions/math/map/
 }
 
-signed byte MATH_clamp(signed int inNumber){
+byte MATH_clamp( int inNumber){
 	if(inNumber>127) return 127;
 	else if (inNumber<-127) return -127;
-	else return (signed byte)(inNumber);
+	else return ( byte)(inNumber);
 }
 
-signed int MATH_round(float inNumber){
-	if(inNumber>=0) return ((signed int)(ceil(inNumber-0.49)));
-	else return ((signed int)(floor(inNumber+0.49)));
+int MATH_round(float inNumber){
+	if(inNumber>=0) return (( int)(ceil(inNumber-0.49)));
+	else return (( int)(floor(inNumber+0.49)));
 }
 
-unsigned short MATH_inchesToPulses(float inches){
+short MATH_inchesToPulses(float inches){
 	return MATH_round(inches*(360/(META_driveWheelDiameter*PI)));
 }
 
-unsigned short MATH_degreesToPulses(float targetDegrees){
-	return MATH_round(targetDegrees*META_driveWidth/META_driveWheelDiameter);
+short MATH_degreesToPulses(float targetDegrees, float turnRadius){
+	return MATH_inchesToPulses(MATH_round((targetDegrees*PI*turnRadius)/180));
+	//return (angle*PI*r)/180
 }
 
-signed short MATH_degreesToTicks(float targetDegrees){
-	return (signed short)(targetDegrees*(META_scaleFactor/360));
+byte swingTurnInsideSpeed(float turnRadius, byte speed){
+	return (byte)(-(META_driveWidth/turnRadius) * speed + speed);
+}
+
+short MATH_degreesToTicks(float targetDegrees){
+	return (short)(targetDegrees*(META_scaleFactor/360));
 }
 
 bool MATH_withinThreshold(float inNumber, float max, float min){
@@ -38,14 +43,14 @@ bool MATH_withinThreshold(float inNumber, float max, float min){
 
 //PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----PID----//
 
-byte MATH_calculatePID(TEMPLATE_PID &values, signed int target, signed int sensorInput){
+byte MATH_calculatePID(TEMPLATE_PID &values,  int setPoint,  int processVariable){
 
 	//Calculate Error
-	values.error = (signed int)(target - sensorInput);
+	values.error = ( int)(setPoint - processVariable);
 
 	//Calculate integral if within the integralMax range
-	if(fabs(values.integral+values.error * META_loopsDelay * 0.01)<= (float)(values.integralMax)){
-		values.integral += values.error * META_loopsDelay * 0.01;
+	if(fabs(values.integral+values.error * META_loopsDelay * 0.001)<= (float)(values.integralMax)){
+		values.integral += values.error * META_loopsDelay * 0.001;
 	}
 	if(MATH_withinThreshold(values.error, values.correctionThreshold, -values.correctionThreshold)) values.integral = 0;
 
@@ -58,11 +63,11 @@ byte MATH_calculatePID(TEMPLATE_PID &values, signed int target, signed int senso
 	values.lastError = values.error;
 
 	//Check if values.output has remained within the correctionThreshold for a values.correctionCycles amount of cycles
-	if(MATH_withinThreshold(values.output, values.correctionThreshold, -values.correctionThreshold)){
+	if(MATH_withinThreshold(processVariable, (setPoint + values.correctionThreshold), (setPoint - values.correctionThreshold))){
 		if(values.cyclesCounter<(ubyte)values.correctionCycles) values.cyclesCounter++;
 		writeDebugStream("Inside Threshold\t");
 		if(values.cyclesCounter == (ubyte)values.correctionCycles){
-			if(MATH_withinThreshold(values.output, values.correctionThreshold, -values.correctionThreshold)){
+			if(MATH_withinThreshold(processVariable, (setPoint + values.correctionThreshold), (setPoint - values.correctionThreshold))){
 				values.notDone = false;
 				values.output = 0;
 				return 0;
@@ -80,15 +85,18 @@ byte MATH_calculatePID(TEMPLATE_PID &values, signed int target, signed int senso
 		values.output = 0;
 		return 0;
 	}
+
 	//Just in case Debug is needed
-	//writeDebugStreamLine("values = %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", values.KP, values.KI, values.KD, values.integralMax, values.error, values.lastError, values.integral, values.cyclesCounter, values.timeoutCounter, values.output);
-	datalogAddValue(0, sensorInput);
+	//writeDebugStreamLine("values = %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", values.KP, values.KI, values.KD, values.integralMax, values.error, values.lastError, values.integral, values.cyclesCounter, values.timeoutCounter, values.output); datalogAddValue(0, processVariable);
 
 	return (values.output);
 
 }
 
-double MATH_motionProfile(TEMPLATE_motionProfile &values, signed int currentDistance, unsigned int desiredDistance, signed int desiredSpeed){
+float MATH_motionProfile(TEMPLATE_motionProfile &values,  int currentDistance,  int desiredDistance,  int desiredSpeed){
+
+	values.previousPosition = currentDistance;
+
 
 	if(0<=currentDistance && currentDistance<desiredDistance*values.distanceMultiplier[0]){
 		return( ((desiredSpeed-values.offset)/(desiredDistance*values.distanceMultiplier[0]))*currentDistance + values.offset );
@@ -98,7 +106,7 @@ double MATH_motionProfile(TEMPLATE_motionProfile &values, signed int currentDist
 		return( desiredSpeed );
 	}
 
-	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && (unsigned int)(currentDistance) <= desiredDistance){
+	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && ( int)(currentDistance) <= desiredDistance){
 		return( ((-desiredSpeed)/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance*values.distanceMultiplier[1])+desiredSpeed );
 	}
 

@@ -25,9 +25,20 @@ task autonomous(){
 	//resetValues();
 	initialize();
 
-	drive.PID.timeout = 200;
 	while(drive.PID.notDone){
-		driveForward(PID, 24, 127);
+		turnLeft(PID, 90, 20, 50);
 		delay(META_loopsDelay);
 	}
+	resetValues();
+	writeDebugStreamLine("Turned 90 degrees without turning radius");
+
+	delay(1000);
+
+	while(drive.PID.notDone){
+		turnRight(PID, 90, 20, 50);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+	writeDebugStreamLine("Turned 90 degrees with turning radius of 13\"");
+
 }

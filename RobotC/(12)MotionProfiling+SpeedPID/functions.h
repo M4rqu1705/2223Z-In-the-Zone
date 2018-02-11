@@ -7,8 +7,8 @@ typedef struct {
 	float KP;
 	float KI;
 	float KD;
-	signed int error;
-	signed int lastError;
+	int error;
+	int lastError;
 	float integral;
 	ubyte integralMax;
 	ubyte cyclesCounter;
@@ -24,9 +24,10 @@ typedef struct {
 typedef struct {
 	float distanceMultiplier[2];
 	float offset;
+	int previousPosition;
 }TEMPLATE_motionProfile;
 
-enum ENUM_driveMode{None = 0, PID, MotionProfiling, MotionProfilingAndPID, Gyro };
+enum ENUM_driveMode{None = 0, PID, Acceleration, Gyro };
 
 typedef struct{
 	byte joystickInputs[2];
@@ -72,7 +73,9 @@ void initialize();
 void resetValues();
 
 void driveOperatorControl(bool simple = false);
-void driveForward(ENUM_driveMode mode, float pulses, signed byte speed);
+void driveForward(ENUM_driveMode mode, float pulses, byte speed);
+void driveBackwards(ENUM_driveMode mode, float pulses, byte speed);
+void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 
 void mobileGoalOperatorControl(bool simple = false);
 void moveMobileGoal(bool retract, bool loaded = false);
@@ -81,7 +84,7 @@ void armOperatorControl(bool simple = false);
 void moveArm(ubyte position, bool loaded = false);
 
 void coneIntakeOperatorControl();
-void moveIntake(bool pickUp, signed byte speed = META_coneIntakeSpeed);
+void moveIntake(bool pickUp, byte speed = META_coneIntakeSpeed);
 
 //LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD---//
 //#include "fullRobotLCD.h"
@@ -177,9 +180,10 @@ void resetValues(){
 	drive.PID.output = 0;
 	drive.PID.notDone = true;
 
-	drive.motionProfile.distanceMultiplier[0] = 1/4;
-	drive.motionProfile.distanceMultiplier[1] = 3/4;
-	drive.motionProfile.offset = 0;
+	drive.motionProfile.distanceMultiplier[0] = 1;
+	drive.motionProfile.distanceMultiplier[1] = 1.1;	//When greater than 1, it is not used
+	drive.motionProfile.offset = 25;
+	drive.motionProfile.previousPosition = 0;
 
 	//Mobile Goal Values
 	mobileGoalIntake.retractButtonPressed = false;
@@ -205,6 +209,7 @@ void resetValues(){
 	mobileGoalIntake.motionProfile.distanceMultiplier[0] = 1/5;
 	mobileGoalIntake.motionProfile.distanceMultiplier[1] = 4/5;
 	mobileGoalIntake.motionProfile.offset = 0;
+	mobileGoalIntake.motionProfile.previousPosition = 0;
 
 	//Arm Values
 	arm.joystickInput = 0;
@@ -228,6 +233,7 @@ void resetValues(){
 	arm.motionProfile.distanceMultiplier[0] = 1/5;
 	arm.motionProfile.distanceMultiplier[1] = 4/5;
 	arm.motionProfile.offset = 0;
+	arm.motionProfile.previousPosition = 0;
 
 	//Cone Intake Values
 	coneIntake.pickUpButtonPressed = false;
@@ -246,7 +252,7 @@ void driveOperatorControl(bool simple){
 	drive.joystickInputs[1] = vexRT[JOYSTICK_driveS];
 
 	if(simple){
-		//Calculate output by first doing the operation and then clamping it while converting them to a signed byte
+		//Calculate output by first doing the operation and then clamping it while converting them to a byte
 		drive.outputs[0] = (MATH_clamp(drive.joystickInputs[0] + drive.joystickInputs[1]));
 		drive.outputs[1] = (MATH_clamp(drive.joystickInputs[0] - drive.joystickInputs[1]));
 
@@ -285,23 +291,25 @@ void driveOperatorControl(bool simple){
 	}
 }
 
-void driveForward(ENUM_driveMode mode, float pulses, signed byte speed){
+void driveForward(ENUM_driveMode mode, float pulses, byte speed){
 	pulses = MATH_inchesToPulses(pulses);
 
-	writeDebugStream("Converted Pulses=%f\t", pulses);
-
-	//{None, PID, MotionProfiling, MotionProfilingAndPID, Gyro };
 	switch(mode){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2));
 		drive.outputs[0] = drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		break;
-	case MotionProfiling:
-		break;
-	case MotionProfilingAndPID:
+	case Acceleration:
+		if(((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) < pulses){
+			drive.outputs[0] = drive.outputs[1] = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
 		break;
 	default:
-		if(pulses > ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2)){
+		if(((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) < pulses){
 			drive.outputs[0] = drive.outputs[1] = speed;
 		}
 		else{
@@ -310,7 +318,7 @@ void driveForward(ENUM_driveMode mode, float pulses, signed byte speed){
 		}
 	}
 
-	writeDebugStreamLine("Sensors = %f, Outputs = %d",((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) ,drive.outputs[0]);
+	//writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensors = %f, Outputs = %d",((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) ,drive.outputs[0]);
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
@@ -318,8 +326,88 @@ void driveForward(ENUM_driveMode mode, float pulses, signed byte speed){
 
 }
 
-/*void moveDrive(ENUM_driveMode mode, float turnRadius, float turnDegrees, signed byte speed){
+void driveBackwards(ENUM_driveMode mode, float pulses, byte speed){
+	pulses = MATH_inchesToPulses(pulses);
 
-}*/
+	switch(mode){
+	case PID:
+		MATH_calculatePID(drive.PID, pulses, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2));
+		drive.outputs[0] = drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		break;
+	case Acceleration:
+		if(((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) < pulses){
+			drive.outputs[0] = drive.outputs[1] = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
+		break;
+	default:
+		if(((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2) < pulses){
+			drive.outputs[0] = drive.outputs[1] = speed;
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
+	}
+
+	//Move motors
+	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = -drive.outputs[0];
+	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = -drive.outputs[1];
+}
+
+void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
+	pulses = MATH_degreesToPulses(pulses, turnRadius);
+
+	switch(mode){
+	case PID:
+		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderL]));
+		drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		drive.outputs[1] = swingTurnInsideSpeed(turnRadius, drive.outputs[0]);
+		break;
+	default:
+		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
+			drive.outputs[0] = speed;
+			drive.outputs[1] = swingTurnInsideSpeed(turnRadius, speed);
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
+	}
+	writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensor L = %f, Outputs = %d",abs(SensorValue[SENSOR_encoderL]),drive.outputs[0]);
+
+	//Move motors
+	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
+	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
+}
+
+void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
+	pulses = MATH_degreesToPulses(pulses, turnRadius);
+
+	switch(mode){
+	case PID:
+		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderR]));
+		drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		drive.outputs[0] = swingTurnInsideSpeed(turnRadius, drive.outputs[1]);
+		break;
+	default:
+		if(abs(SensorValue[SENSOR_encoderR]) < pulses){
+			drive.outputs[1] = speed;
+			drive.outputs[0] = swingTurnInsideSpeed(turnRadius, speed);
+		}
+		else{
+			drive.outputs[0] = drive.outputs[1] = 0;
+			drive.PID.notDone = false;
+		}
+	}
+	writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensor R = %f, Outputs = %d",abs(SensorValue[SENSOR_encoderR]),drive.outputs[0]);
+
+	//Move motors
+	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
+	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
+}
 
 #endif
