@@ -122,6 +122,7 @@ unsigned byte PID_timeoutArmDown = 50;
 
 #define META_coneIntakeSpeed 100
 #define META_coneIntakeCycles 100
+#define META_coneIntakeMaxOutput 50
 
 #define META_lcdBacklight true
 //#define META_usingLCD //comment if will not use LCD

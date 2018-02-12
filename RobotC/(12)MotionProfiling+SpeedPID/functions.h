@@ -76,6 +76,7 @@ void driveOperatorControl(bool simple = false);
 void driveForward(ENUM_driveMode mode, float pulses, byte speed);
 void driveBackwards(ENUM_driveMode mode, float pulses, byte speed);
 void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
+void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 
 void mobileGoalOperatorControl(bool simple = false);
 void moveMobileGoal(bool retract, bool loaded = false);
@@ -139,7 +140,7 @@ void initialize(){
 	bMotorReflected[MOTOR_mobileGoalL] = true;
 	bMotorReflected[MOTOR_coneIntake] = true;
 	bMotorReflected[MOTOR_arm] = true;
-	bMotorReflected[MOTOR_mobileGoalR] = true;
+	bMotorReflected[MOTOR_mobileGoalR] = false;
 
 	bMotorReflected[MOTOR_driveRB] = false;
 	bMotorReflected[MOTOR_driveRM] = true;
@@ -359,13 +360,25 @@ void driveBackwards(ENUM_driveMode mode, float pulses, byte speed){
 }
 
 void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
-	pulses = MATH_degreesToPulses(pulses, turnRadius);
+	if(mode == Gyro){
+		pulses = MATH_degreesToTicks(pulses);
+	}
+	else{
+		pulses = MATH_degreesToPulses(pulses, turnRadius);
+	}
 
 	switch(mode){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderL]));
 		drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		drive.outputs[1] = swingTurnInsideSpeed(turnRadius, drive.outputs[0]);
+		break;
+	case Gyro:
+		if(turnRadius == 6.5){
+			MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
+			drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+			drive.outputs[1] = swingTurnInsideSpeed(turnRadius, drive.outputs[0]);
+		}
 		break;
 	default:
 		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
@@ -385,13 +398,25 @@ void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 }
 
 void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
-	pulses = MATH_degreesToPulses(pulses, turnRadius);
+	if(mode == Gyro){
+		pulses = MATH_degreesToTicks(pulses);
+	}
+	else{
+		pulses = MATH_degreesToPulses(pulses, turnRadius);
+	}
 
 	switch(mode){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderR]));
 		drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		drive.outputs[0] = swingTurnInsideSpeed(turnRadius, drive.outputs[1]);
+		break;
+	case Gyro:
+		if(turnRadius == 6.5){
+			MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
+			drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+			drive.outputs[0] = swingTurnInsideSpeed(turnRadius, drive.outputs[1]);
+		}
 		break;
 	default:
 		if(abs(SensorValue[SENSOR_encoderR]) < pulses){
@@ -403,11 +428,40 @@ void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 			drive.PID.notDone = false;
 		}
 	}
-	writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensor R = %f, Outputs = %d",abs(SensorValue[SENSOR_encoderR]),drive.outputs[0]);
+	writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensor R = %f, Outputs = %d",abs(SensorValue[SENSOR_encoderR]),drive.outputs[1]);
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.outputs[0];
 	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
 }
 
+//--Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake//
+void mobileGoalOperatorControl(bool simple){
+	if(simple){
+		if(vexRT[JOYSTICK_mobileGoalE]){
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = META_mogoMaxOutput;
+		}
+		else if(vexRT[JOYSTICK_mobileGoalR]){
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -META_mogoMaxOutput;
+		}
+		else{
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 0;
+		}
+	}
+	else{
+
+	}
+}
+
+void coneIntakeOperatorControl(){
+	if(vexRT[JOYSTICK_coneIntakeD]){
+			motor[MOTOR_coneIntake] = META_coneIntakeMaxOutput;
+		}
+		else if(vexRT[JOYSTICK_coneIntakeP]){
+			motor[MOTOR_coneIntake] = -META_coneIntakeMaxOutput;
+		}
+		else{
+			motor[MOTOR_coneIntake] = 0;
+		}
+}
 #endif
