@@ -19,7 +19,7 @@ bool lcdButtonsPressed[3];
 string lcdOutput;    //Declare variable in which the formatted string containing a variable LCD output will be stored
 bool lcdReady;       //Declare a boolean to indicate if autonomous has been selected or not
 
-void lcdInit(){
+void LCD_init(){
 	clearLCDLine(0);                  //Clear LCD
 	clearLCDLine(1);                  //Clear LCD
 	bLCDBacklight = META_LCDbacklight;    //Turn backlight on or off based on META_LCDbacklight constant
@@ -58,10 +58,9 @@ void lcdInit(){
 #endif
 
 	*/
-
 }
 
-void lcdSelect(){
+void LCD_select(){
 	if (nLCDButtons == 4) {
 		if (!lcdButtonsPressed[2]) {
 			lcdButtonsPressed[2] = true;

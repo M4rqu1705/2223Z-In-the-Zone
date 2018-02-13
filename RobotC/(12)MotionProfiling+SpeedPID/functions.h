@@ -54,8 +54,6 @@ typedef struct{
 }TEMPLATE_arm;
 
 typedef struct{
-	bool pickUpButtonPressed;
-	bool depositButtonPressed;
 	bool notDone;
 	ubyte counter;
 	byte output;
@@ -78,24 +76,24 @@ void driveBackwards(ENUM_driveMode mode, float pulses, byte speed);
 void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 
-void mobileGoalOperatorControl(bool simple = false);
-void moveMobileGoal(bool retract, bool loaded = false);
+void mobileGoalOperatorControl(bool analog = false);
+void moveMobileGoal(bool retract);
 
-void armOperatorControl(bool simple = false);
-void moveArm(ubyte position, bool loaded = false);
+void armOperatorControl(bool analog = true);
+void moveArm(ubyte position);
 
 void coneIntakeOperatorControl();
-void moveIntake(bool pickUp, byte speed = META_coneIntakeSpeed);
+void moveConeIntake(bool pickUp, ubyte cycles);
 
 //LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD----LCD---//
-//#include "fullRobotLCD.h"
+#include "LCDcalibrate.h"
 //#include "LCD.h"
 
 //Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize //
 
 void initialize(){
 #ifdef META_usingLCD
-	lcdInit();
+	LCD_init();
 	if(bIfiRobotDisabled){
 		displayLCDCenteredString(0, "Calibrating GYRO");
 	}
@@ -107,17 +105,6 @@ void initialize(){
 		wait1Msec(2000);
 		SensorValue[SENSOR_gyro] = 0;
 	}
-
-#ifdef META_usingLCD
-	do{
-		if(bIfiRobotDisabled)	lcdSelect();
-		else break;
-	}while (!lcdReady);
-	//Clear the LCD
-	clearLCDLine(0);
-	clearLCDLine(1);
-	displayLCDCenteredString(0, "     2223-Z     ");    //Output 2223-Z on the screen, signaling that the LCD is done
-#endif
 
 
 	motorType[MOTOR_driveLF] = tmotorVex393TurboSpeed_HBridge;
@@ -237,8 +224,6 @@ void resetValues(){
 	arm.motionProfile.previousPosition = 0;
 
 	//Cone Intake Values
-	coneIntake.pickUpButtonPressed = false;
-	coneIntake.depositButtonPressed = false;
 	coneIntake.notDone = true;
 	coneIntake.counter = 0;
 	coneIntake.output = 0;
@@ -247,6 +232,67 @@ void resetValues(){
 
 }
 
+void loadMobileGoal(bool loaded, bool retract){
+	if(loaded){
+		drive.PID.KP = PID_KPdriveLoaded;
+		drive.PID.KI = PID_KIdriveLoaded;
+		drive.PID.KD = PID_KDdriveLoaded;
+		drive.PID.integralMax = PID_integralMaxDrive;
+		drive.PID.correctionCycles = PID_correctionCyclesDriveLoaded;
+		drive.PID.correctionThreshold = PID_correctionThresholdDriveLoaded;
+		drive.PID.timeout = PID_timeoutDriveLoaded;
+
+		if(retract){
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedRetract;
+		}
+		else{
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedExtend;
+		}
+	}
+	else{
+		drive.PID.KP = PID_KPdriveLoaded;
+		drive.PID.KI = PID_KIdriveLoaded;
+		drive.PID.KD = PID_KDdriveLoaded;
+		drive.PID.integralMax = PID_integralMaxDrive;
+		drive.PID.correctionCycles = PID_correctionCyclesDriveLoaded;
+		drive.PID.correctionThreshold = PID_correctionThresholdDriveLoaded;
+		drive.PID.timeout = PID_timeoutDriveLoaded;
+
+		if(retract){
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedRetract;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedRetract;
+		}
+		else{
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedExtend;
+		}
+	}
+}
+
+
+//Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive -- Drive --//
 void driveOperatorControl(bool simple){
 
 	drive.joystickInputs[0] = vexRT[JOYSTICK_driveF];
@@ -435,9 +481,21 @@ void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.outputs[1];
 }
 
+
 //--Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake//
-void mobileGoalOperatorControl(bool simple){
-	if(simple){
+void moveMobileGoal(bool retract){
+	if(retract){
+		MATH_calculatePID(mobileGoalIntake.PID, META_mogoExtended, SensorValue[SENSOR_potMogo]);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.PID.output;
+	}
+	else{
+		MATH_calculatePID(mobileGoalIntake.PID, META_mogoRetracted, SensorValue[SENSOR_potMogo]);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.PID.output;
+	}
+}
+
+void mobileGoalOperatorControl(bool analog){
+	if(analog){
 		if(vexRT[JOYSTICK_mobileGoalE]){
 			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = META_mogoMaxOutput;
 		}
@@ -449,19 +507,73 @@ void mobileGoalOperatorControl(bool simple){
 		}
 	}
 	else{
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = vexRT[JOYSTICK_arm];
 
+	}
+}
+
+
+//Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm//
+void moveArm(ubyte position){
+	switch(position){
+	case 0:
+		MATH_calculatePID(arm.PID, META_armDown, SensorValue[SENSOR_potArm]);
+		break;
+	case 1:
+		MATH_calculatePID(arm.PID, META_armUp, SensorValue[SENSOR_potArm]);
+		break;
+	case 2:
+		MATH_calculatePID(arm.PID, META_armMiddle, SensorValue[SENSOR_potArm]);
+		break;
+	default:
+	}
+
+	motor[MOTOR_arm] = arm.PID.output;
+}
+
+void armOperatorControl(bool analog){
+	if(analog){
+		motor[MOTOR_arm] = vexRT[JOYSTICK_arm];
+	}
+	else{
+		if(vexRT[JOYSTICK_mobileGoalE]){
+			motor[MOTOR_arm] = META_armMaxOutput;
+		}
+		else if(vexRT[JOYSTICK_mobileGoalR]){
+			motor[MOTOR_arm] = -META_armMaxOutput;
+		}
+		else{
+			motor[MOTOR_arm] = 0;
+		}
+	}
+}
+
+// Cone Intake --  Cone Intake --  Cone Intake --  Cone Intake --  Cone Intake --  Cone Intake --  Cone Intake --  Cone Intake//
+void moveConeIntake(bool pickUp, ubyte cycles){
+	if(pickUp){
+		motor[MOTOR_coneIntake] = META_coneIntakeSpeed;
+	}
+	else{
+		motor[MOTOR_coneIntake] = -META_coneIntakeSpeed;
+	}
+	coneIntake.counter++;
+
+	if(coneIntake.counter >= cycles){
+		coneIntake.notDone = false;
+		motor[MOTOR_coneIntake] = 0;
 	}
 }
 
 void coneIntakeOperatorControl(){
 	if(vexRT[JOYSTICK_coneIntakeD]){
-			motor[MOTOR_coneIntake] = META_coneIntakeMaxOutput;
-		}
-		else if(vexRT[JOYSTICK_coneIntakeP]){
-			motor[MOTOR_coneIntake] = -META_coneIntakeMaxOutput;
-		}
-		else{
-			motor[MOTOR_coneIntake] = 0;
-		}
+		motor[MOTOR_coneIntake] = META_coneIntakeMaxOutput;
+	}
+	else if(vexRT[JOYSTICK_coneIntakeP]){
+		motor[MOTOR_coneIntake] = -META_coneIntakeMaxOutput;
+	}
+	else{
+		motor[MOTOR_coneIntake] = 0;
+	}
 }
+
 #endif

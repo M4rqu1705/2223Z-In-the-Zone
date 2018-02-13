@@ -26,7 +26,7 @@
 
 //Joystick setup
 #define JOYSTICK_driveF Ch3
-#define JOYSTICK_driveS Ch1
+#define JOYSTICK_driveS Ch4
 #define JOYSTICK_arm Ch2
 #define JOYSTICK_mobileGoalE Btn6D
 #define JOYSTICK_mobileGoalR Btn6U
@@ -64,7 +64,7 @@ unsigned byte PID_timeoutMobileGoalIntakeUnloadedRetract = 50;
 float PID_KPmobileGoalIntakeLoadedRetract = 0.75;
 float PID_KImobileGoalIntakeLoadedRetract = 0.5;
 float PID_KDmobileGoalIntakeLoadedRetract = 95;
-#define PID_correctionCyclesMobileGoalLoadedRetract 50
+#define PID_correctionCyclesMobileGoalIntakeLoadedRetract 50
 #define PID_correctionThresholdMobileGoalIntakeLoadedRetract 10
 unsigned byte PID_timeoutMobileGoalIntakeLoadedRetract = 50;
 
@@ -72,7 +72,7 @@ unsigned byte PID_timeoutMobileGoalIntakeLoadedRetract = 50;
 float PID_KPmobileGoalIntakeUnloadedExtend = 0.75;
 float PID_KImobileGoalIntakeUnloadedExtend = 0.5;
 float PID_KDmobileGoalIntakeUnloadedExtend = 95;
-#define PID_correctionCyclesMobileGoalUnloadedExtend 50
+#define PID_correctionCyclesMobileGoalIntakeUnloadedExtend 50
 #define PID_correctionThresholdMobileGoalIntakeUnloadedExtend 10
 unsigned byte PID_timeoutMobileGoalIntakeUnloadedExtend = 50;
 
@@ -80,7 +80,7 @@ unsigned byte PID_timeoutMobileGoalIntakeUnloadedExtend = 50;
 float PID_KPmobileGoalIntakeLoadedExtend = 0.75;
 float PID_KImobileGoalIntakeLoadedExtend = 0.5;
 float PID_KDmobileGoalIntakeLoadedExtend = 95;
-#define PID_correctionCyclesMobileGoalLoadedExtend 50
+#define PID_correctionCyclesMobileGoalIntakeLoadedExtend 50
 #define PID_correctionThresholdMobileGoalIntakeLoadedExtend 10
 unsigned byte PID_timeoutMobileGoalIntakeLoadedExtend = 50;
 
@@ -112,20 +112,22 @@ unsigned byte PID_timeoutArmDown = 50;
 #define META_slewGainThreshold 10
 #define PI 3.141592653589793
 
-#define META_mogoExtended 2725
-#define META_mogoRetracted 1050
+#define META_mogoExtended 820
+#define META_mogoRetracted 2600
 #define META_mogoMaxOutput 127
 
 #define META_armOpControlThreshold 50
-#define META_armUp 2375
-#define META_armDown 0
+#define META_armUp 2955
+#define META_armDown 1230
+#define META_armMiddle 1975
+#define META_armMaxOutput 127
 
 #define META_coneIntakeSpeed 100
 #define META_coneIntakeCycles 100
-#define META_coneIntakeMaxOutput 50
+float META_coneIntakeMaxOutput = 50;
 
 #define META_lcdBacklight true
-//#define META_usingLCD //comment if will not use LCD
+#define META_usingLCD //comment if will not use LCD
 
 #define META_powerExpanderInputDivisor 70
 //Use divisors of 45.6 or

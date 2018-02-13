@@ -12,14 +12,17 @@ void pre_auton(){
 	initialize();
 }
 
+
+
 task usercontrol(){
 	//startTask(autonomous);
 	while (true){
 		driveOperatorControl(false);
-		mobileGoalOperatorControl(true);
+		mobileGoalOperatorControl(false);
+		armOperatorControl(false);
 		coneIntakeOperatorControl();
+		LCD_calibrate();
 		delay(META_loopsDelay);
-
 	}
 }
 
@@ -28,23 +31,24 @@ task autonomous(){
 	initialize();
 
 	resetValues();
-	drive.PID.timeout = 255;
 
-	while(drive.PID.notDone){
-		turnLeft(PID, 90, 6.5, 50);
+	while(coneIntake.notDone){
+		moveConeIntake(true, 50);
 		delay(META_loopsDelay);
 	}
+	writeDebugStream("Cone Intake Pick Up");
 	resetValues();
-	drive.PID.timeout = 255;
-	writeDebugStreamLine("Turned 90 degrees without turning radius");
 
-	delay(1000);
+	while(coneIntake.notDone){
+		moveConeIntake(false, 50);
+	}
+	writeDebugStream("Cone Intake deposit");
+	resetValues();
 
-	while(drive.PID.notDone){
-		turnRight(PID, 90, 6.5, 50);
+	while(arm.PID.notDone){
+		moveArm(1);
 		delay(META_loopsDelay);
 	}
-	resetValues();
-	writeDebugStreamLine("Turned 90 degrees with turning radius of 13\"");
+	writeDebugStream("Arm done rising");
 
 }
