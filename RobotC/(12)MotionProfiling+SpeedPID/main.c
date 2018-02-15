@@ -15,7 +15,6 @@ void pre_auton(){
 
 
 task usercontrol(){
-	//startTask(autonomous);
 	while (true){
 		driveOperatorControl(false);
 		mobileGoalOperatorControl(false);
@@ -27,28 +26,21 @@ task usercontrol(){
 }
 
 task autonomous(){
-	//resetValues();
-	initialize();
 
 	resetValues();
+	loadMobileGoal(true, true, true);
 
-	while(coneIntake.notDone){
-		moveConeIntake(true, 50);
+	while(drive.PID.notDone){
+		turnRight(Gyro, 90, META_driveWidth/2, 100);
 		delay(META_loopsDelay);
 	}
-	writeDebugStream("Cone Intake Pick Up");
-	resetValues();
 
-	while(coneIntake.notDone){
-		moveConeIntake(false, 50);
-	}
-	writeDebugStream("Cone Intake deposit");
 	resetValues();
+	loadMobileGoal(true, true, true);
 
-	while(arm.PID.notDone){
-		moveArm(1);
+	while(drive.PID.notDone){
+		turnLeft(Gyro, 90, META_driveWidth/2, 100);
 		delay(META_loopsDelay);
 	}
-	writeDebugStream("Arm done rising");
 
 }

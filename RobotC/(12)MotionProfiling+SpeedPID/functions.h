@@ -38,6 +38,7 @@ typedef struct{
 }TEMPLATE_drive;
 
 typedef struct{
+	byte joystickInput;
 	bool retractButtonPressed;
 	bool extendButtonPressed;
 	bool intakeState;
@@ -76,7 +77,7 @@ void driveBackwards(ENUM_driveMode mode, float pulses, byte speed);
 void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 
-void mobileGoalOperatorControl(bool analog = false);
+void mobileGoalOperatorControl(bool notAnalog = false);
 void moveMobileGoal(bool retract);
 
 void armOperatorControl(bool analog = true);
@@ -104,7 +105,13 @@ void initialize(){
 		SensorType[SENSOR_gyro] = sensorGyro;
 		wait1Msec(2000);
 		SensorValue[SENSOR_gyro] = 0;
+		SensorScale[SENSOR_gyro] = 136;
+		SensorFullCount[SENSOR_gyro] = 18000;
 	}
+
+#ifdef META_usingLCD
+	LCD_calibrate();
+#endif
 
 
 	motorType[MOTOR_driveLF] = tmotorVex393TurboSpeed_HBridge;
@@ -229,14 +236,23 @@ void resetValues(){
 	coneIntake.output = 0;
 
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	SensorValue[SENSOR_gyro] = 0;
 
 }
 
-void loadMobileGoal(bool loaded, bool retract){
+void loadMobileGoal(bool loaded, bool retract, bool usingGyro){
 	if(loaded){
-		drive.PID.KP = PID_KPdriveLoaded;
-		drive.PID.KI = PID_KIdriveLoaded;
-		drive.PID.KD = PID_KDdriveLoaded;
+
+		if(usingGyro){
+			drive.PID.KP = PID_KPdriveGyroLoaded;
+			drive.PID.KI = PID_KIdriveGyroLoaded;
+			drive.PID.KD = PID_KDdriveGyroLoaded;
+		}
+		else{
+			drive.PID.KP = PID_KPdriveLoaded;
+			drive.PID.KI = PID_KIdriveLoaded;
+			drive.PID.KD = PID_KDdriveLoaded;
+		}
 		drive.PID.integralMax = PID_integralMaxDrive;
 		drive.PID.correctionCycles = PID_correctionCyclesDriveLoaded;
 		drive.PID.correctionThreshold = PID_correctionThresholdDriveLoaded;
@@ -262,31 +278,39 @@ void loadMobileGoal(bool loaded, bool retract){
 		}
 	}
 	else{
-		drive.PID.KP = PID_KPdriveLoaded;
-		drive.PID.KI = PID_KIdriveLoaded;
-		drive.PID.KD = PID_KDdriveLoaded;
-		drive.PID.integralMax = PID_integralMaxDrive;
-		drive.PID.correctionCycles = PID_correctionCyclesDriveLoaded;
-		drive.PID.correctionThreshold = PID_correctionThresholdDriveLoaded;
-		drive.PID.timeout = PID_timeoutDriveLoaded;
-
-		if(retract){
-			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedRetract;
-			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedRetract;
-			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedRetract;
-			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
-			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedRetract;
-			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedRetract;
-			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedRetract;
+		if(usingGyro){
+			drive.PID.KP = PID_KPdriveGyroUnloaded;
+			drive.PID.KI = PID_KIdriveGyroUnloaded;
+			drive.PID.KD = PID_KDdriveGyroUnloaded;
 		}
 		else{
-			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeLoadedExtend;
-			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeLoadedExtend;
-			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeLoadedExtend;
+			drive.PID.KP = PID_KPdriveUnloaded;
+			drive.PID.KI = PID_KIdriveUnloaded;
+			drive.PID.KD = PID_KDdriveUnloaded;
+		}
+
+		drive.PID.integralMax = PID_integralMaxDrive;
+		drive.PID.correctionCycles = PID_correctionCyclesDriveUnloaded;
+		drive.PID.correctionThreshold = PID_correctionThresholdDriveUnloaded;
+		drive.PID.timeout = PID_timeoutDriveUnloaded;
+
+		if(retract){
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeUnloadedRetract;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeUnloadedRetract;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeUnloadedRetract;
 			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
-			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeLoadedExtend;
-			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeLoadedExtend;
-			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeLoadedExtend;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeUnloadedRetract;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeUnloadedRetract;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeUnloadedRetract;
+		}
+		else{
+			mobileGoalIntake.PID.KP = PID_KPmobileGoalIntakeUnloadedExtend;
+			mobileGoalIntake.PID.KI = PID_KImobileGoalIntakeUnloadedExtend;
+			mobileGoalIntake.PID.KD = PID_KDmobileGoalIntakeUnloadedExtend;
+			mobileGoalIntake.PID.integralMax = PID_integralMaxMobileGoalIntake;
+			mobileGoalIntake.PID.correctionCycles = PID_correctionCyclesMobileGoalIntakeUnloadedExtend;
+			mobileGoalIntake.PID.correctionThreshold = PID_correctionThresholdMobileGoalIntakeUnloadedExtend;
+			mobileGoalIntake.PID.timeout = PID_timeoutMobileGoalIntakeUnloadedExtend;
 		}
 	}
 }
@@ -417,14 +441,14 @@ void turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderL]));
 		drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
-		drive.outputs[1] = swingTurnInsideSpeed(turnRadius, drive.outputs[0]);
+		MATH_calculatePID(drive.PID, MATH_swingTurnInside(turnRadius, pulses), abs(SensorValue[SENSOR_encoderR]);
+		drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, MATH_swingTurnInside(turnRadius, drive.outputs[0]), -MATH_swingTurnInside(turnRadius, drive.outputs[0]));
 		break;
 	case Gyro:
-		if(turnRadius == 6.5){
-			MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
-			drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
-			drive.outputs[1] = swingTurnInsideSpeed(turnRadius, drive.outputs[0]);
-		}
+		writeDebugStreamLine("Turning %f degrees with gyro", pulses);
+		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
+		drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		drive.outputs[1] = -MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		break;
 	default:
 		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
@@ -455,19 +479,19 @@ void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_encoderR]));
 		drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
-		drive.outputs[0] = swingTurnInsideSpeed(turnRadius, drive.outputs[1]);
+		MATH_calculatePID(drive.PID, MATH_swingTurnInside(turnRadius, pulses), abs(SensorValue[SENSOR_encoderL]);
+		drive.outputs[0] = MATH_map(drive.PID.output, 127, -127, MATH_swingTurnInside(turnRadius, drive.outputs[1]), -MATH_swingTurnInside(turnRadius, drive.outputs[1]));
 		break;
 	case Gyro:
-		if(turnRadius == 6.5){
-			MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
-			drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
-			drive.outputs[0] = swingTurnInsideSpeed(turnRadius, drive.outputs[1]);
-		}
+		writeDebugStreamLine("Turning %f degrees with gyro", pulses);
+		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
+		drive.outputs[0] = -MATH_map(drive.PID.output, 127, -127, speed, -speed);
+		drive.outputs[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		break;
 	default:
-		if(abs(SensorValue[SENSOR_encoderR]) < pulses){
-			drive.outputs[1] = speed;
-			drive.outputs[0] = swingTurnInsideSpeed(turnRadius, speed);
+		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
+			drive.outputs[0] = speed;
+			drive.outputs[1] = swingTurnInsideSpeed(turnRadius, speed);
 		}
 		else{
 			drive.outputs[0] = drive.outputs[1] = 0;
@@ -485,17 +509,17 @@ void turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed){
 //--Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake----Mobile Goal Intake//
 void moveMobileGoal(bool retract){
 	if(retract){
-		MATH_calculatePID(mobileGoalIntake.PID, META_mogoExtended, SensorValue[SENSOR_potMogo]);
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.PID.output;
+		MATH_calculatePID(mobileGoalIntake.PID, META_mogoRetracted, SensorValue[SENSOR_potMogo]);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -mobileGoalIntake.PID.output;
 	}
 	else{
-		MATH_calculatePID(mobileGoalIntake.PID, META_mogoRetracted, SensorValue[SENSOR_potMogo]);
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.PID.output;
+		MATH_calculatePID(mobileGoalIntake.PID, META_mogoExtended, SensorValue[SENSOR_potMogo]);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -mobileGoalIntake.PID.output;
 	}
 }
 
-void mobileGoalOperatorControl(bool analog){
-	if(analog){
+void mobileGoalOperatorControl(bool notAnalog){
+	if(notAnalog){
 		if(vexRT[JOYSTICK_mobileGoalE]){
 			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = META_mogoMaxOutput;
 		}
@@ -507,11 +531,26 @@ void mobileGoalOperatorControl(bool analog){
 		}
 	}
 	else{
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = vexRT[JOYSTICK_arm];
+		mobileGoalIntake.joystickInput = vexRT[JOYSTICK_arm];
 
+		if(MATH_withinThreshold(mobileGoalIntake.joystickInput, META_mogoOpControlThreshold, -META_mogoOpControlThreshold)){
+			mobileGoalIntake.joystickInput = 0;
+		}
+
+		if((SensorValue[SENSOR_potMogo] >= META_mogoExtended) && (SensorValue[SENSOR_potMogo] <= META_mogoRetracted)){
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.joystickInput;
+		}
+		else if((SensorValue[SENSOR_potMogo] <= META_mogoExtended) && (mobileGoalIntake.joystickInput < 0)){
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.joystickInput;
+		}
+		else if((SensorValue[SENSOR_potMogo] >= META_mogoRetracted) && (mobileGoalIntake.joystickInput > 0)){
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = mobileGoalIntake.joystickInput;
+		}
+		else{
+			motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 0;
+		}
 	}
 }
-
 
 //Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm -- Arm//
 void moveArm(ubyte position){

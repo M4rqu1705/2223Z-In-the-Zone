@@ -29,12 +29,12 @@ short MATH_degreesToPulses(float targetDegrees, float turnRadius){
 	//return (angle*PI*r)/180
 }
 
-byte swingTurnInsideSpeed(float turnRadius, byte speed){
-	return (byte)(-(META_driveWidth/turnRadius) * speed + speed);
+float MATH_swingTurnInside(float turnRadius, float speed){
+	return (-(META_driveWidth/turnRadius) * speed + speed);
 }
 
-short MATH_degreesToTicks(float targetDegrees){
-	return (short)(targetDegrees*(META_scaleFactor/360));
+float MATH_degreesToTicks(float targetDegrees){
+	return (float)(targetDegrees*10);
 }
 
 bool MATH_withinThreshold(float inNumber, float max, float min){

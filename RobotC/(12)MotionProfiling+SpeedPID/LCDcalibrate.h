@@ -21,6 +21,8 @@ void LCD_refresh();
 void LCD_calibrate();
 void LCD_addToConstant(float &constant);
 void LCD_substractToConstant(float &constant);
+void LCD_addToConstant(float &constant, float add);
+void LCD_substractToConstant(float &constant, float substract);
 
 void LCD_init(){
 	clearLCDLine(0);                  //Clear LCD
@@ -64,36 +66,36 @@ void LCD_refresh(){
 		case driveSubsKP:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Drv KP Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KPdriveLoaded);
+				sprintf(LCD_output, "%1.3f", PID_KPdriveLoaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Drv KP UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KPdriveUnloaded);
+				sprintf(LCD_output, "%1.3f", PID_KPdriveUnloaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
 		case driveSubsKI:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Drv KI Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KIdriveLoaded);
+				sprintf(LCD_output, "%1.3f", PID_KIdriveLoaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Drv KI UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KIdriveUnloaded);
+				sprintf(LCD_output, "%1.3f", PID_KIdriveUnloaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
 		case driveSubsKD:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Drv KD Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KDdriveLoaded);
+				sprintf(LCD_output, "%1.3f", PID_KDdriveLoaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Drv KD UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KDdriveUnloaded);
+				sprintf(LCD_output, "%1.3f", PID_KDdriveUnloaded);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
@@ -101,24 +103,24 @@ void LCD_refresh(){
 			if(LCD_retracting){
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGR KP Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KPmobileGoalIntakeLoadedRetract);
+					sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntakeLoadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGR KP UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KPmobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntakeUnloadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
 			else{
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGE KP Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KPmobileGoalIntakeLoadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntakeLoadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGE KP UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KPmobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntakeUnloadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
@@ -127,24 +129,24 @@ void LCD_refresh(){
 			if(LCD_retracting){
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGR KI Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KImobileGoalIntakeLoadedRetract);
+					sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntakeLoadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGR KI UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KImobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntakeUnloadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
 			else{
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGE KI Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KImobileGoalIntakeLoadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntakeLoadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGE KI UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KImobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntakeUnloadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
@@ -153,24 +155,24 @@ void LCD_refresh(){
 			if(LCD_retracting){
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGR KD Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KDmobileGoalIntakeLoadedRetract);
+					sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntakeLoadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGR KD UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KDmobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntakeUnloadedRetract);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
 			else{
 				if(LCD_mogoLoaded){
 					displayLCDCenteredString(0, "MGE KD Loaded");
-					sprintf(LCD_output, "%1.2f", PID_KDmobileGoalIntakeLoadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntakeLoadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 				else{
 					displayLCDCenteredString(0, "MGE KD UnLded");
-					sprintf(LCD_output, "%1.2f", PID_KDmobileGoalIntakeUnloadedExtend);
+					sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntakeUnloadedExtend);
 					displayLCDCenteredString(1, LCD_output);
 				}
 			}
@@ -179,36 +181,36 @@ void LCD_refresh(){
 		case armSubsKP:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Arm KP Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KParmUp);
+				sprintf(LCD_output, "%1.3f", PID_KParmUp);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Arm KP UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KParmDown);
+				sprintf(LCD_output, "%1.3f", PID_KParmDown);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
 		case armSubsKI:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Arm KI Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KIarmUp);
+				sprintf(LCD_output, "%1.3f", PID_KIarmUp);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Arm KI UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KIarmDown);
+				sprintf(LCD_output, "%1.3f", PID_KIarmDown);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
 		case armSubsKD:
 			if(LCD_mogoLoaded){
 				displayLCDCenteredString(0, "Arm KD Loaded");
-				sprintf(LCD_output, "%1.2f", PID_KDarmUp);
+				sprintf(LCD_output, "%1.3f", PID_KDarmUp);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			else{
 				displayLCDCenteredString(0, "Arm KD UnLded");
-				sprintf(LCD_output, "%1.2f", PID_KDarmDown);
+				sprintf(LCD_output, "%1.3f", PID_KDarmDown);
 				displayLCDCenteredString(1, LCD_output);
 			}
 			break;
@@ -318,11 +320,11 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 					break;
 				case driveSubsKD:
 					if(LCD_mogoLoaded){
-						LCD_substractToConstant(PID_KDdriveLoaded);
+						LCD_substractToConstant(PID_KDdriveLoaded, 0.01);
 						LCD_refresh();
 					}
 					else{
-						LCD_substractToConstant(PID_KDdriveUnloaded);
+						LCD_substractToConstant(PID_KDdriveUnloaded, 0.01);
 						LCD_refresh();
 					}
 					break;
@@ -374,21 +376,21 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 				case mogoIntakeSubsKD:
 					if(LCD_retracting){
 						if(LCD_mogoLoaded){
-							LCD_substractToConstant(PID_KDmobileGoalIntakeLoadedRetract);
+							LCD_substractToConstant(PID_KDmobileGoalIntakeLoadedRetract, 0.01);
 							LCD_refresh();
 						}
 						else{
-							LCD_substractToConstant(PID_KDmobileGoalIntakeUnloadedRetract);
+							LCD_substractToConstant(PID_KDmobileGoalIntakeUnloadedRetract, 0.01);
 							LCD_refresh();
 						}
 					}
 					else{
 						if(LCD_mogoLoaded){
-							LCD_substractToConstant(PID_KDmobileGoalIntakeLoadedExtend);
+							LCD_substractToConstant(PID_KDmobileGoalIntakeLoadedExtend, 0.01);
 							LCD_refresh();
 						}
 						else{
-							LCD_substractToConstant(PID_KDmobileGoalIntakeUnloadedExtend);
+							LCD_substractToConstant(PID_KDmobileGoalIntakeUnloadedExtend, 0.01);
 							LCD_refresh();
 						}
 					}
@@ -415,11 +417,11 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 					break;
 				case armSubsKD:
 					if(LCD_mogoLoaded){
-						LCD_substractToConstant(PID_KDarmUp);
+						LCD_substractToConstant(PID_KDarmUp, 0.01);
 						LCD_refresh();
 					}
 					else{
-						LCD_substractToConstant(PID_KDarmDown);
+						LCD_substractToConstant(PID_KDarmDown, 0.01);
 						LCD_refresh();
 					}
 					break;
@@ -503,11 +505,11 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 					break;
 				case driveSubsKD:
 					if(LCD_mogoLoaded){
-						LCD_addToConstant(PID_KDdriveLoaded);
+						LCD_addToConstant(PID_KDdriveLoaded, 0.01);
 						LCD_refresh();
 					}
 					else{
-						LCD_addToConstant(PID_KDdriveUnloaded);
+						LCD_addToConstant(PID_KDdriveUnloaded, 0.01);
 						LCD_refresh();
 					}
 					break;
@@ -559,21 +561,21 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 				case mogoIntakeSubsKD:
 					if(LCD_retracting){
 						if(LCD_mogoLoaded){
-							LCD_addToConstant(PID_KDmobileGoalIntakeLoadedRetract);
+							LCD_addToConstant(PID_KDmobileGoalIntakeLoadedRetract, 0.01);
 							LCD_refresh();
 						}
 						else{
-							LCD_addToConstant(PID_KDmobileGoalIntakeUnloadedRetract);
+							LCD_addToConstant(PID_KDmobileGoalIntakeUnloadedRetract, 0.01);
 							LCD_refresh();
 						}
 					}
 					else{
 						if(LCD_mogoLoaded){
-							LCD_addToConstant(PID_KDmobileGoalIntakeLoadedExtend);
+							LCD_addToConstant(PID_KDmobileGoalIntakeLoadedExtend, 0.01);
 							LCD_refresh();
 						}
 						else{
-							LCD_addToConstant(PID_KDmobileGoalIntakeUnloadedExtend);
+							LCD_addToConstant(PID_KDmobileGoalIntakeUnloadedExtend, 0.01);
 							LCD_refresh();
 						}
 					}
@@ -604,7 +606,7 @@ void LCD_calibrate(){		//It is in reality used for calibrating PID
 						LCD_refresh();
 					}
 					else{
-						LCD_addToConstant(PID_KDarmDown);
+						LCD_addToConstant(PID_KDarmDown, 0.01);
 						LCD_refresh();
 					}
 					break;
@@ -627,5 +629,12 @@ void LCD_substractToConstant(float &constant){
 	constant-=0.05;
 }
 
+void LCD_addToConstant(float &constant, float add){
+	constant += add;
+}
+
+void LCD_substractToConstant(float &constant, float substract){
+	constant -= substract
+}
 #endif
 #endif
