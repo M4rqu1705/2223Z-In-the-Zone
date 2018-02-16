@@ -25,7 +25,7 @@ short MATH_inchesToPulses(float inches){
 }
 
 short MATH_degreesToPulses(float targetDegrees, float turnRadius){
-	return MATH_inchesToPulses(MATH_round((targetDegrees*PI*turnRadius)/180));
+	return MATH_inchesToPulses((targetDegrees*PI*turnRadius)/180);
 	//return (angle*PI*r)/180
 }
 

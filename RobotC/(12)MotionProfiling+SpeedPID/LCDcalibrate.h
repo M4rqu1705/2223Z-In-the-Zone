@@ -219,7 +219,6 @@ void LCD_refresh(){
 }
 
 
-
 void LCD_calibrate(){		//It is in reality used for calibrating PID
 	switch(nLCDButtons){		//If Middle Button Pressed
 	case (TControllerButtons)2:
@@ -634,7 +633,7 @@ void LCD_addToConstant(float &constant, float add){
 }
 
 void LCD_substractToConstant(float &constant, float substract){
-	constant -= substract
+	constant -= substract;
 }
 #endif
 #endif

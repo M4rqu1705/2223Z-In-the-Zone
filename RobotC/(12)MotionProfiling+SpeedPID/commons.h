@@ -17,9 +17,9 @@
 #define MOTOR_driveRM port2
 #define MOTOR_driveRF port7
 
-#define SENSOR_powerExpander in1
+#define SENSOR_potArm in1
 #define SENSOR_potMogo in2
-#define SENSOR_potArm in3
+#define SENSOR_powerExpander in3
 #define SENSOR_encoderL dgtl1
 #define SENSOR_encoderR dgtl3
 #define SENSOR_gyro in8
@@ -52,13 +52,13 @@ float PID_KDdriveLoaded = 0.15;
 unsigned byte PID_timeoutDriveLoaded = 100;
 
 //Drive with Gyro
-float PID_KPdriveGyroLoaded = 0.05;
+float PID_KPdriveGyroLoaded = 0.4;
 float PID_KIdriveGyroLoaded = 0.5;
 float PID_KDdriveGyroLoaded = 0.05;
 
-float PID_KPdriveGyroUnloaded = 0.3;
+float PID_KPdriveGyroUnloaded = 0.4;
 float PID_KIdriveGyroUnloaded = 0.45;
-float PID_KDdriveGyroUnloaded = 0.065;
+float PID_KDdriveGyroUnloaded = 0.05;
 
 //Mobile Goal intake retracts without Mobile Goal
 float PID_KPmobileGoalIntakeUnloadedRetract = 0.15;
@@ -103,9 +103,9 @@ float PID_KDarmUp = 0;
 unsigned byte PID_timeoutArmUp = 100;
 
 //Arm lowers without cone
-float PID_KParmDown = 1;
-float PID_KIarmDown = 0;
-float PID_KDarmDown = 0;
+float PID_KParmDown = 0.4;
+float PID_KIarmDown = 0.4;
+float PID_KDarmDown = 0.05;
 #define PID_correctionCyclesArmDown 50
 #define PID_correctionThresholdArmDown 10
 unsigned byte PID_timeoutArmDown = 100;
@@ -127,9 +127,10 @@ unsigned byte PID_timeoutArmDown = 100;
 #define META_mogoMaxOutput 127
 
 #define META_armOpControlThreshold 50
-#define META_armUp 2955
-#define META_armDown 1230
-#define META_armMiddle 1975
+#define META_armUp 2900
+#define META_armDown 1250
+#define META_armScore 2324
+#define META_armLoader 1990
 #define META_armMaxOutput 127
 
 #define META_coneIntakeSpeed 100
