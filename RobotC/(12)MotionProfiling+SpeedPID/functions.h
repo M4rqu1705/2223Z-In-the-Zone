@@ -603,7 +603,7 @@ void moveArm(ENUM_driveMode mode, ubyte position){
 			}
 			break;
 		case 1:
-			if(SensorValue[SENSOR_potArm] < META_armDown) arm.output = -META_armMaxOutput;
+			if(SensorValue[SENSOR_potArm] < META_armUp) arm.output = -META_armMaxOutput;
 			else{
 				arm.output = 0;
 				arm.PID.notDone = false;

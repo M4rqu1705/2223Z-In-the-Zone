@@ -94,9 +94,9 @@ float PID_KDmobileGoalIntakeLoadedExtend = 0.025;
 unsigned byte PID_timeoutMobileGoalIntakeLoadedExtend = 100;
 
 //Arm rises with cone
-float PID_KParmUp = 1;
-float PID_KIarmUp = 0;
-float PID_KDarmUp = 0;
+float PID_KParmUp = 0.5;
+float PID_KIarmUp = 0.4;
+float PID_KDarmUp = 0.05;
 #define PID_integralMaxArm 127
 #define PID_correctionCyclesArmUp 50
 #define PID_correctionThresholdArmUp 10
@@ -135,7 +135,7 @@ unsigned byte PID_timeoutArmDown = 100;
 
 #define META_coneIntakeSpeed 100
 #define META_coneIntakeCycles 100
-float META_coneIntakeMaxOutput = 50;
+float META_coneIntakeMaxOutput = 40;
 
 #define META_lcdBacklight true
 #define META_usingLCD //comment if will not use LCD
