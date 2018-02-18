@@ -5,31 +5,32 @@
 
 void programmingSkillsAuton(){
 
-	/*
 	resetValues();
 	loadMobileGoal(false, false, false);
 	armLoaded(true);
 
+	drive.PID.timeout = 25;
+
 	//Accelerate 3 inches towards the Mobile Goal
 	while(drive.PID.notDone){
-	driveForward(Acceleration, 3, 127);
-	moveMobileGoal(false);
-	moveArm(PID, 1);
-	moveConeIntake(true, 100);
-	delay(META_loopsDelay);
+		driveForward(Acceleration, 3, 127);
+		moveMobileGoal(false);
+		moveArm(PID, 1);
+		moveConeIntake(true, 100);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(false, false, false);
-	drive.PID.timeout = 55;
+	drive.PID.timeout = 70;
 
 	//Move 40 inches towards the Mobile Goal
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveForward(PID, 40, 127);
-	moveMobileGoal(false);
-	moveArm(PID, 1);
-	moveConeIntake(true, 100);
-	delay(META_loopsDelay);
+		driveForward(PID, 45, 127);
+		moveMobileGoal(false);
+		moveArm(PID, 1);
+		moveConeIntake(true, 100);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -37,66 +38,57 @@ void programmingSkillsAuton(){
 
 	//Begin retracting Mobile Goal before beginning to accelerate for half a second
 	for(int C = 0; C < 500/META_loopsDelay; C++){
-	moveMobileGoal(true);
-	moveArm(PID, 1);
-	moveConeIntake(true, 100);
-	delay(META_loopsDelay);
+		moveMobileGoal(true);
+		moveArm(PID, 1);
+		moveConeIntake(true, 100);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
-	loadMobileGoal(true, true, false);
+	loadMobileGoal(false, true, false);
 
-	drive.PID.timeout = 50;
+	drive.PID.timeout = 65;
 
-	//Move 43 inches backwards toward the 5 point zone.
+	//Move 40 inches backwards toward the 5 point zone.
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveBackwards(PID, 42, 100);
-	moveMobileGoal(true);
-	moveArm(PID, 1);
-	moveConeIntake(true, 100);
-	delay(META_loopsDelay);
-	}
-
-	resetValues();
-
-	delay(250);
-
-	while(coneIntake.notDone){
-	moveConeIntake(false, 500/META_loopsDelay);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveBackwards(PID, 40, 127);
+		moveMobileGoal(true);
+		moveArm(PID, 1);
+		moveConeIntake(false, 100);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, true, true);
-	drive.PID.timeout = 50;
+	drive.PID.timeout = 75;
 
 	//Rotate 135 degrees to the left to align Buddy parallel to the starting bar
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 135, 6.5, 100);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		turnLeft(Gyro, 145, 6.5, 100);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
 
-	//Accelerate 6 inches moving towards the middle of the starting bar
+	drive.PID.timeout = 15;
+	//Accelerate 3 inches moving towards the middle of the starting bar
 	while(drive.PID.notDone){
-	driveForward(Acceleration, 3, 127);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveForward(Acceleration, 3, 127);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
 	drive.PID.timeout = 50;
 
-	//Move 20 inches moving towards the middle of the starting bar
+	//Move 26 inches moving towards the middle of the starting bar
 	while(drive.PID.notDone){
-	driveForward(PID, 23, 100);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveForward(PID, 26, 127);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -106,18 +98,19 @@ void programmingSkillsAuton(){
 
 	//Rotate left aligning Buddy perpendicular to the starting bar
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 90, 6.5, 100);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		turnLeft(Gyro, 85, 6.5, 100);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 20;
 
 	while(drive.PID.notDone){
-	driveForward(Acceleration, 5, 100);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveForward(Acceleration, 5, 100);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -125,10 +118,10 @@ void programmingSkillsAuton(){
 	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveForward(PID, 20, 100);
-	moveMobileGoal(false);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveForward(PID, 25, 100);
+		moveMobileGoal(false);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -136,10 +129,10 @@ void programmingSkillsAuton(){
 	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
-	driveBackwards(PID, 25, 100);
-	moveMobileGoal(true);
-	moveArm(PID, 1);
-	delay(META_loopsDelay);
+		driveBackwards(PID, 25, 100);
+		moveMobileGoal(true);
+		moveArm(PID, 1);
+		delay(META_loopsDelay);
 	}
 	//-------------------------------Finished 22 points--------------------------------------------//
 
@@ -149,9 +142,9 @@ void programmingSkillsAuton(){
 
 	//Turn left, parallel to the starting bar
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 90, 6.5, 100);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		turnLeft(Gyro, 90, 6.5, 100);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -160,19 +153,19 @@ void programmingSkillsAuton(){
 
 	//Drive forward to align Buddy to the Mobile Goal
 	while(drive.PID.notDone){
-	driveForward(PID, 15, 127);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		driveForward(PID, 18, 127);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(false, false, true);
-	drive.PID.timeout = 75;
+	drive.PID.timeout = 50;
 
 	//Turn Left to face the Mobile Goal
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 90, 6.5, 100);
-	delay(META_loopsDelay);
+		turnLeft(Gyro, 90, 6.5, 100);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -181,27 +174,28 @@ void programmingSkillsAuton(){
 
 	//Move forward to pick up the Mobile Goal
 	while(drive.PID.notDone){
-	driveForward(PID, 25, 127);
-	delay(META_loopsDelay);
+		driveForward(PID, 30, 127);
+		delay(META_loopsDelay);
 	}
 	resetValues();
 	loadMobileGoal(true, false, false);
 
 	//Begin retracting Mobile Goal intake before driving back
 	for(int C = 0; C<500/META_loopsDelay; C++){
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
-	drive.PID.timeout = 50;
+	drive.PID.timeout = 30;
+	mobileGoalIntake.PID.timeout = 30;
 
 	//Drive backwards towards starting bar
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveBackwards(PID, 12, 100);
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		driveBackwards(PID, 12, 100);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -210,22 +204,22 @@ void programmingSkillsAuton(){
 
 	//Turn 180 degrees to face the starting bar
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 170, 6.5, 127);
+		turnLeft(Gyro, 170, 6.5, 127);
 
-	delay(META_loopsDelay);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
-	drive.PID.timeout = 50;
+	drive.PID.timeout = 45;
 
 	while(drive.PID.notDone){
-	driveForward(PID, 25, 127);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		driveForward(PID, 25, 127);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
-	//----------------------------------- 33 points done -------------------------------------------------//
+	//----------------------------------- 32 points done -------------------------------------------------//
 
 	resetValues();
 	loadMobileGoal(false, true, false);
@@ -233,63 +227,75 @@ void programmingSkillsAuton(){
 
 	//Drive backwards to align Buddy with the Mobile Goal
 	while(drive.PID.notDone){
-	driveBackwards(PID, 45, 127);
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		driveBackwards(PID, 45, 127);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(false, false, true);
-	drive.PID.timeout = 75;
+	drive.PID.timeout = 50;
 
 	//Face the Mobile Goal
 	while(drive.PID.notDone){
-	turnRight(Gyro, 80, 6.5, 127);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		turnRight(Gyro, 70, 6.5, 127);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(false, false, false);
+	drive.PID.timeout = 10;
 
 	//Accelerate to pick up the Mobile Goal
 	while(drive.PID.notDone){
-	driveForward(Acceleration, 3, 50);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		driveForward(Acceleration, 3, 50);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(false, false, false);
-	drive.PID.timeout = 50;
+	drive.PID.timeout = 40;
 
 	//Move forward to fit Mobile Goal in Intake
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveForward(PID, 24, 100);
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		driveForward(PID, 24, 100);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, true, false);
-	drive.PID.timeout = 100;
+	drive.PID.timeout = 50;
+	mobileGoalIntake.PID.timeout = 50;
 
 	//Move Forward while picking up Mobile Goal
 	while(drive.PID.notDone || mobileGoalIntake.PID.notDone){
-	driveForward(PID, 6, 50);
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		driveForward(PID, 12, 50);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
 	}
 	//Mobile Goal is Inside
 	resetValues();
 	loadMobileGoal(true, true, true);
-	drive.PID.timeout = 75;
+	drive.PID.timeout = 50;
 
 	//Turn towards the starting bar
 	while(drive.PID.notDone){
-	turnLeft(Gyro, 90, 6.5, 127);
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		turnLeft(Gyro, 90, 6.5, 127);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 25;
+
+	while(drive.PID.notDone){
+		driveForward(Acceleration, 3, 127);
+		moveMobileGoal(true);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
@@ -297,48 +303,43 @@ void programmingSkillsAuton(){
 	drive.PID.timeout = 75;
 
 	while(drive.PID.notDone){
-	driveForward(Acceleration, 3, 127);
-	moveMobileGoal(true);
-	delay(META_loopsDelay);
+		driveForward(PID, 45, 127);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
-	drive.PID.timeout = 75;
-
-	while(drive.PID.notDone){
-	driveForward(PID, 45, 127);
-	delay(META_loopsDelay);
-	}
-
-	resetValues();
-	loadMobileGoal(true, false, false);
+	mobileGoalIntake.PID.timeout = 50;
 
 	while(mobileGoalIntake.PID.notDone){
-	moveMobileGoal(false);
-	delay(META_loopsDelay);
+		moveMobileGoal(false);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 25;
 
 	while(mobileGoalIntake.PID.notDone){
-	driveBackwards(Acceleration, 4, 127);
-	delay(META_loopsDelay);
+		driveBackwards(Acceleration, 4, 127);
+		delay(META_loopsDelay);
 	}
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 25;
 
 	while(mobileGoalIntake.PID.notDone){
-	driveBackwards(PID, 1, 127);
-	delay(META_loopsDelay);
+		driveBackwards(PID, 10, 127);
+		delay(META_loopsDelay);
 	}
 
 	//---------------------------------- 42 points -------------------------------------/
-*/
+writeDebugStream("Finished 42 points");
+
 	resetValues();
 	loadMobileGoal(false, false, true);
+	drive.PID.timeout = 75;
 
 	while(mobileGoalIntake.PID.notDone){
 		turnRight(Gyro, 180, 6.5, 127);
@@ -348,6 +349,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(false, false, false);
+	drive.PID.timeout = 15;
 
 	while(drive.PID.notDone){
 		driveForward(Acceleration, 3, 127);
@@ -357,6 +359,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 80;
 
 	while(drive.PID.notDone){
 		driveForward(None, 50, 127);
@@ -366,6 +369,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, true, false);
+	drive.PID.timeout = 80;
 
 	while(drive.PID.notDone){
 		driveForward(PID, 50, 127);
@@ -384,6 +388,7 @@ void programmingSkillsAuton(){
 	//---------------------------- 52 points ------------------------------------------------//
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 10;
 
 	while(drive.PID.notDone){
 		driveBackwards(Acceleration, 3, 127);
@@ -391,8 +396,8 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 	resetValues();
-
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 60;
 
 	while(drive.PID.notDone){
 		driveBackwards(PID, 35, 127);
@@ -401,6 +406,7 @@ void programmingSkillsAuton(){
 	}
 	resetValues();
 	loadMobileGoal(false, false, true);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		turnRight(Gyro, 90, 6.5, 127);
@@ -410,6 +416,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(false, false, false);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		driveForward(PID, 30, 127);
@@ -426,6 +433,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, true, true);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		turnLeft(Gyro, 90, 6.5, 127);
@@ -434,6 +442,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 25;
 
 	while(drive.PID.notDone){
 		driveForward(PID, 12, 127);
@@ -442,6 +451,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, false, true);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		turnLeft(Gyro, 90, 6.5, 127);
@@ -450,6 +460,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		driveForward(PID, 30, 127);
@@ -458,6 +469,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, true, true);
+	drive.PID.timeout = 50;
 
 	while(drive.PID.notDone){
 		turnRight(PID, 90, 6.5, 127);
@@ -466,9 +478,12 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	loadMobileGoal(true, false, false);
+	drive.PID.timeout = 25;
 
 	while(drive.PID.notDone){
 		driveForward(PID, 12, 127);
 	}
+
+	resetValues();
 }
 #endif
