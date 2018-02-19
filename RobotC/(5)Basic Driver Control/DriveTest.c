@@ -1,3 +1,19 @@
+/*   DriveTest.c - Improvised program to test the drive's operation         *
+*    Copyright (C) <2017>  Marcos Ricardo Pesante Colón                     *
+*                                                                           *
+*    This program is free software: you can redistribute it and/or modify   *
+*    it under the terms of the GNU General Public License as published by   *
+*    the Free Software Foundation, either version 3 of the License, or      *
+*    (at your option) any later version.                                    *
+*                                                                           *
+*    This program is distributed in the hope that it will be useful,        *
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+*    GNU General Public License for more details.                           *
+*                                                                           *
+*    You should have received a copy of the GNU General Public License      *
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
 #pragma config(Motor,  port1,           DriveBL,       tmotorVex393HighSpeed_HBridge, openLoop, reversed)
 #pragma config(Motor,  port2,           DriveFL,       tmotorVex393HighSpeed_MC29, openLoop, reversed)
 #pragma config(Motor,  port9,           DriveFR,       tmotorVex393HighSpeed_MC29, openLoop)
