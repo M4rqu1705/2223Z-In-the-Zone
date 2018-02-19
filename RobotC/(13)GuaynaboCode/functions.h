@@ -14,8 +14,6 @@ typedef struct {
 	ubyte cyclesCounter;
 	ubyte correctionCycles;
 	ubyte correctionThreshold;
-	ubyte timeoutCounter;
-	ubyte timeout;
 	byte output;
 
 	bool notDone;
@@ -23,7 +21,7 @@ typedef struct {
 
 typedef struct {
 	float distanceMultiplier[2];
-	float offset;
+	float offsets[2];
 	int previousPosition;
 }TEMPLATE_motionProfile;
 
