@@ -94,7 +94,7 @@ void LOADED_arm(bool loaded);
 void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro);
 
 void DRIVE_operatorControl(bool simple = false);
-void DRIVE_forward(ENUM_driveMode mode, float pulses, byte speed);
+void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed);
 void DRIVE_backwards(ENUM_driveMode mode, float pulses, byte speed);
 void DRIVE_turnRight(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
 void DRIVE_turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, byte speed);
@@ -116,6 +116,7 @@ void GOLIATH_operatorControl();
 //Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize //
 
 void initialize(){
+	/*
 	if(bIfiRobotDisabled){
 		SensorType[SENSOR_gyro] = sensorNone;
 		wait1Msec(1000);
@@ -125,7 +126,7 @@ void initialize(){
 		SensorScale[SENSOR_gyro] = 136;
 		//SensorScale[SENSOR_gyro] = 141;
 		SensorFullCount[SENSOR_gyro] = 3600;
-	}
+	}*/
 
 	motorType[MOTOR_driveLF] = motorType[MOTOR_driveLM] = motorType[MOTOR_driveLB] =  tmotorVex393TurboSpeed_HBridge;
 	motorType[MOTOR_mobileGoalL] = motorType[MOTOR_mobileGoalR] = tmotorVex393_HBridge;
@@ -178,15 +179,15 @@ void resetValues(){
 	drive.right.PID.output = 0;
 	drive.right.PID.notDone = true;
 
-	drive.left.motionProfile.distanceMultiplier[0] = 1/7;
-	drive.left.motionProfile.distanceMultiplier[1] = 6/7;
+	drive.left.motionProfile.distanceMultiplier[0] = 0.1;
+	drive.left.motionProfile.distanceMultiplier[1] = 0.8;
 	drive.left.motionProfile.offsets[0] = 25;
-	drive.left.motionProfile.offsets[1] = 25;
+	drive.left.motionProfile.offsets[1] = 15;
 
-	drive.right.motionProfile.distanceMultiplier[0] = 1/7;
-	drive.right.motionProfile.distanceMultiplier[1] = 6/7;
+	drive.right.motionProfile.distanceMultiplier[0] = 0.1;
+	drive.right.motionProfile.distanceMultiplier[1] = 0.8;
 	drive.right.motionProfile.offsets[0] = 25;
-	drive.right.motionProfile.offsets[1] = 25;
+	drive.right.motionProfile.offsets[1] = 15;
 
 	//Mobile Goal Values
 	mobileGoalIntake.retractButtonPressed = mobileGoalIntake.extendButtonPressed = false;
@@ -340,14 +341,13 @@ void DRIVE_operatorControl(bool simple){
 	}
 }
 
-void DRIVE_forward(ENUM_driveMode mode, float pulses, byte speed){
+void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 	pulses = MATH_inchesToPulses(pulses);
 
 	switch(mode){
 	case PID:
 		speed = MATH_map(speed, 127, 0, 240, 0);
 		MATH_calculatePID(drive.left.PID, MATH_motionProfile(drive.left.motionProfile, abs(SensorValue[SENSOR_encoderL]), pulses, speed), MATH_getSpeed(drive.left.previousPosition, abs(SensorValue[SENSOR_encoderL])));
-
 		MATH_calculatePID(drive.right.PID, MATH_motionProfile(drive.right.motionProfile, abs(SensorValue[SENSOR_encoderR]), pulses, speed), MATH_getSpeed(drive.right.previousPosition, abs(SensorValue[SENSOR_encoderR])));
 
 		drive.left.output = drive.left.PID.output;
@@ -366,6 +366,10 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, byte speed){
 
 
 	//Move motors
+	drive.left.output += (abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL]));
+
+	datalogAddValue(0, drive.left.output);
+	datalogAddValue(1, drive.right.output);
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.left.output;
 	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.right.output;
 
@@ -378,7 +382,6 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, byte speed){
 	case PID:
 		speed = MATH_map(speed, 127, 0, 240, 0);
 		MATH_calculatePID(drive.left.PID, MATH_motionProfile(drive.left.motionProfile, abs(SensorValue[SENSOR_encoderL]), pulses, speed), MATH_getSpeed(drive.left.previousPosition, abs(SensorValue[SENSOR_encoderL])));
-
 		MATH_calculatePID(drive.right.PID, MATH_motionProfile(drive.right.motionProfile, abs(SensorValue[SENSOR_encoderR]), pulses, speed), MATH_getSpeed(drive.right.previousPosition, abs(SensorValue[SENSOR_encoderR])));
 
 		drive.left.output = drive.left.PID.output;

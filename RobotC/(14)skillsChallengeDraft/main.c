@@ -40,5 +40,23 @@ task usercontrol(){
 }
 
 task autonomous(){
-	programmingSkillsAuton();
+	resetValues();
+	LOADED_mobileGoal(false, false, false);
+
+	drive.left.motionProfile.distanceMultiplier[0] = 0.1;
+	drive.left.motionProfile.distanceMultiplier[1] = 0.8;
+	drive.left.motionProfile.offsets[0] = 25;
+	drive.left.motionProfile.offsets[1] = 15;
+
+	drive.right.motionProfile.distanceMultiplier[0] = 0.1;
+	drive.right.motionProfile.distanceMultiplier[1] = 0.8;
+	drive.right.motionProfile.offsets[0] = 25;
+	drive.right.motionProfile.offsets[1] = 15;
+
+	while(drive.left.PID.notDone || drive.right.PID.notDone){
+		writeDebugStreamLine("Moving Drive forward test");
+		DRIVE_forward(PID, 48, 120);
+		delay(META_loopsDelay);
+	}
+	//programmingSkillsAuton();
 }

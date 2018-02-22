@@ -58,7 +58,7 @@ bool MATH_withinThreshold(float inNumber, float max, float min){
 }
 
 float MATH_getSpeed(float &previousValue, float currentValue){
-	float temp = (currentValue-previousValue)/(META_loopsDelay*0.001);
+	float temp = (currentValue-previousValue)/(META_loopsDelay*0.01);
 	previousValue = currentValue;
 	return temp;
 }
@@ -106,18 +106,18 @@ byte MATH_calculatePID(TEMPLATE_PID &values,  int setPoint,  int processVariable
 
 }
 
-float MATH_motionProfile(TEMPLATE_motionProfile &values,  int currentDistance,  int desiredDistance,  int desiredSpeed){
+float MATH_motionProfile(TEMPLATE_motionProfile &values,  int currentDistance,  int desiredDistance,  float desiredSpeed){
 	//Output value from generated motion profile based on current distance as an 'x' variable
 
 	if(0<=currentDistance && currentDistance<desiredDistance*values.distanceMultiplier[0]){
-		return( ((desiredSpeed-values.offsets[0])/(desiredDistance*values.distanceMultiplier[0]))*currentDistance + values.offsets[0] );
+		return( ((desiredSpeed-values.offsets[0])/(desiredDistance*values.distanceMultiplier[0]))*currentDistance + values.offsets[0]);
 	}
 
 	else if(desiredDistance*values.distanceMultiplier[0]<=currentDistance && currentDistance<desiredDistance*values.distanceMultiplier[1]){
 		return( desiredSpeed );
 	}
 
-	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && ( int)(currentDistance) <= desiredDistance){
+	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && currentDistance <= desiredDistance){
 		return( ((-desiredSpeed-values.offsets[1])/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance*values.distanceMultiplier[1])+desiredSpeed );
 	}
 

@@ -42,7 +42,7 @@
 
 //Joystick setup
 #define JOYSTICK_driveF Ch3
-#define JOYSTICK_driveS Ch4
+#define JOYSTICK_driveS Ch1
 #define JOYSTICK_arm Ch2
 #define JOYSTICK_mobileGoalE Btn6D
 #define JOYSTICK_mobileGoalR Btn6U
@@ -51,30 +51,30 @@
 
 //PID variables setup
 //Drive without Mobile Goal
-float PID_KPdriveUnloaded = 0.3;
-float PID_KIdriveUnloaded = 0.3;
-float PID_KDdriveUnloaded = 0.125;
+float PID_KPdriveUnloaded = 1;
+float PID_KIdriveUnloaded = 0.1;
+float PID_KDdriveUnloaded = 0.005;
 #define PID_integralMaxDrive 127
 #define PID_correctionCyclesDriveUnloaded 20
 #define PID_correctionThresholdDriveUnloaded 5
 unsigned byte PID_timeoutDriveUnloaded = 100;
 
 //Drive with Mobile Goal
-float PID_KPdriveLoaded = 0.45;
-float PID_KIdriveLoaded = 0.45;
-float PID_KDdriveLoaded = 0.15;
+float PID_KPdriveLoaded = 1;
+float PID_KIdriveLoaded = 0;
+float PID_KDdriveLoaded = 0;
 #define PID_correctionCyclesDriveLoaded 20
 #define PID_correctionThresholdDriveLoaded 15
 unsigned byte PID_timeoutDriveLoaded = 100;
 
 //Drive with Gyro
-float PID_KPdriveGyroLoaded = 0.4;
-float PID_KIdriveGyroLoaded = 0.5;
-float PID_KDdriveGyroLoaded = 0.05;
+float PID_KPdriveGyroLoaded = 1;
+float PID_KIdriveGyroLoaded = 0;
+float PID_KDdriveGyroLoaded = 0;
 
-float PID_KPdriveGyroUnloaded = 0.4;
-float PID_KIdriveGyroUnloaded = 0.45;
-float PID_KDdriveGyroUnloaded = 0.05;
+float PID_KPdriveGyroUnloaded = 1;
+float PID_KIdriveGyroUnloaded = 0;
+float PID_KDdriveGyroUnloaded = 0;
 
 //Mobile Goal intake retracts without Mobile Goal
 float PID_KPmobileGoalIntakeUnloadedRetract = 0.15;
