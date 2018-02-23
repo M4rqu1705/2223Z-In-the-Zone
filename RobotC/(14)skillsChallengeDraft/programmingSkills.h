@@ -25,12 +25,13 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(false, false, false, false);
 	LOADED_arm(true);
-	drive.motionProfile.distanceMultiplier[0] = 0.01;
-	drive.motionProfile.distanceMultiplier[1] = 0.9;
+	drive.motionProfile.distanceMultiplier[0] = 0.025;
+	drive.motionProfile.distanceMultiplier[1] = 0.75;
 	drive.motionProfile.offsets[0] = 25;
 	drive.motionProfile.offsets[1] = 25;
+	drive.rectify = true;
 	for(int C = 0; drive.PID.notDone && C<75; C++){
-		DRIVE_forward(PID, 42, 120);
+		DRIVE_forward(MtnPrfl, 42, 120);
 		MOBILEGOAL_retract(false);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);

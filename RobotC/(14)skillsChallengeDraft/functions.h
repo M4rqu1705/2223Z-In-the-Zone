@@ -152,7 +152,8 @@ void initialize(){
 
 void resetValues(){
 
-	motor[port1] = motor[port2] = motor[port3] = motor[port4] = motor[port5] = motor[port6] = motor[port7] = motor[port8] = motor[port9] = motor[port10] = 0;
+	motor[port1] = motor[port2] = motor[port3] = motor[port4] = motor[port5] =
+	motor[port6] = motor[port7] = motor[port8] = motor[port9] = motor[port10] = 0;
 
 	//Drive Values
 	drive.joystickInputs[0] = drive.joystickInputs[1] = 0;
@@ -241,26 +242,42 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 	if(loaded){
 		if(usingGyro){
 			if(speedPID){
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdriveGyro[1][1];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdriveGyro[1][1];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdriveGyro[1][1];
+				drive.PID.KP = PID_KPdriveGyro[1][1];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[1][1];
+				drive.PID.KI = PID_KIdriveGyro[1][1];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[1][1];
+				drive.PID.KD = PID_KDdriveGyro[1][1];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[1][1];
+				drive.PID.correctionThreshold = drive.swingTurnPID.correctionThreshold = 0;
 			}
 			else{
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdriveGyro[1][0];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdriveGyro[1][0];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdriveGyro[1][0];
+				drive.PID.KP = PID_KPdriveGyro[1][0];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[1][1];
+				drive.PID.KI = PID_KIdriveGyro[1][0];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[1][1];
+				drive.PID.KD = PID_KDdriveGyro[1][0];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[1][1];
+				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
 		else{
 			if(speedPID){
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdrive[1][1];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdrive[1][1];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdrive[1][1];
+				drive.PID.KP = PID_KPdrive[1][1];
+				drive.swingTurnPID.KP = PID_KPdrive[1][1];
+				drive.PID.KI = PID_KIdrive[1][1];
+				drive.swingTurnPID.KI = PID_KIdrive[1][1];
+				drive.PID.KD = PID_KDdrive[1][1];
+				drive.swingTurnPID.KD = PID_KDdrive[1][1];
+				drive.PID.correctionThreshold = drive.swingTurnPID.correctionThreshold = 0;
 			}
 			else{
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdrive[1][0];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdrive[1][0];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdrive[1][0];
+				drive.PID.KP = PID_KPdrive[1][0];
+				drive.swingTurnPID.KP = PID_KPdrive[1][1];
+				drive.PID.KI = PID_KIdrive[1][0];
+				drive.swingTurnPID.KI = PID_KIdrive[1][1];
+				drive.PID.KD = PID_KDdrive[1][0];
+				drive.swingTurnPID.KD = PID_KDdrive[1][1];
+				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
 
@@ -279,26 +296,42 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 	else{
 		if(usingGyro){
 			if(speedPID){
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdriveGyro[0][1];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdriveGyro[0][1];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdriveGyro[0][1];
+				drive.PID.KP = PID_KPdriveGyro[0][1];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[0][1];
+				drive.PID.KI = PID_KIdriveGyro[0][1];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[0][1];
+				drive.PID.KD = PID_KDdriveGyro[0][1];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[0][1];
+				drive.PID.correctionThreshold = drive.swingTurnPID.correctionThreshold = 0;
 			}
 			else{
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdriveGyro[0][0];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdriveGyro[0][0];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdriveGyro[0][0];
+				drive.PID.KP = PID_KPdriveGyro[0][0];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[0][1];
+				drive.PID.KI = PID_KIdriveGyro[0][0];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[0][1];
+				drive.PID.KD = PID_KDdriveGyro[0][0];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[0][1];
+				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
 		else{
 			if(speedPID){
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdrive[0][1];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdrive[0][1];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdrive[0][1];
+				drive.PID.KP = PID_KPdrive[0][1];
+				drive.swingTurnPID.KP = PID_KPdrive[0][1];
+				drive.PID.KI = PID_KIdrive[0][1];
+				drive.swingTurnPID.KI = PID_KIdrive[0][1];
+				drive.PID.KD = PID_KDdrive[0][1];
+				drive.swingTurnPID.KD = PID_KDdrive[0][1];
+				drive.PID.correctionThreshold = drive.swingTurnPID.correctionThreshold = 0;
 			}
 			else{
-				drive.PID.KP = drive.swingTurnPID.KP = PID_KPdrive[0][0];
-				drive.PID.KI = drive.swingTurnPID.KI = PID_KIdrive[0][0];
-				drive.PID.KD = drive.swingTurnPID.KD = PID_KDdrive[0][0];
+				drive.PID.KP = PID_KPdrive[0][0];
+				drive.swingTurnPID.KP = PID_KPdrive[0][1];
+				drive.PID.KI = PID_KIdrive[0][0];
+				drive.swingTurnPID.KI = PID_KIdrive[0][1];
+				drive.PID.KD = PID_KDdrive[0][0];
+				drive.swingTurnPID.KD = PID_KDdrive[0][1];
+				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
 
@@ -366,17 +399,19 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 
 	switch(mode){
 	case PID:
+		//Position PID
 		MATH_calculatePID(drive.PID, pulses, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
 		drive.output[0] = drive.output[1] = drive.PID.output;
 		writeDebugStreamLine("Drive forward PID: output = %f\toutput = %f", drive.output[0], drive.output[1]);
 		break;
 
 	case MtnPrfl:
+		int bias = floor(speed*0.5);
 		speed = MATH_map(speed, 127, 0, 240, 0);
 		float temp = MATH_motionProfile(drive.motionProfile, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2, pulses, speed);
 		MATH_calculatePID(drive.PID, temp, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		drive.output[0] = drive.output[1] = drive.PID.output;
-		writeDebugStreamLine("Drive forward MtnPrfl: speed = %f\ttemp = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
+		drive.output[0] = drive.output[1] = drive.PID.output + bias;
+		writeDebugStreamLine("Drive forward MtnPrfl: desiredSpeed = %f\tdesiredSpeedMtnProfile = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
 		break;
 
 	default:
@@ -389,19 +424,15 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 		}
 	}
 
-
 	//Rectify drive if necessary
 	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
+		//If distance traveled is less than 3/4 of the distance desired
 		if(pulses > MATH_inchesToPulses(50)){
-			if(abs(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*0.5) < 10)
-				if((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR]))> 0){
-					drive.output[1] += 1;
-				}
-				else{
-					drive.output[1] -= 1;
-				}
+			//Only use encoders over long distances
+			if(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR]) > 0) drive.output[1] += 1;
+			else drive.output[1] -= 1;
 		}
-		else{
+		else{		//Only use Gyro over short distances
 			if(SensorValue[SENSOR_gyro]*0.1 < 10){
 				//drive.output[0] -= SensorValue[SENSOR_gyro]*0.1;
 				drive.output[1] += SensorValue[SENSOR_gyro]*0.1;
@@ -425,12 +456,15 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 	case PID:
 		MATH_calculatePID(drive.PID, pulses, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
 		drive.output[0] = drive.output[1] = drive.PID.output;
-
+		writeDebugStreamLine("Drive forward PID: output = %f\toutput = %f", drive.output[0], drive.output[1]);
 		break;
+
 	case MtnPrfl:
 		speed = MATH_map(speed, 127, 0, 240, 0);
-		MATH_calculatePID(drive.PID, MATH_motionProfile(drive.motionProfile, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2, pulses, speed), MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
+		float temp = MATH_motionProfile(drive.motionProfile, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2, pulses, speed);
+		MATH_calculatePID(drive.PID, temp, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
 		drive.output[0] = drive.output[1] = drive.PID.output;
+		writeDebugStreamLine("Drive forward MtnPrfl: desiredSpeed = %f\tdesiredSpeedMtnProfile = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
 		break;
 
 	default:
@@ -445,12 +479,15 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 
 	//Rectify drive if necessary
 	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
+		//If distance traveled is less than 3/4 of the distance desired
 		if(pulses > MATH_inchesToPulses(50)){
-			if(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*0.5 < 10)drive.output[0] += abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*0.5;
+			//Only use encoders over long distances
+			if(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR]) > 0) drive.output[1] += 1;
+			else drive.output[1] -= 1;
 		}
-		else{
+		else{		//Only use Gyro over short distances
 			if(SensorValue[SENSOR_gyro]*0.1 < 10){
-				drive.output[0] -= SensorValue[SENSOR_gyro]*0.1;
+				//drive.output[0] -= SensorValue[SENSOR_gyro]*0.1;
 				drive.output[1] += SensorValue[SENSOR_gyro]*0.1;
 			}
 		}
@@ -471,52 +508,52 @@ void DRIVE_turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, float s
 
 	switch(mode){
 	case PID:
+		//Position PID
 		MATH_calculatePID(drive.PID, fabs(pulses), (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
+		//Speed PID
 		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR]))), MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])));
-		drive.output[0] = drive.swingTurnPID.output;
-		drive.output[1] = drive.PID.output;
+		drive.output[0] = drive.swingTurnPID.output;	drive.output[1] = drive.PID.output;
 		//Invert direction if desired position is negative
-		if(pulses < 0){
-			drive.output[0] = -drive.output[0];
-			drive.output[1] = -drive.output[1];
-		}
+		if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
 		break;
 
 	case MtnPrfl:
+		int bias = floor(speed*0.5);
+		//Remap desired speed to the max speed the robot can drive at
 		speed = MATH_map(speed, 127, 0, 240, 0);
+		//Get speed only once because, otherwise, the second time around it will output 0
 		float temp = MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR]));
+		//Calculate right side speed (which is the fastest side)
 		MATH_calculatePID(drive.PID, MATH_motionProfile(drive.motionProfile, abs(SensorValue[SENSOR_encoderR]), fabs(pulses), speed), temp);
+		//Calculate the left side speed (which is the slowest side)
 		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, temp), MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])));
-		drive.output[1] = drive.PID.output;
-		drive.output[0] = drive.swingTurnPID.output;
-
-
-		if(pulses < 0){
-			drive.output[0] = -drive.output[0];
-			drive.output[1] = -drive.output[1];
-		}
+		//Assign outputs respectively
+		drive.output[1] = drive.PID.output + bias;	drive.output[0] = drive.swingTurnPID.output + bias;
+		//For debugging reasons
+		writeDebugStreamLine("desired speed = %f,\tdesired Speed mtnprfl = %f,\toutput = %f,\toutput = %f", speed, temp, drive.output[0], drive.output[1]);
+		//Invert the drive direction if the "pulses" input was originally negative
+		if(pulses < 0){ drive.output[0] = -drive.output[0]; drive.output[1] = -drive.output[1];}
 		break;
 
 	case Gyro:
-		MATH_calculatePID(drive.PID, pulses, abs(SensorValue[SENSOR_gyro]));
+		//Point turn using position PID and Gyro
+		MATH_calculatePID(drive.PID, pulses, SensorValue[SENSOR_gyro]);
 		drive.output[0] = -drive.PID.output;	drive.output[1] = drive.PID.output;
 		break;
 
 	default:
+		//By default, if the user doesn't choose either motion profiling, PID or gyro
 		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
-			drive.output[1] = speed;
-			drive.output[0] = MATH_swingTurnInside(turnRadius, speed);
-			if(pulses < 0){
-				drive.output[0] = -drive.output[0];
-				drive.output[1] = -drive.output[1];
-			}
+			//Assign respective speeds using if destination not reached or surpassed
+			drive.output[1] = speed;	drive.output[0] = MATH_swingTurnInside(turnRadius, speed);
+			//Invert the drive direction if the pulses input was originally negative
+			if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
 		}
 		else{
-			drive.output[0] = drive.output[1] = 0;
-			drive.PID.notDone = drive.swingTurnPID.notDone = false;
+			//If the distance is reached, stop motors and determine that the drive is done
+			drive.output[0] = drive.output[1] = 0;	drive.PID.notDone = drive.swingTurnPID.notDone = false;
 		}
 	}
-	//writeDebugStream("Converted Pulses=%f\t", pulses);	writeDebugStreamLine("Sensor L = %f, Outputs = %d",abs(SensorValue[SENSOR_encoderL]),drive.outputs[0]);
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.output[0];
