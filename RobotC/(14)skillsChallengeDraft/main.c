@@ -1,5 +1,5 @@
 /*   main.c - Main file controlling robot movement, containing its motions  *
-*    Copyright (C) <2018>  Marcos Ricardo Pesante ColÃ³n                     *
+*    Copyright (C) <2018>  Marcos Ricardo Pesante Colón                     *
 *                                                                           *
 *    This program is free software: you can redistribute it and/or modify   *
 *    it under the terms of the GNU General Public License as published by   *

@@ -1,5 +1,5 @@
 /*   math.h - Container of useful mathematical functions                    *
-*    Copyright (C) <2018>  Marcos Ricardo Pesante ColÃ³n                     *
+*    Copyright (C) <2018>  Marcos Ricardo Pesante Colón                     *
 *                                                                           *
 *    This program is free software: you can redistribute it and/or modify   *
 *    it under the terms of the GNU General Public License as published by   *
@@ -68,7 +68,7 @@ float MATH_getSpeed(float &previousValue, float currentValue){
 byte MATH_calculatePID(TEMPLATE_PID &values,  int setPoint,  int processVariable){
 
 	//Calculate Error
-	values.error = ( int)(setPoint - processVariable);
+	values.error = (int)(setPoint - processVariable);
 
 	//Calculate integral if within the integralMax range
 	if(fabs(values.integral+values.error * META_loopsDelay * 0.001)<= (float)(values.integralMax)){
@@ -117,7 +117,7 @@ float MATH_motionProfile(TEMPLATE_motionProfile &values,  int currentDistance,  
 	}
 
 	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && currentDistance <= desiredDistance){
-		return( ((-desiredSpeed-values.offsets[1])/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance*values.distanceMultiplier[1])+desiredSpeed );
+		return( ((-desiredSpeed+values.offsets[1])/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance*values.distanceMultiplier[1]) + desiredSpeed);
 	}
 
 	return 0;

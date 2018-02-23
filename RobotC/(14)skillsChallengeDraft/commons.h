@@ -1,5 +1,5 @@
 /*   commons.h - Necessary constants for program operation                  *
-*    Copyright (C) <2018>  Marcos Ricardo Pesante ColÃ³n                     *
+*    Copyright (C) <2018>  Marcos Ricardo Pesante Colón                     *
 *                                                                           *
 *    This program is free software: you can redistribute it and/or modify   *
 *    it under the terms of the GNU General Public License as published by   *
@@ -54,9 +54,9 @@
 float PID_KPdrive[2][2] = {{1,0.75}, {0.45,0.75}};
 float PID_KIdrive[2][2] = {{0.3,0.5}, {0.45,0.5}};
 float PID_KDdrive[2][2] = {{0.0125,0.005}, {0.15,0.005}};
-float PID_KPdriveGyro[2][2] = {{0.4,1}, {0.4,1}};
-float PID_KIdriveGyro[2][2] = {{0.45,0}, {0.5,0.5}};
-float PID_KDdriveGyro[2][2] = {{0.005,0}, {0.05,0.005}};
+float PID_KPdriveGyro[2][2] = {{0.3,1}, {0.3,1}};
+float PID_KIdriveGyro[2][2] = {{0.3,0}, {0.3,0.5}};
+float PID_KDdriveGyro[2][2] = {{0.04,0}, {0.04,0.005}};
 #define PID_integralMaxDrive 127
 #define PID_correctionCyclesDriveUnloaded 20
 #define PID_correctionThresholdDriveUnloaded 5
