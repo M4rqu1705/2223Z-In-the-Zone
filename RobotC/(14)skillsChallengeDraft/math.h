@@ -58,7 +58,7 @@ bool MATH_withinThreshold(float inNumber, float max, float min){
 }
 
 float MATH_getSpeed(float &previousValue, float currentValue){
-	float temp = (currentValue-previousValue)/(META_loopsDelay*0.01);
+	float temp = (currentValue-previousValue)/(META_loopsDelay*0.001)/360;
 	previousValue = currentValue;
 	return temp;
 }
@@ -87,7 +87,6 @@ byte MATH_calculatePID(TEMPLATE_PID &values,  int setPoint,  int processVariable
 	//Check if values.output has remained within the correctionThreshold for a values.correctionCycles amount of cycles
 	if(MATH_withinThreshold(processVariable, (setPoint + values.correctionThreshold), (setPoint - values.correctionThreshold))){
 		if(values.cyclesCounter<(ubyte)values.correctionCycles) values.cyclesCounter++;
-		writeDebugStream("Inside Threshold\t");
 		if(values.cyclesCounter == (ubyte)values.correctionCycles){
 			if(MATH_withinThreshold(processVariable, (setPoint + values.correctionThreshold), (setPoint - values.correctionThreshold))){
 				values.notDone = false;

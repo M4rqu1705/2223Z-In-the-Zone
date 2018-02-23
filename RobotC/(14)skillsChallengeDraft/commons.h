@@ -50,81 +50,32 @@
 #define JOYSTICK_coneIntakeD Btn5D
 
 //PID variables setup
-//Drive without Mobile Goal
-float PID_KPdriveUnloaded = 1;
-float PID_KIdriveUnloaded = 0.1;
-float PID_KDdriveUnloaded = 0.005;
+//Format:[Loaded][speedPID] or {{unloadedPosition PID, unloadedSpeed PID}, {loaded Position PID, loaded speed PID}}
+float PID_KPdrive[2][2] = {{1,0.75}, {0.45,0.75}};
+float PID_KIdrive[2][2] = {{0.3,0.5}, {0.45,0.5}};
+float PID_KDdrive[2][2] = {{0.0125,0.005}, {0.15,0.005}};
+float PID_KPdriveGyro[2][2] = {{0.4,1}, {0.4,1}};
+float PID_KIdriveGyro[2][2] = {{0.45,0}, {0.5,0.5}};
+float PID_KDdriveGyro[2][2] = {{0.005,0}, {0.05,0.005}};
 #define PID_integralMaxDrive 127
 #define PID_correctionCyclesDriveUnloaded 20
 #define PID_correctionThresholdDriveUnloaded 5
-unsigned byte PID_timeoutDriveUnloaded = 100;
 
-//Drive with Mobile Goal
-float PID_KPdriveLoaded = 1;
-float PID_KIdriveLoaded = 0;
-float PID_KDdriveLoaded = 0;
-#define PID_correctionCyclesDriveLoaded 20
-#define PID_correctionThresholdDriveLoaded 15
-unsigned byte PID_timeoutDriveLoaded = 100;
-
-//Drive with Gyro
-float PID_KPdriveGyroLoaded = 1;
-float PID_KIdriveGyroLoaded = 0;
-float PID_KDdriveGyroLoaded = 0;
-
-float PID_KPdriveGyroUnloaded = 1;
-float PID_KIdriveGyroUnloaded = 0;
-float PID_KDdriveGyroUnloaded = 0;
-
-//Mobile Goal intake retracts without Mobile Goal
-float PID_KPmobileGoalIntakeUnloadedRetract = 0.15;
-float PID_KImobileGoalIntakeUnloadedRetract = 0;
-float PID_KDmobileGoalIntakeUnloadedRetract = 0;
+//Format: [Loaded][Retract]
+float PID_KPmobileGoalIntake[2][2] = {{0.15,0.15}, {0.25,0.3}};
+float PID_KImobileGoalIntake[2][2] = {{0.15,0}, {0.1,0.3}};
+float PID_KDmobileGoalIntake[2][2] = {{0.025,0}, {0.025,0.025}};
 #define PID_integralMaxMobileGoalIntake 127
-#define PID_correctionCyclesMobileGoalIntakeUnloadedRetract 50
-#define PID_correctionThresholdMobileGoalIntakeUnloadedRetract 10
-unsigned byte PID_timeoutMobileGoalIntakeUnloadedRetract = 100;
+#define PID_correctionCyclesMobileGoalIntake 50
+#define PID_correctionThresholdMobileGoalIntake 10
 
-//Mobile Goal Intake retracts with Mobile Goal
-float PID_KPmobileGoalIntakeLoadedRetract = 0.3;
-float PID_KImobileGoalIntakeLoadedRetract = 0.3;
-float PID_KDmobileGoalIntakeLoadedRetract = 0.025;
-#define PID_correctionCyclesMobileGoalIntakeLoadedRetract 50
-#define PID_correctionThresholdMobileGoalIntakeLoadedRetract 10
-unsigned byte PID_timeoutMobileGoalIntakeLoadedRetract = 100;
-
-//Mobile Goal intake extends without Mobile Goal
-float PID_KPmobileGoalIntakeUnloadedExtend = 0.15;
-float PID_KImobileGoalIntakeUnloadedExtend = 0.15;
-float PID_KDmobileGoalIntakeUnloadedExtend = 0.025;
-#define PID_correctionCyclesMobileGoalIntakeUnloadedExtend 50
-#define PID_correctionThresholdMobileGoalIntakeUnloadedExtend 10
-unsigned byte PID_timeoutMobileGoalIntakeUnloadedExtend = 100;
-
-//Mobile Goal Intake extends with Mobile Goal
-float PID_KPmobileGoalIntakeLoadedExtend = 0.25;
-float PID_KImobileGoalIntakeLoadedExtend = 0.1;
-float PID_KDmobileGoalIntakeLoadedExtend = 0.025;
-#define PID_correctionCyclesMobileGoalIntakeLoadedExtend 50
-#define PID_correctionThresholdMobileGoalIntakeLoadedExtend 10
-unsigned byte PID_timeoutMobileGoalIntakeLoadedExtend = 100;
-
-//Arm rises with cone
-float PID_KParmUp = 0.5;
-float PID_KIarmUp = 0.4;
-float PID_KDarmUp = 0.05;
+//Format: [Down]
+float PID_KParm[2] = {0.5, 0.4};
+float PID_KIarm[2] = {0.4, 0.4};
+float PID_KDarm[2] = {0.005, 0.05};
 #define PID_integralMaxArm 127
-#define PID_correctionCyclesArmUp 50
-#define PID_correctionThresholdArmUp 10
-unsigned byte PID_timeoutArmUp = 100;
-
-//Arm lowers without cone
-float PID_KParmDown = 0.4;
-float PID_KIarmDown = 0.4;
-float PID_KDarmDown = 0.05;
-#define PID_correctionCyclesArmDown 50
-#define PID_correctionThresholdArmDown 10
-unsigned byte PID_timeoutArmDown = 100;
+#define PID_correctionCyclesArm 50
+#define PID_correctionThresholdArm 10
 
 //Information needed for calculations
 #define META_driveOpControlThreshold 20
@@ -138,7 +89,7 @@ unsigned byte PID_timeoutArmDown = 100;
 #define PI 3.141592653589793
 
 #define META_mogoOpControlThreshold 40
-#define META_mogoExtended 700
+#define META_mogoExtended 735
 #define META_mogoRetracted 2400
 #define META_mogoMaxOutput 127
 
