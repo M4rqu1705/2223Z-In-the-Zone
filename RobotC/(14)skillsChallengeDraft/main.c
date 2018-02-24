@@ -26,6 +26,7 @@ void pre_auton(){
 	bStopTasksBetweenModes = true;
 	bDisplayCompetitionStatusOnLcd = false;
 	initialize();
+	LCD_init();
 }
 
 task usercontrol(){
@@ -35,10 +36,25 @@ task usercontrol(){
 		ARM_operatorControl(false);
 		GOLIATH_operatorControl();
 		LCD_calibrate();
+		//writeDebugStreamLine("Left Speed = %f,\tRight Speed = %f", MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])), MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
 		delay(META_loopsDelay);
 	}
 }
 
 task autonomous(){
-	programmingSkillsAuton();
+	resetValues();
+	LOADED_mobileGoal(false, false, false, false);
+	LOADED_arm(true);
+	drive.motionProfile.distanceMultiplier[0] = 0.1;
+	drive.motionProfile.distanceMultiplier[1] = 0.9;
+	drive.motionProfile.offsets[0] = 50;
+	drive.motionProfile.offsets[1] = 0;
+	drive.rectify = true
+	for(int C = 0; drive.PID.notDone && C<1000; C++){
+	DRIVE_forward(PID, 24, 127);
+	delay(META_loopsDelay);
+	}
+	resetValues();
+	writeDebugStreamLine("\nDone!!");
+	//programmingSkillsAuton();
 }

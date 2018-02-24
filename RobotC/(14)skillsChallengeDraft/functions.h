@@ -418,7 +418,7 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 		//Position PID
 		MATH_calculatePID(drive.PID, pulses, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
 		//Assign PID outputs to variables
-		drive.output[0] = drive.output[1] = drive.PID.output;
+		drive.output[0] = drive.output[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		//For debugging reasons
 		writeDebugStreamLine("Drive forward PID: output = %f\toutput = %f", drive.output[0], drive.output[1]);
 		break;
@@ -427,10 +427,12 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 		//Remap desired speed to the max speed the robot can drive at
 		speed = MATH_map(speed, 127, 0, 240, 0);
 		float temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
+		int bias = MATH_map(temp, 240, 0, 127, 0)*0.25;
 		MATH_calculatePID(drive.PID, temp, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		drive.output[0] = drive.output[1] = drive.PID.output;// + bias;
-		if(temp == 0)	drive.PID.notDone = false;
+		drive.output[0] = drive.output[1] = drive.PID.output + bias;
+		//if(temp == 0)	drive.PID.notDone = false;
 		writeDebugStreamLine("Drive forward MtnPrfl: desiredSpeed = %f\tdesiredSpeedMtnProfile = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
+		datalogAddValue(2, temp);
 		break;
 
 	default:
@@ -446,17 +448,7 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 	//Rectify drive if necessary
 	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
 		//If distance traveled is less than 3/4 of the distance desired
-		if(pulses > MATH_inchesToPulses(50)){
-			//Only use encoders over long distances
-			if(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR]) > 0) drive.output[1] += 1;
-			else drive.output[1] -= 1;
-		}
-		else{		//Only use Gyro over short distances
-			if(SensorValue[SENSOR_gyro]*0.1 < 10){
-				//drive.output[0] -= SensorValue[SENSOR_gyro]*0.1;
-				drive.output[1] += SensorValue[SENSOR_gyro]*0.1;
-			}
-		}
+		drive.output[0] = MATH_clamp(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*(1/10));
 	}
 
 	//Print values to datalog for debugging reasons

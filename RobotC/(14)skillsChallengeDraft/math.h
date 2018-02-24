@@ -58,7 +58,7 @@ bool MATH_withinThreshold(float inNumber, float max, float min){
 }
 
 float MATH_getSpeed(float &previousValue, float currentValue){
-	float temp = (currentValue-previousValue)/(META_loopsDelay*0.001)/360;
+	float temp = ((currentValue-previousValue)/(META_loopsDelay*0.001)/360)*60;
 	previousValue = currentValue;
 	return temp;
 }
@@ -117,7 +117,7 @@ float MATH_motionProfile(TEMPLATE_motionProfile &values,  int currentDistance,  
 	}
 
 	else if(desiredDistance*values.distanceMultiplier[1] <= currentDistance && currentDistance <= desiredDistance){
-		return( ((-desiredSpeed+values.offsets[1])/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance*values.distanceMultiplier[1]) + desiredSpeed);
+		return( ((values.offsets[1]-desiredSpeed)/(desiredDistance-desiredDistance*values.distanceMultiplier[1])) * (currentDistance - desiredDistance) + values.offsets[1]);
 	}
 
 	return 0;

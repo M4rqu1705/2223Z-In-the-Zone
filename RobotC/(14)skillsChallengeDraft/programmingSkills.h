@@ -351,7 +351,7 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(true, false, false, true);
 
-	for(int C = 0; mobileGoalIntake.PID.notDOne && C<100; C++){
+	for(int C = 0; mobileGoalIntake.PID.notDone && C<100; C++){
 		MOBILEGOAL_retract(false);
 		delay(META_loopsDelay);
 	}

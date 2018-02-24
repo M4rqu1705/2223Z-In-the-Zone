@@ -51,9 +51,9 @@
 
 //PID variables setup
 //Format:[Loaded][speedPID] or {{unloadedPosition PID, unloadedSpeed PID}, {loaded Position PID, loaded speed PID}}
-float PID_KPdrive[2][2] = {{1,0.75}, {0.45,0.75}};
-float PID_KIdrive[2][2] = {{0.3,0.5}, {0.45,0.5}};
-float PID_KDdrive[2][2] = {{0.0125,0.005}, {0.15,0.005}};
+float PID_KPdrive[2][2] = {{0.55,0.5}, {0.5,0.5}};
+float PID_KIdrive[2][2] = {{0.0,0}, {0.0,0}};
+float PID_KDdrive[2][2] = {{0.07,0}, {0.0,0}};
 float PID_KPdriveGyro[2][2] = {{0.3,1}, {0.3,1}};
 float PID_KIdriveGyro[2][2] = {{0.3,0}, {0.3,0.5}};
 float PID_KDdriveGyro[2][2] = {{0.04,0}, {0.04,0.005}};

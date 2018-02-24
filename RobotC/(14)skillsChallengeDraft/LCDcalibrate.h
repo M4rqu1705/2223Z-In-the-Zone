@@ -92,70 +92,70 @@ void LCD_refresh(){
 		switch(LCD_currentConstant){
 		case driveSubsKP:
 			displayLCDCenteredString(0, "Drive KP");
-			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KPdriveGyro[1][0]);
-			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KPdrive[1][0]);
-			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KPdriveGyro[0][0]);
-			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KPdrive[0][0]);
+			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KPdriveGyro[1][0]);
+			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KPdrive[1][0]);
+			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KPdriveGyro[0][0]);
+			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KPdrive[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case driveSubsKI:
 			displayLCDCenteredString(0, "Drive KI");
-			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KIdriveGyro[1][0]);
-			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KIdrive[1][0]);
-			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KIdriveGyro[0][0]);
-			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KIdrive[0][0]);
+			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KIdriveGyro[1][0]);
+			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KIdrive[1][0]);
+			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KIdriveGyro[0][0]);
+			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KIdrive[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case driveSubsKD:
 			displayLCDCenteredString(0, "Drive KD");
-			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KDdriveGyro[1][0]);
-			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KDdrive[1][0]);
-			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KDdriveGyro[0][0]);
-			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", &PID_KDdrive[0][0]);
+			if(LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KDdriveGyro[1][0]);
+			else if(LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KDdrive[1][0]);
+			else if(!LCD_mogoLoaded && LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KDdriveGyro[0][0]);
+			else if(!LCD_mogoLoaded && !LCD_gyro) sprintf(LCD_output, "%1.3f", PID_KDdrive[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 
 		case mogoIntakeSubsKP:
 			displayLCDCenteredString(0, "Mogo KP");
-			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KPmobileGoalIntake[1][1]);
-			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KPmobileGoalIntake[1][0]);
-			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KPmobileGoalIntake[0][1]);
-			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KPmobileGoalIntake[0][0]);
+			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntake[1][1]);
+			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntake[1][0]);
+			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntake[0][1]);
+			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KPmobileGoalIntake[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case mogoIntakeSubsKI:
 			displayLCDCenteredString(0, "Mogo KI");
-			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KImobileGoalIntake[1][1]);
-			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KImobileGoalIntake[1][0]);
-			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KImobileGoalIntake[0][1]);
-			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KImobileGoalIntake[0][0]);
+			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntake[1][1]);
+			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntake[1][0]);
+			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntake[0][1]);
+			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KImobileGoalIntake[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case mogoIntakeSubsKD:
 			displayLCDCenteredString(0, "Mogo KD");
-			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KDmobileGoalIntake[1][1]);
-			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KDmobileGoalIntake[1][0]);
-			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KDmobileGoalIntake[0][1]);
-			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", &PID_KDmobileGoalIntake[0][0]);
+			if(LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntake[1][1]);
+			else if(LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntake[1][0]);
+			else if(!LCD_mogoLoaded && LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntake[0][1]);
+			else if(!LCD_mogoLoaded && !LCD_retracting) sprintf(LCD_output, "%1.3f", PID_KDmobileGoalIntake[0][0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 
 		case armSubsKP:
 			displayLCDCenteredString(0, "Arm KP");
-			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KParm[1]);
-			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KParm[0]);
+			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KParm[1]);
+			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KParm[0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case armSubsKI:
 			displayLCDCenteredString(0, "Arm KI");
-			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KIarm[1]);
-			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KIarm[0]);
+			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KIarm[1]);
+			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KIarm[0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		case armSubsKD:
 			displayLCDCenteredString(0, "Arm KD");
-			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KDarm[1]);
-			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", &PID_KDarm[0]);
+			if(LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KDarm[1]);
+			else if(!LCD_mogoLoaded) sprintf(LCD_output, "%1.3f", PID_KDarm[0]);
 			displayLCDCenteredString(1, LCD_output);
 			break;
 		}
