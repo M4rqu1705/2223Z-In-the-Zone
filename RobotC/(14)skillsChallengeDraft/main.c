@@ -42,19 +42,26 @@ task usercontrol(){
 }
 
 task autonomous(){
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	resetValues();
-	LOADED_mobileGoal(false, false, false, false);
+	LOADED_mobileGoal(true, false, false, false);
 	LOADED_arm(true);
-	drive.motionProfile.distanceMultiplier[0] = 0.1;
-	drive.motionProfile.distanceMultiplier[1] = 0.9;
-	drive.motionProfile.offsets[0] = 50;
-	drive.motionProfile.offsets[1] = 0;
-	drive.rectify = true
+	drive.motionProfile.distanceMultiplier[0] = 1;
+	drive.motionProfile.distanceMultiplier[1] = 1;
+	drive.motionProfile.offsets[0] = 40;
+	drive.motionProfile.offsets[1] = 127;
+	drive.rectify = false;
 	for(int C = 0; drive.PID.notDone && C<1000; C++){
-	DRIVE_forward(PID, 24, 127);
-	delay(META_loopsDelay);
+		DRIVE_forward(MtnPrfl, 6, 127);
+		delay(META_loopsDelay);
 	}
+
 	resetValues();
-	writeDebugStreamLine("\nDone!!");
-	//programmingSkillsAuton();
+	LOADED_mobileGoal(true, false, false, false);
+	drive.rectify = false;
+	for(int C = 0; drive.PID.notDone && C<1000; C++){
+		DRIVE_forward(PID, 24, 127);
+		delay(META_loopsDelay);
+	}
+		//programmingSkillsAuton();
 }

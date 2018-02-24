@@ -169,8 +169,8 @@ void resetValues(){
 	drive.PID.cyclesCounter = 0;
 	drive.PID.output = 0;
 	drive.PID.notDone = true;
-	drive.PID.correctionCycles = PID_correctionCyclesDriveUnloaded;
-	drive.PID.correctionThreshold = PID_correctionThresholdDriveUnloaded;
+	drive.PID.correctionCycles = PID_correctionCyclesDrive;
+	drive.PID.correctionThreshold = PID_correctionThresholdDrive;
 
 	drive.swingTurnPID.error = 0;
 	drive.swingTurnPID.lastError = 0;
@@ -179,8 +179,8 @@ void resetValues(){
 	drive.swingTurnPID.cyclesCounter = 0;
 	drive.swingTurnPID.output = 0;
 	drive.swingTurnPID.notDone = false;
-	drive.swingTurnPID.correctionCycles = PID_correctionCyclesDriveUnloaded;
-	drive.swingTurnPID.correctionThreshold = PID_correctionThresholdDriveUnloaded;
+	drive.swingTurnPID.correctionCycles = PID_correctionCyclesDrive;
+	drive.swingTurnPID.correctionThreshold = PID_correctionThresholdDrive;
 
 	drive.motionProfile.distanceMultiplier[0] = 0.1;
 	drive.motionProfile.distanceMultiplier[1] = 0.8;
@@ -220,9 +220,6 @@ void resetValues(){
 	coneIntake.notDone = true;
 	coneIntake.counter = 0;
 	coneIntake.output = 0;
-
-	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
-	//SensorValue[SENSOR_gyro] = 0;
 }
 
 void LOADED_arm(bool loaded){
@@ -424,15 +421,9 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 		break;
 
 	case MtnPrfl:
-		//Remap desired speed to the max speed the robot can drive at
-		speed = MATH_map(speed, 127, 0, 240, 0);
 		float temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
-		int bias = MATH_map(temp, 240, 0, 127, 0)*0.25;
-		MATH_calculatePID(drive.PID, temp, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		drive.output[0] = drive.output[1] = drive.PID.output + bias;
-		//if(temp == 0)	drive.PID.notDone = false;
-		writeDebugStreamLine("Drive forward MtnPrfl: desiredSpeed = %f\tdesiredSpeedMtnProfile = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
-		datalogAddValue(2, temp);
+		drive.output[0] = drive.output[1] = temp;
+		if(temp == 0)	drive.PID.notDone = false;
 		break;
 
 	default:
@@ -448,7 +439,7 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 	//Rectify drive if necessary
 	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
 		//If distance traveled is less than 3/4 of the distance desired
-		drive.output[0] = MATH_clamp(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*(1/10));
+		drive.output[0] = MATH_clamp(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*(1/5));
 	}
 
 	//Print values to datalog for debugging reasons
