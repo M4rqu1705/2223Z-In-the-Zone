@@ -41,7 +41,7 @@ typedef struct {
 
 }TEMPLATE_motionProfile;
 
-enum ENUM_driveMode{None = 0, PID, MtnPrfl, Gyro };
+enum ENUM_driveMode{None = 0, PID, MtnPrfl, MtnPrflPID, Gyro };
 
 
 typedef struct{
@@ -49,6 +49,7 @@ typedef struct{
 	float slewRateOutputs[2];
 	byte output[2];
 	float previousPosition[2];
+	int previousGyro;
 
 	bool rectify;
 
@@ -161,6 +162,7 @@ void resetValues(){
 	drive.output[0] = drive.output[1] = 0;
 	drive.previousPosition[0] = drive.previousPosition[1] = 0;
 	drive.rectify = false;
+	drive.previousGyro = 0;
 
 	drive.PID.error = 0;
 	drive.PID.lastError = 0;
@@ -409,7 +411,7 @@ void DRIVE_operatorControl(bool simple){
 
 void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 	pulses = MATH_inchesToPulses(pulses);
-
+	float temp;
 	switch(mode){
 	case PID:
 		//Position PID
@@ -421,9 +423,28 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 		break;
 
 	case MtnPrfl:
-		float temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
-		drive.output[0] = drive.output[1] = temp;
-		if(temp == 0)	drive.PID.notDone = false;
+		temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
+		drive.output[0] = drive.output[1] = MATH_clamp(temp);
+		writeDebugStreamLine("Drive forward MtnPrfl: output = %f\toutput = %f", drive.output[0], drive.output[1]);
+		if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 >=pulses)	drive.PID.notDone = false;
+		datalogAddValue(4, temp);
+		break;
+
+	case MtnPrflPID:
+		//float sideAvgSpeed = (((drive.previousPosition[0]+drive.previousPosition[1])/2-((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2)/(((META_loopsDelay*0.001)/360)*60)));
+		float sideAvgSpeed = (MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])) + MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])))/2;
+		temp = MATH_motionProfile(drive.motionProfile,((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2), pulses, MATH_map(speed, 127, 0, 240, 0));
+		drive.output[0] = drive.output[1] = MATH_calculatePID(drive.PID, temp, sideAvgSpeed);
+		if(drive.motionProfile.distanceMultiplier[0]*pulses <= ((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2) &&
+			drive.motionProfile.distanceMultiplier[1]*pulses >= ((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2)
+		){
+			drive.PID.integral= 0;
+			drive.output[0] = drive.output[1] = speed;
+		}
+		writeDebugStreamLine("Drive forward MtnPrfl: output = %f\toutput = %f", drive.output[0], drive.output[1]);
+		if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 >=pulses)	drive.PID.notDone = false;
+		datalogAddValue(4, temp);
+		datalogAddValue(5, sideAvgSpeed);
 		break;
 
 	default:
@@ -437,14 +458,20 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 	}
 
 	//Rectify drive if necessary
-	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
-		//If distance traveled is less than 3/4 of the distance desired
-		drive.output[0] = MATH_clamp(abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])*(1/5));
+	if(drive.rectify){
+		//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+		int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])));
+		drive.output[0] += (temp1 <=0 && drive.output[0] >= 0)? temp1 : (temp>=0 && drive.output[0] <= 0) ? -temp1 : 0;
+		temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+		drive.output[1] += (temp1 <=0 && drive.output[1] >= 0)? temp1 : (temp>=0 && drive.output[1] <= 0) ? -temp1 : 0;
+
 	}
 
 	//Print values to datalog for debugging reasons
 	datalogAddValue(0, drive.output[0]);
 	datalogAddValue(1, drive.output[1]);
+	datalogAddValue(2, abs(SensorValue[SENSOR_encoderL]));
+	datalogAddValue(3, abs(SensorValue[SENSOR_encoderR]));
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.output[0];
@@ -453,25 +480,40 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 
 void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 	pulses = MATH_inchesToPulses(pulses);
-
+	float temp;
 	switch(mode){
 	case PID:
 		//Position PID
 		MATH_calculatePID(drive.PID, pulses, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
 		//Assign PID outputs to variables
-		drive.output[0] = drive.output[1] = drive.PID.output;
+		drive.output[0] = drive.output[1] = MATH_map(drive.PID.output, 127, -127, speed, -speed);
 		//For debugging reasons
 		writeDebugStreamLine("Drive forward PID: output = %f\toutput = %f", drive.output[0], drive.output[1]);
 		break;
 
 	case MtnPrfl:
-		//Remap desired speed to the max speed the robot can drive at
-		speed = MATH_map(speed, 127, 0, 240, 0);
-		float temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
-		MATH_calculatePID(drive.PID, temp, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		drive.output[0] = drive.output[1] = drive.PID.output;// + bias;
-		if(temp == 0)	drive.PID.notDone = false;
-		writeDebugStreamLine("Drive forward MtnPrfl: desiredSpeed = %f\tdesiredSpeedMtnProfile = %f\toutput = %f\toutput = %f",speed, temp, drive.output[0], drive.output[1]);
+		temp = MATH_motionProfile(drive.motionProfile, ((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2), pulses, speed);
+		drive.output[0] = drive.output[1] = MATH_clamp(temp);
+		writeDebugStreamLine("Drive forward MtnPrfl: output = %f\toutput = %f", drive.output[0], drive.output[1]);
+		if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 >=pulses)	drive.PID.notDone = false;
+		datalogAddValue(4, temp);
+		break;
+
+	case MtnPrflPID:
+		//float sideAvgSpeed = (((drive.previousPosition[0]+drive.previousPosition[1])/2-((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2)/(((META_loopsDelay*0.001)/360)*60)));
+		float sideAvgSpeed = (MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])) + MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])))/2;
+		temp = MATH_motionProfile(drive.motionProfile,((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2), pulses, MATH_map(speed, 127, 0, 240, 0));
+		drive.output[0] = drive.output[1] = MATH_calculatePID(drive.PID, temp, sideAvgSpeed);
+		if(drive.motionProfile.distanceMultiplier[0]*pulses <= ((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2) &&
+			drive.motionProfile.distanceMultiplier[1]*pulses >= ((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2)
+		){
+			drive.PID.integral= 0;
+			drive.output[0] = drive.output[1] = speed;
+		}
+		writeDebugStreamLine("Drive forward MtnPrfl: output = %f\toutput = %f", drive.output[0], drive.output[1]);
+		if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 >=pulses)	drive.PID.notDone = false;
+		datalogAddValue(4, temp);
+		datalogAddValue(5, sideAvgSpeed);
 		break;
 
 	default:
@@ -485,24 +527,20 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 	}
 
 	//Rectify drive if necessary
-	if((abs(SensorValue[SENSOR_encoderL])+abs(SensorValue[SENSOR_encoderR]))/2 < pulses*0.75 && drive.rectify){
-		//If distance traveled is less than 3/4 of the distance desired
-		if(pulses > MATH_inchesToPulses(50)){
-			//Only use encoders over long distances
-			if(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR]) > 0) drive.output[1] += 1;
-			else drive.output[1] -= 1;
-		}
-		else{		//Only use Gyro over short distances
-			if(SensorValue[SENSOR_gyro]*0.1 < 10){
-				//drive.output[0] -= SensorValue[SENSOR_gyro]*0.1;
-				drive.output[1] += SensorValue[SENSOR_gyro]*0.1;
-			}
-		}
+	if(drive.rectify){
+		//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+		int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])));
+		drive.output[0] += (temp1 <=0 && drive.output[0] >= 0)? temp1 : (temp>=0 && drive.output[0] <= 0) ? -temp1 : 0;
+		temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+		drive.output[1] += (temp1 <=0 && drive.output[1] >= 0)? temp1 : (temp>=0 && drive.output[1] <= 0) ? -temp1 : 0;
+
 	}
 
 	//Print values to datalog for debugging reasons
 	datalogAddValue(0, drive.output[0]);
 	datalogAddValue(1, drive.output[1]);
+	datalogAddValue(2, abs(SensorValue[SENSOR_encoderL]));
+	datalogAddValue(3, abs(SensorValue[SENSOR_encoderR]));
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = -drive.output[0];
