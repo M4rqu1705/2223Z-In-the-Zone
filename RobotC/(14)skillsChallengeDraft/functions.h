@@ -19,6 +19,7 @@
 
 #pragma systemfile
 
+//PID structure template in which the program will mainly store constants, integral, counters, and lastError
 typedef struct {
 	float KP;
 	float KI;
@@ -35,15 +36,17 @@ typedef struct {
 	bool notDone;
 }TEMPLATE_PID;
 
+//Motion Profile structure template in which the program will store variables that will transform the motion profile trapezoid
 typedef struct {
 	float distanceMultiplier[2];
 	float offsets[2];
 
 }TEMPLATE_motionProfile;
 
+//Possible modes in which the user can control the drive in different scenarios
 enum ENUM_driveMode{None = 0, PID, MtnPrfl, MtnPrflPID, Gyro };
 
-
+//Drive structure template in which the program will store variables useful for the drive's control, either for operator control or autonomous
 typedef struct{
 	byte joystickInputs[2];
 	float slewRateOutputs[2];
@@ -58,6 +61,7 @@ typedef struct{
 	TEMPLATE_motionProfile motionProfile;
 }TEMPLATE_drive;
 
+//Mobile Goal intake structure template in which the program will store variables useful for the intake's control, either for the operator control or the autonomous
 typedef struct{
 	byte joystickInput;
 	bool retractButtonPressed;
@@ -66,22 +70,22 @@ typedef struct{
 	TEMPLATE_PID PID;
 }TEMPLATE_mobileGoalIntake;
 
+//Arm structure template in which the program will store variables useful for the arm's control, either for the operator control or the autonomous
 typedef struct{
 	byte joystickInput;
 	byte output;
 	TEMPLATE_PID PID;
 }TEMPLATE_arm;
 
+//Cone intake structure template in which the program will store variables useful for the cone intake's control, either for the operator control or the autonomous
 typedef struct{
 	bool notDone;
 	ubyte counter;
 	byte output;
 }TEMPLATE_coneIntake;
 
-TEMPLATE_drive drive;
-TEMPLATE_mobileGoalIntake mobileGoalIntake;
-TEMPLATE_arm arm;
-TEMPLATE_coneIntake coneIntake;
+//Create instances of subsystems structure templates
+TEMPLATE_drive drive;	TEMPLATE_mobileGoalIntake mobileGoalIntake;	TEMPLATE_arm arm;	TEMPLATE_coneIntake coneIntake;
 
 #include "math.h"
 
@@ -115,22 +119,27 @@ void GOLIATH_operatorControl();
 //Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize -- Initialize //
 
 void initialize(){
+	//Only calibrate Gyro if robot is disabled
+	//If robot is disconnected during match play, the robot will not try to calibrate gyro again while initializing, saving 3 more seconds
 	if(bIfiRobotDisabled){
 		SensorType[SENSOR_gyro] = sensorNone;
 		wait1Msec(1000);
 		SensorType[SENSOR_gyro] = sensorGyro;
 		wait1Msec(2000);
 		SensorValue[SENSOR_gyro] = 0;
-		SensorScale[SENSOR_gyro] = 135;
-		//SensorScale[SENSOR_gyro] = 141;
+
+		SensorScale[SENSOR_gyro] = 139;
+		//SensorScale[SENSOR_gyro] = 135;
 		SensorFullCount[SENSOR_gyro] = 3600;
 	}
 
+	//Initiate motors with their types
 	motorType[MOTOR_driveLF] = motorType[MOTOR_driveLM] = motorType[MOTOR_driveLB] =  tmotorVex393TurboSpeed_HBridge;
 	motorType[MOTOR_mobileGoalL] = motorType[MOTOR_mobileGoalR] = tmotorVex393_HBridge;
 	motorType[MOTOR_coneIntake] = motorType[MOTOR_arm] = tmotorVex393_HBridge;
 	motorType[MOTOR_driveRB] = motorType[MOTOR_driveRM] = motorType[MOTOR_driveRF] = tmotorVex393TurboSpeed_HBridge;
 
+	//Invert necessary motors
 	bMotorReflected[MOTOR_driveLF] = false;
 	bMotorReflected[MOTOR_driveLM] = false;
 	bMotorReflected[MOTOR_driveLB] = true;
@@ -142,17 +151,24 @@ void initialize(){
 	bMotorReflected[MOTOR_driveRM] = true;
 	bMotorReflected[MOTOR_driveRF] = true;
 
+	//Identify types of sensors
 	SensorType[SENSOR_powerExpander] = sensorAnalog;
 	SensorType[SENSOR_potMogo] = SensorType[SENSOR_potArm] = sensorPotentiometer;
 	SensorType[SENSOR_encoderL] = SensorType[SENSOR_encoderR] = sensorQuadEncoder;
 
+	//Reset values except for PID constants
 	resetValues();
-	clearDebugStream();
-	datalogClear();
+	//Reset PID constants for drive and Mobile Goal intake
+	LOADED_mobileGoal(false, false, false, false);
+	//Reset PID constants for arm
+	LOADED_arm(true);
+	//Prepare debug stream and datalog for new information
+	clearDebugStream();	datalogClear();
 }
 
 void resetValues(){
 
+	//Stop all motors
 	motor[port1] = motor[port2] = motor[port3] = motor[port4] = motor[port5] =
 	motor[port6] = motor[port7] = motor[port8] = motor[port9] = motor[port10] = 0;
 
@@ -256,11 +272,11 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 			else{
 				//If drive will use position PID
 				drive.PID.KP = PID_KPdriveGyro[1][0];
-				drive.swingTurnPID.KP = PID_KPdriveGyro[1][1];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[1][0];
 				drive.PID.KI = PID_KIdriveGyro[1][0];
-				drive.swingTurnPID.KI = PID_KIdriveGyro[1][1];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[1][0];
 				drive.PID.KD = PID_KDdriveGyro[1][0];
-				drive.swingTurnPID.KD = PID_KDdriveGyro[1][1];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[1][0];
 				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
@@ -279,11 +295,11 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 			else{
 				//If drive will use position PID
 				drive.PID.KP = PID_KPdrive[1][0];
-				drive.swingTurnPID.KP = PID_KPdrive[1][1];
+				drive.swingTurnPID.KP = PID_KPdrive[1][0];
 				drive.PID.KI = PID_KIdrive[1][0];
-				drive.swingTurnPID.KI = PID_KIdrive[1][1];
+				drive.swingTurnPID.KI = PID_KIdrive[1][0];
 				drive.PID.KD = PID_KDdrive[1][0];
-				drive.swingTurnPID.KD = PID_KDdrive[1][1];
+				drive.swingTurnPID.KD = PID_KDdrive[1][0];
 				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
@@ -319,11 +335,11 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 			else{
 				//If drive will use position PID
 				drive.PID.KP = PID_KPdriveGyro[0][0];
-				drive.swingTurnPID.KP = PID_KPdriveGyro[0][1];
+				drive.swingTurnPID.KP = PID_KPdriveGyro[0][0];
 				drive.PID.KI = PID_KIdriveGyro[0][0];
-				drive.swingTurnPID.KI = PID_KIdriveGyro[0][1];
+				drive.swingTurnPID.KI = PID_KIdriveGyro[0][0];
 				drive.PID.KD = PID_KDdriveGyro[0][0];
-				drive.swingTurnPID.KD = PID_KDdriveGyro[0][1];
+				drive.swingTurnPID.KD = PID_KDdriveGyro[0][0];
 				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
@@ -342,11 +358,11 @@ void LOADED_mobileGoal(bool loaded, bool retract, bool usingGyro, bool speedPID)
 			else{
 				//If drive will use position PID
 				drive.PID.KP = PID_KPdrive[0][0];
-				drive.swingTurnPID.KP = PID_KPdrive[0][1];
+				drive.swingTurnPID.KP = PID_KPdrive[0][0];
 				drive.PID.KI = PID_KIdrive[0][0];
-				drive.swingTurnPID.KI = PID_KIdrive[0][1];
+				drive.swingTurnPID.KI = PID_KIdrive[0][0];
 				drive.PID.KD = PID_KDdrive[0][0];
-				drive.swingTurnPID.KD = PID_KDdrive[0][1];
+				drive.swingTurnPID.KD = PID_KDdrive[0][0];
 				drive.swingTurnPID.correctionThreshold = 0;
 			}
 		}
@@ -533,7 +549,6 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 		drive.output[0] += (temp1 <=0 && drive.output[0] >= 0)? temp1 : (temp>=0 && drive.output[0] <= 0) ? -temp1 : 0;
 		temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
 		drive.output[1] += (temp1 <=0 && drive.output[1] >= 0)? temp1 : (temp>=0 && drive.output[1] <= 0) ? -temp1 : 0;
-
 	}
 
 	//Print values to datalog for debugging reasons
@@ -547,37 +562,86 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = -drive.output[1];
 }
 
-//Still not working*****************************************************************************************************
 void DRIVE_turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, float speed){
 	pulses = (mode == Gyro) ? MATH_degreesToTicks(pulses) : MATH_degreesToPulses(pulses, turnRadius);
-
+	float temp;
 	switch(mode){
 	case PID:
 		//Position PID
-		MATH_calculatePID(drive.PID, fabs(pulses), (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
+		MATH_calculatePID(drive.PID, fabs(pulses), abs(SensorValue[SENSOR_encoderR]));
 		//Speed PID
-		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR]))), MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])));
-		drive.output[0] = drive.swingTurnPID.output;	drive.output[1] = drive.PID.output;
+		MATH_calculatePID(drive.swingTurnPID, fabs(MATH_swingTurnInside(turnRadius, pulses)), abs(SensorValue[SENSOR_encoderL]));
+		drive.output[0] = MATH_clamp((240.0-8.33)/(127.0-20.0)*MATH_map(drive.swingTurnPID.output, 127, -127, MATH_swingTurnInside(turnRadius, speed), -MATH_swingTurnInside(turnRadius, speed)));
+		drive.output[1] = drive.PID.output;
 		//Invert direction if desired position is negative
 		if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
+		writeDebugStreamLine("output=%f,\toutput=%f,\tpulses=%d", drive.output[0], drive.output[1], pulses);
 		break;
 
 	case MtnPrfl:
-		int bias = floor(speed*0.5);
-		//Remap desired speed to the max speed the robot can drive at
-		speed = MATH_map(speed, 127, 0, 240, 0);
-		//Get speed only once because, otherwise, the second time around it will output 0
-		float temp = MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR]));
-		//Calculate right side speed (which is the fastest side)
-		MATH_calculatePID(drive.PID, MATH_motionProfile(drive.motionProfile, abs(SensorValue[SENSOR_encoderR]), fabs(pulses), speed), temp);
-		//Calculate the left side speed (which is the slowest side)
-		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, temp), MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL])));
-		//Assign outputs respectively
-		drive.output[1] = drive.PID.output + bias;	drive.output[0] = drive.swingTurnPID.output + bias;
-		//For debugging reasons
-		writeDebugStreamLine("desired speed = %f,\tdesired Speed mtnprfl = %f,\toutput = %f,\toutput = %f", speed, temp, drive.output[0], drive.output[1]);
+		temp = MATH_motionProfile(drive.motionProfile, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2, pulses, speed);
+		drive.output[1] = temp;	drive.output[0] = MATH_swingTurnInside(turnRadius, temp);
 		//Invert the drive direction if the "pulses" input was originally negative
 		if(pulses < 0){ drive.output[0] = -drive.output[0]; drive.output[1] = -drive.output[1];}
+		//For debugging reasons
+		if((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2 >= pulses) drive.PID.notDone = false;
+		writeDebugStreamLine("output=%f,\toutput=%f,\tpulses=%d", drive.output[0], drive.output[1], pulses);
+		break;
+
+	case Gyro:
+		//Point turn using position PID and Gyro
+		MATH_calculatePID(drive.PID, pulses, SensorValue[SENSOR_gyro]);
+		drive.output[0] = drive.PID.output;	drive.output[1] = -drive.PID.output;
+		break;
+
+	default:
+		//By default, if the user doesn't choose either motion profiling, PID or gyro
+		if(abs(SensorValue[SENSOR_encoderR]) < pulses){
+			//Assign respective speeds using if destination not reached or surpassed
+			drive.output[1] = speed;
+			drive.output[0] = MATH_clamp((240.0-8.33)/(127.0-20.0)*MATH_map(speed, 127, -127, MATH_swingTurnInside(turnRadius, speed), -MATH_swingTurnInside(turnRadius, speed)));
+			//Invert the drive direction if the pulses input was originally negative
+			if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
+		}
+		else{
+			//If the distance is reached, stop motors and determine that the drive is done
+			drive.output[0] = drive.output[1] = 0;	drive.PID.notDone = drive.swingTurnPID.notDone = false;
+		}
+	}
+
+	//Print values to datalog for debugging reasons
+	datalogAddValue(0, drive.output[0]);
+	datalogAddValue(1, drive.output[1]);
+
+	//Move motors
+	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.output[0];
+	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.output[1];
+}
+
+void DRIVE_turnRight(ENUM_driveMode mode, float pulses, float turnRadius, float speed){
+	pulses = (mode == Gyro) ? MATH_degreesToTicks(pulses) : MATH_degreesToPulses(pulses, turnRadius);
+	float temp;
+	switch(mode){
+	case PID:
+		//Position PID
+		MATH_calculatePID(drive.PID, fabs(pulses), abs(SensorValue[SENSOR_encoderL]));
+		//Speed PID
+		MATH_calculatePID(drive.swingTurnPID, fabs(MATH_swingTurnInside(turnRadius, pulses)), abs(SensorValue[SENSOR_encoderR]));
+		drive.output[1] = MATH_clamp((240.0-8.33)/(127.0-20.0)*MATH_map(drive.swingTurnPID.output, 127, -127, MATH_swingTurnInside(turnRadius, speed), -MATH_swingTurnInside(turnRadius, speed)));
+		drive.output[0] = drive.PID.output;
+		//Invert direction if desired position is negative
+		if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
+		writeDebugStreamLine("output=%f,\toutput=%f,\tpulses=%d", drive.output[0], drive.output[1], pulses);
+		break;
+
+	case MtnPrfl:
+		temp = MATH_motionProfile(drive.motionProfile, (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2, pulses, speed);
+		drive.output[0] = temp;	drive.output[1] = MATH_swingTurnInside(turnRadius, temp);
+		//Invert the drive direction if the "pulses" input was originally negative
+		if(pulses < 0){ drive.output[0] = -drive.output[0]; drive.output[1] = -drive.output[1];}
+		//For debugging reasons
+		if((abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2 >= pulses) drive.PID.notDone = false;
+		writeDebugStreamLine("output=%f,\toutput=%f,\tpulses=%d", drive.output[0], drive.output[1], pulses);
 		break;
 
 	case Gyro:
@@ -590,7 +654,8 @@ void DRIVE_turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, float s
 		//By default, if the user doesn't choose either motion profiling, PID or gyro
 		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
 			//Assign respective speeds using if destination not reached or surpassed
-			drive.output[1] = speed;	drive.output[0] = MATH_swingTurnInside(turnRadius, speed);
+			drive.output[0] = speed;
+			drive.output[1] = MATH_clamp((240.0-8.33)/(127.0-20.0)*MATH_map(speed, 127, -127, MATH_swingTurnInside(turnRadius, speed), -MATH_swingTurnInside(turnRadius, speed)));
 			//Invert the drive direction if the pulses input was originally negative
 			if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
 		}
@@ -600,62 +665,9 @@ void DRIVE_turnLeft(ENUM_driveMode mode, float pulses, float turnRadius, float s
 		}
 	}
 
-	//Move motors
-	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.output[0];
-	motor[MOTOR_driveRF] = motor[MOTOR_driveRM] = motor[MOTOR_driveRB] = drive.output[1];
-}
-//Still not working*****************************************************************************************************
-
-void DRIVE_turnRight(ENUM_driveMode mode, float pulses, float turnRadius, float speed){
-	pulses = (mode == Gyro) ? MATH_degreesToTicks(pulses) : MATH_degreesToPulses(pulses, turnRadius);
-
-	switch(mode){
-	case PID:
-		//Position PID
-		MATH_calculatePID(drive.PID, fabs(pulses), (abs(SensorValue[SENSOR_encoderL]) + abs(SensorValue[SENSOR_encoderR]))/2);
-		//Speed PID
-		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL]))), MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		drive.output[1] = drive.swingTurnPID.output;	drive.output[0] = drive.PID.output;
-		//Invert direction if desired position is negative
-		if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
-		break;
-
-	case MtnPrfl:
-		//Remap desired speed to the max speed the robot can drive at
-		speed = MATH_map(speed, 127, 0, 240, 0);
-		//Get speed only once because, otherwise, the second time around it will output 0
-		float temp = MATH_getSpeed(drive.previousPosition[0], abs(SensorValue[SENSOR_encoderL]));
-		//Calculate right side speed (which is the fastest side)
-		MATH_calculatePID(drive.PID, MATH_motionProfile(drive.motionProfile, abs(SensorValue[SENSOR_encoderL]), fabs(pulses), speed), temp);
-		//Calculate the left side speed (which is the slowest side)
-		MATH_calculatePID(drive.swingTurnPID, MATH_swingTurnInside(turnRadius, temp), MATH_getSpeed(drive.previousPosition[1], abs(SensorValue[SENSOR_encoderR])));
-		//Assign outputs respectively
-		drive.output[0] = drive.PID.output;	drive.output[1] = drive.swingTurnPID.output;
-		//For debugging reasons
-		writeDebugStreamLine("desired speed = %f,\tdesired Speed mtnprfl = %f,\toutput = %f,\toutput = %f", speed, temp, drive.output[0], drive.output[1]);
-		//Invert the drive direction if the "pulses" input was originally negative
-		if(pulses < 0){ drive.output[0] = -drive.output[0]; drive.output[1] = -drive.output[1];}
-		break;
-
-	case Gyro:
-		//Point turn using position PID and Gyro
-		MATH_calculatePID(drive.PID, pulses, SensorValue[SENSOR_gyro]);
-		drive.output[0] = drive.PID.output;	drive.output[1] = -drive.PID.output;
-		break;
-
-	default:
-		//By default, if the user doesn't choose either motion profiling, PID or gyro
-		if(abs(SensorValue[SENSOR_encoderL]) < pulses){
-			//Assign respective speeds using if destination not reached or surpassed
-			drive.output[1] = speed;	drive.output[0] = MATH_swingTurnInside(turnRadius, speed);
-			//Invert the drive direction if the pulses input was originally negative
-			if(pulses < 0){	drive.output[0] = -drive.output[0];	drive.output[1] = -drive.output[1];}
-		}
-		else{
-			//If the distance is reached, stop motors and determine that the drive is done
-			drive.output[0] = drive.output[1] = 0;	drive.PID.notDone = drive.swingTurnPID.notDone = false;
-		}
-	}
+	//Print values to datalog for debugging reasons
+	datalogAddValue(0, drive.output[0]);
+	datalogAddValue(1, drive.output[1]);
 
 	//Move motors
 	motor[MOTOR_driveLF] = motor[MOTOR_driveLM] = motor[MOTOR_driveLB] = drive.output[0];
