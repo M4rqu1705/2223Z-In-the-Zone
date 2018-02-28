@@ -1,0 +1,136 @@
+#ifndef FAST_H_
+#define FAST_H_
+
+void FAST_pickup(ENUM_driveMode mode, float firstDistance, float firstSpeed, int firstTimeout, float secondDistance, float secondSpeed, int secondTimeout, bool driveRectify){
+
+	resetValues();
+	LOADED_mobileGoal(false, false, false, false);
+	LOADED_arm(true);
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	drive.motionProfile.distanceMultiplier[0] = 0.25;
+	drive.motionProfile.distanceMultiplier[1] = 1.5;
+	drive.motionProfile.offsets[0] = (int)(40);
+	drive.motionProfile.offsets[1] = (int)(firstSpeed);
+	drive.rectify = driveRectify;
+	writeDebugStream("Before First loop\n\n");
+	for(int C = 0; drive.PID.notDone && C<(int)(firstTimeout/4); C++){
+		if(firstDistance >= 0) DRIVE_forward(MtnPrfl, (float)(firstDistance/4), firstSpeed);
+		else if(firstDistance < 0) DRIVE_backwards(MtnPrfl, (fabs(firstDistance)/4), firstSpeed);
+		MOBILEGOAL_retract(false);
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+		writeDebugStream("FirstLoop\n\n");
+	}
+
+	resetValues();
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<firstTimeout; C++){
+		if(firstDistance > 0) DRIVE_forward(PID, firstDistance, firstSpeed);
+		else if(firstDistance < 0) DRIVE_backwards(PID, fabs(firstDistance), firstSpeed);
+		MOBILEGOAL_retract(false);
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+		writeDebugStream("SecondLoop\n\n");
+	}
+	//Begin retracting the Mobile Goal Intake for 100 milliseconds before driving back
+	resetValues();
+	LOADED_mobileGoal(true, true, false, true);
+	for(int C = 0; C<=10; C++){
+		MOBILEGOAL_retract(true);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+	LOADED_mobileGoal(true, true, false, false);
+	LOADED_arm(true);
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	drive.motionProfile.distanceMultiplier[0] = 0.25;
+	drive.motionProfile.distanceMultiplier[1] = 1.5;
+	drive.motionProfile.offsets[0] = 40;
+	drive.motionProfile.offsets[1] = (int)(secondSpeed);
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<(int)(secondTimeout/4); C++){
+		if(secondDistance > 0) DRIVE_forward(MtnPrfl, secondDistance/5, secondSpeed);
+		else if(secondDistance < 0) DRIVE_backwards(MtnPrfl, fabs(secondDistance)/5, secondSpeed);
+		MOBILEGOAL_retract(true);
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<secondTimeout; C++){
+		if(secondDistance > 0) DRIVE_forward(PID, secondDistance, secondSpeed);
+		else if(secondDistance < 0) DRIVE_backwards(PID, fabs(secondDistance), secondSpeed);
+		MOBILEGOAL_retract(true);
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+}
+
+void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, int firstTimeout, float secondDistance, float secondSpeed, int secondTimeout, bool driveRectify){
+
+	resetValues();
+	LOADED_mobileGoal(false, false, false, false);
+	LOADED_arm(true);
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	drive.motionProfile.distanceMultiplier[0] = 0.25;
+	drive.motionProfile.distanceMultiplier[1] = 1.5;
+	drive.motionProfile.offsets[0] = (int)(40);
+	drive.motionProfile.offsets[1] = (int)(firstSpeed);
+	drive.rectify = driveRectify;
+	writeDebugStream("Before First loop\n\n");
+	for(int C = 0; drive.PID.notDone && C<(int)(firstTimeout/4); C++){
+		if(firstDistance >= 0) DRIVE_forward(MtnPrfl, (float)(firstDistance/4), firstSpeed);
+		else if(firstDistance < 0) DRIVE_backwards(MtnPrfl, (fabs(firstDistance)/4), firstSpeed);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -127;
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+		writeDebugStream("FirstLoop\n\n");
+	}
+
+	resetValues();
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<firstTimeout; C++){
+		if(firstDistance > 0) DRIVE_forward(PID, firstDistance, firstSpeed);
+		else if(firstDistance < 0) DRIVE_backwards(PID, fabs(firstDistance), firstSpeed);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -127;
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+		writeDebugStream("SecondLoop\n\n");
+	}
+
+	resetValues();
+	LOADED_mobileGoal(true, true, false, false);
+	LOADED_arm(true);
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	drive.motionProfile.distanceMultiplier[0] = 0.25;
+	drive.motionProfile.distanceMultiplier[1] = 1.5;
+	drive.motionProfile.offsets[0] = 40;
+	drive.motionProfile.offsets[1] = (int)(secondSpeed);
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<(int)(secondTimeout/4); C++){
+		if(secondDistance > 0) DRIVE_forward(MtnPrfl, secondDistance/5, secondSpeed);
+		else if(secondDistance < 0) DRIVE_backwards(MtnPrfl, fabs(secondDistance)/5, secondSpeed);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 127;
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+	drive.rectify = driveRectify;
+	for(int C = 0; drive.PID.notDone && C<secondTimeout; C++){
+		if(secondDistance > 0) DRIVE_forward(PID, secondDistance, secondSpeed);
+		else if(secondDistance < 0) DRIVE_backwards(PID, fabs(secondDistance), secondSpeed);
+		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 127;
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+	}
+
+	resetValues();
+
+}
+
+#endif

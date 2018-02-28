@@ -647,7 +647,7 @@ void DRIVE_turnRight(ENUM_driveMode mode, float pulses, float turnRadius, float 
 	case Gyro:
 		//Point turn using position PID and Gyro
 		MATH_calculatePID(drive.PID, pulses, SensorValue[SENSOR_gyro]);
-		drive.output[0] = -drive.PID.output;	drive.output[1] = drive.PID.output;
+		drive.output[0] = drive.PID.output;	drive.output[1] = -drive.PID.output;
 		break;
 
 	default:
