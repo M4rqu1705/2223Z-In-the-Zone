@@ -13,9 +13,9 @@ void FAST_pickup(ENUM_driveMode mode, float firstDistance, float firstSpeed, int
 	drive.motionProfile.offsets[1] = (int)(firstSpeed);
 	drive.rectify = driveRectify;
 	writeDebugStream("Before First loop\n\n");
-	for(int C = 0; drive.PID.notDone && C<(int)(firstTimeout/4); C++){
-		if(firstDistance >= 0) DRIVE_forward(MtnPrfl, (float)(firstDistance/4), firstSpeed);
-		else if(firstDistance < 0) DRIVE_backwards(MtnPrfl, (fabs(firstDistance)/4), firstSpeed);
+	for(int C = 0; drive.PID.notDone && C<(int)(firstTimeout/3); C++){
+		if(firstDistance >= 0) DRIVE_forward(MtnPrfl, (float)(firstDistance/3), firstSpeed);
+		else if(firstDistance < 0) DRIVE_backwards(MtnPrfl, (fabs(firstDistance)/3), firstSpeed);
 		MOBILEGOAL_retract(false);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
@@ -87,16 +87,17 @@ void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, in
 		else if(firstDistance < 0) DRIVE_backwards(MtnPrfl, (fabs(firstDistance)/4), firstSpeed);
 		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -127;
 		ARM_move(PID, 1);
+		MOBILEGOAL_retract(false);
 		delay(META_loopsDelay);
 		writeDebugStream("FirstLoop\n\n");
 	}
 
 	resetValues();
 	drive.rectify = driveRectify;
-	for(int C = 0; drive.PID.notDone && C<firstTimeout; C++){
+	for(int C = 0; (drive.PID.notDone || mobileGoalIntake.PID.notDone) && C<firstTimeout; C++){
 		if(firstDistance > 0) DRIVE_forward(PID, firstDistance, firstSpeed);
 		else if(firstDistance < 0) DRIVE_backwards(PID, fabs(firstDistance), firstSpeed);
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = -127;
+		MOBILEGOAL_retract(false);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 		writeDebugStream("SecondLoop\n\n");
@@ -114,7 +115,6 @@ void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, in
 	for(int C = 0; drive.PID.notDone && C<(int)(secondTimeout/4); C++){
 		if(secondDistance > 0) DRIVE_forward(MtnPrfl, secondDistance/5, secondSpeed);
 		else if(secondDistance < 0) DRIVE_backwards(MtnPrfl, fabs(secondDistance)/5, secondSpeed);
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 127;
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -124,7 +124,7 @@ void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, in
 	for(int C = 0; drive.PID.notDone && C<secondTimeout; C++){
 		if(secondDistance > 0) DRIVE_forward(PID, secondDistance, secondSpeed);
 		else if(secondDistance < 0) DRIVE_backwards(PID, fabs(secondDistance), secondSpeed);
-		motor[MOTOR_mobileGoalL] = motor[MOTOR_mobileGoalR] = 127;
+		MOBILEGOAL_retract(true);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}

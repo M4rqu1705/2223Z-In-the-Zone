@@ -128,7 +128,7 @@ void initialize(){
 		wait1Msec(2000);
 		SensorValue[SENSOR_gyro] = 0;
 
-		SensorScale[SENSOR_gyro] = 139;
+		SensorScale[SENSOR_gyro] = 140;
 		//SensorScale[SENSOR_gyro] = 135;
 		SensorFullCount[SENSOR_gyro] = 3600;
 	}
