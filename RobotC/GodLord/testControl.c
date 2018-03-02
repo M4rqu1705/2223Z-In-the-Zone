@@ -34,18 +34,18 @@ task usercontrol(){
 		motor[MOTOR_driveLB] = motor[MOTOR_driveLF] = (vexRT[Ch3] + vexRT[Ch1]);
 		motor[MOTOR_driveRB] = motor[MOTOR_driveRF] = (vexRT[Ch3] - vexRT[Ch1]);
 
-		motor[MOTOR_liftL] = motor[MOTOR_liftR] = vexRT[Ch2];
+		motor[MOTOR_liftL] = motor[MOTOR_liftR] = vexRT[Ch2Xmtr2];
 
-		if (vexRT[Btn5U] == 1)	motor[MOTOR_4L] = motor[MOTOR_4R] = 127;
-		else if (vexRT[Btn5D] == 1)	motor[MOTOR_4L] = motor[MOTOR_4R] = -127;
+		if (vexRT[Btn5UXmtr2] == 1)	motor[MOTOR_4L] = motor[MOTOR_4R] = 127;
+		else if (vexRT[Btn5DXmtr2] == 1)	motor[MOTOR_4L] = motor[MOTOR_4R] = -127;
 		else	motor[MOTOR_4L] = 0;
 
-		if (vexRT[Btn6U] == 1)	motor[MOTOR_roller] = 127;
-		else if (vexRT[Btn6D] == 1)	motor[MOTOR_roller] = -127;
+		if (vexRT[Btn6UXmtr2] == 1)	motor[MOTOR_roller] = 127;
+		else if (vexRT[Btn6DXmtr2] == 1)	motor[MOTOR_roller] = -127;
 		else	motor[MOTOR_roller] = 0;
 
-		if (vexRT[Btn7U] == 1)	motor[MOTOR_mogo] = 127;
-		else if (vexRT[Btn7D] == 1)	motor[MOTOR_mogo] = -127;
+		if (vexRT[Btn6U] == 1)	motor[MOTOR_mogo] = 127;
+		else if (vexRT[Btn6D] == 1)	motor[MOTOR_mogo] = -127;
 		else	motor[MOTOR_mogo] = 0;
 	}
 }

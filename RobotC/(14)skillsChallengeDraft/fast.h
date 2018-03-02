@@ -104,7 +104,7 @@ void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, in
 	}
 
 	resetValues();
-	LOADED_mobileGoal(true, true, false, false);
+	LOADED_mobileGoal(true, false, false, false);
 	LOADED_arm(true);
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	drive.motionProfile.distanceMultiplier[0] = 0.25;
@@ -116,10 +116,12 @@ void FAST_deposit(ENUM_driveMode mode, float firstDistance, float firstSpeed, in
 		if(secondDistance > 0) DRIVE_forward(MtnPrfl, secondDistance/5, secondSpeed);
 		else if(secondDistance < 0) DRIVE_backwards(MtnPrfl, fabs(secondDistance)/5, secondSpeed);
 		ARM_move(PID, 1);
+		MOBILEGOAL_retract(false);
 		delay(META_loopsDelay);
 	}
 
 	resetValues();
+	LOADED_mobileGoal(true, true, false, false);
 	drive.rectify = driveRectify;
 	for(int C = 0; drive.PID.notDone && C<secondTimeout; C++){
 		if(secondDistance > 0) DRIVE_forward(PID, secondDistance, secondSpeed);

@@ -42,7 +42,7 @@
 
 //Joystick setup
 #define JOYSTICK_driveF Ch3
-#define JOYSTICK_driveS Ch1
+#define JOYSTICK_driveS Ch2
 #define JOYSTICK_arm Ch2
 #define JOYSTICK_mobileGoalE Btn6D
 #define JOYSTICK_mobileGoalR Btn6U
