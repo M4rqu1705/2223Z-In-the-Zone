@@ -52,7 +52,7 @@
 //PID variables setup
 //Format:[Loaded][speedPID] or {{unloadedPosition PID, unloadedSpeed PID}, {loaded Position PID, loaded speed PID}}
 float PID_KPdrive[2][2] = {{0.45,0.5}, {0.4,0.5}};
-float PID_KIdrive[2][2] = {{0.0,0.5}, {0,0.5}};
+float PID_KIdrive[2][2] = {{0,0.5}, {0,0.5}};
 float PID_KDdrive[2][2] = {{0.04,0.0005}, {0.065,0.0005}};
 float PID_KPdriveGyro[2][2] = {{0.3,1}, {0.3,1}};
 float PID_KIdriveGyro[2][2] = {{0.3,0}, {0.3,0.5}};
@@ -79,8 +79,11 @@ float PID_KDarm[2] = {0.005, 0.05};
 
 //Information needed for calculations
 #define META_driveOpControlThreshold 20
+#define META_gyroCalibrationConstant 142
 #define META_driveWidth 13.0
 #define META_driveWheelDiameter 3.25
+#define META_driveRectificationGyro 0.5
+#define META_driveRectificationEncoder 0.2
 #define META_encoderLInverted false
 #define META_encoderRInverted true
 #define META_slewGain 12.7

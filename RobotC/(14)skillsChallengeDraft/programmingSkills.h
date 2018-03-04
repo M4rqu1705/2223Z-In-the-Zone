@@ -22,8 +22,8 @@
 #include "fast.h"
 
 void programmingSkillsAuton(){
-
-	FAST_pickup(PID, 50, 127, 55, -43, 127, 55, true);
+////////////////////////////////////////////////////////
+	FAST_pickup(PID, 50, 127, 55, -43, 127, 55, true, false, true);
 
 	//Point turn 35 degrees left
 	resetValues();
@@ -31,6 +31,7 @@ void programmingSkillsAuton(){
 	for(int C = 0; drive.PID.notDone && C<30; C++){
 		DRIVE_turnLeft(Gyro, -35, 6.5, 127);
 		ARM_move(PID, 1);
+		GOLIATH_pickUp(true, 100);
 		delay(META_loopsDelay);
 	}
 
@@ -46,13 +47,15 @@ void programmingSkillsAuton(){
 	for(int C = 0; drive.PID.notDone && C<20; C++){
 		DRIVE_backwards(MtnPrfl, 6, 127);
 		ARM_move(PID, 1);
+		GOLIATH_pickUp(false, 100);
 		delay(META_loopsDelay);
 	}
 
 	resetValues();
-	for(int C = 0; drive.PID.notDone && C<45; C++){
+	for(int C = 0; drive.PID.notDone && C<43; C++){
 		DRIVE_backwards(PID, 30, 127);
 		ARM_move(PID, 1);
+		GOLIATH_pickUp(false, 100);
 		delay(META_loopsDelay);
 	}
 
@@ -90,7 +93,7 @@ void programmingSkillsAuton(){
 
 	// ------------------------------------------ 20 points ---------------------------------------/
 
-	//Move backwards 27.5 inches perpendicular to the starting bar
+	//Move backwards 28 inches perpendicular to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(true, true, false, false);
@@ -108,13 +111,13 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_backwards(PID, 27.5, 127);
+		DRIVE_backwards(PID, 28, 127);
 		MOBILEGOAL_retract(true);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	SensorValue[SENSOR_gyro] = 0;
+	SensorValue[SENSOR_gyro] = 0;    delay(META_loopsDelay);
 
 	//Point turn 90 degrees left, parallel to the starting bar
 	resetValues();
@@ -125,7 +128,7 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 18 inches parllel to the starting bar
+	//Move backwards 17 inches parllel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(false, true, false, false);
@@ -141,8 +144,8 @@ void programmingSkillsAuton(){
 	}
 
 	resetValues();
-	for(int C = 0; drive.PID.notDone && C<55; C++){
-		DRIVE_backwards(PID, 18, 127);
+	for(int C = 0; drive.PID.notDone && C<45; C++){
+		DRIVE_backwards(PID, 17, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -157,7 +160,7 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	FAST_pickup(PID, 25, 127, 50, -25, 127, 50, true);
+	FAST_pickup(PID, 30, 127, 47, -27.5, 127, 50, true, false, false);
 
 	//Point turn 180 degrees right, facing the starting bar
 	resetValues();
@@ -168,7 +171,7 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	FAST_deposit(PID, 12, 127, 50, -43, 127, 75, false);
+	FAST_deposit(PID, 15, 127, 50, -43, 127, 75, false);
 
 	//---------------------------------------- 30 points ------------------------------------------//
 
@@ -183,13 +186,13 @@ void programmingSkillsAuton(){
 	}
 
 	//Pick up third mobile goal
-	FAST_pickup(PID, 25, 127, 35, 10, 127, 30, true);
+	FAST_pickup(PID, 30, 127, 35, 10, 127, 30, true, true, false);
 
 	//Turn right 90 degrees ready to deposit mobile goal
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_turnRight(Gyro, 0, 6.5, 127);
+		DRIVE_turnRight(Gyro, 92.5, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -218,14 +221,14 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	FAST_deposit(PID, 12, 127, 50, -12, 127, 60, true);
+	FAST_deposit(PID, 12, 127, 50, -12, 127, 50, true);
 
 	//------------------------------------------- 40 points ----------------------------------------------//
 
 /*
 	//Turn left 90 degrees for positioning
 	resetValues();
-	SensorValue[SENSOR_gyro] = 0;
+	SensorValue[SENSOR_gyro] = 0;    delay(META_loopsDelay);
 	LOADED_mobileGoal(false, false, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
 		DRIVE_turnLeft(Gyro, -90, 6.5, 127);
@@ -308,43 +311,41 @@ void programmingSkillsAuton(){
 	}
 
 	FAST_deposit(PID, 10, 127, 50, -12.5, 127, 50, true);
-	*/
+	*///////////////////////////////////////////////////////////
 
 	//Turn right '120' degrees for positioning
 	resetValues();
-	SensorValue[SENSOR_gyro] = 0;
-	LOADED_mobileGoal(true, true, true, false);
-	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnLeft(Gyro, -117.5, 6.5, 127);
+	LOADED_mobileGoal(false, false, true, false);
+	for(int C = 0; drive.PID.notDone && C<50; C++){
+		DRIVE_turnLeft(Gyro, -33.5, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	FAST_pickup(PID, 50, 127, 75, -65, 127, 75, true);
+	FAST_pickup(PID, 45, 127, 75, -70, 127, 90, true, false, false);
 
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_turnRight(Gyro, 0, 6.5, 127);
+		DRIVE_turnRight(Gyro, 90, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	FAST_deposit(Gyro, 7.5, 127, 50, -10, 127, 50, true);
+	FAST_deposit(PID, 7.5, 127, 50, -10, 127, 50, true);
 
 	//--------------------------------- 50 points ---------------------------------------//
 
 	//Turn right 90 degrees for positioning
 	resetValues();
-	SensorValue[SENSOR_gyro] = 0;
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnLeft(Gyro, -90, 6.5, 127);
+		DRIVE_turnLeft(Gyro, 0, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//Move forward 12.5 inches parallel to the starting bar
+	//Move forward 12 inches parallel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(true, true, false, false);
@@ -361,7 +362,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_forward(PID, 12.5, 127);
+		DRIVE_forward(PID, 13, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -369,13 +370,13 @@ void programmingSkillsAuton(){
 	//Turn left 90 degrees to face the Mobile Goal
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
-	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_turnLeft(Gyro, -180, 6.5, 127);
+	for(int C = 0; drive.PID.notDone && C<40; C++){
+		DRIVE_turnLeft(Gyro, -90, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 15 inches perpendicular to the starting bar
+	//Move backwards 10 inches perpendicular to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(true, true, false, false);
@@ -392,26 +393,25 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_backwards(PID, 14, 127);
+		DRIVE_backwards(None, 10, 100);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//----------------------------------------- Cross the field --------------------------------------/
+	//======================================== Cross the field =======================================/
 	resetValues();
-	FAST_pickup(PID, 75, 127, 75, 45, 127, 75, true);
+	FAST_pickup(PID, 75, 127, 75, 45, 127, 70, true, true, false);
 
 	//Turn right 90 degrees left for positioning
 	resetValues();
-	SensorValue[SENSOR_gyro] = 0;
 	LOADED_mobileGoal(true, true, true, false);
-	for(int C = 0; drive.PID.notDone && C<50; C++){
+	for(int C = 0; drive.PID.notDone && C<45; C++){
 		DRIVE_turnRight(Gyro, 85, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 15 inches parllel to the starting bar
+	//Move backwards 20 inches parllel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(true, false, false, false);
@@ -428,7 +428,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_backwards(PID, 15, 127);
+		DRIVE_backwards(PID, 20, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -436,7 +436,7 @@ void programmingSkillsAuton(){
 	//Point turn 90 degrees left, perpendicular to the starting bar
 	resetValues();
 	LOADED_mobileGoal(true, false, true, false);
-	for(int C = 0; drive.PID.notDone && C<40; C++){
+	for(int C = 0; drive.PID.notDone && C<35; C++){
 		DRIVE_turnLeft(Gyro, 0, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
@@ -484,7 +484,7 @@ void programmingSkillsAuton(){
 	}
 
 	resetValues();
-	for(int C = 0; drive.PID.notDone && C<50; C++){
+	for(int C = 0; drive.PID.notDone && C<45; C++){
 		DRIVE_backwards(PID, 25, 127);
 		MOBILEGOAL_retract(true);
 		ARM_move(PID, 1);
@@ -493,15 +493,15 @@ void programmingSkillsAuton(){
 
 	//Point turn 90 degrees right, perpendicular to the starting bar
 	resetValues();
-	SensorValue[SENSOR_gyro] = 0;
+	SensorValue[SENSOR_gyro] = 0;    delay(META_loopsDelay);
 	LOADED_mobileGoal(true, false, true, false);
-	for(int C = 0; drive.PID.notDone && C<50; C++){
+	for(int C = 0; drive.PID.notDone && C<45; C++){
 		DRIVE_turnRight(Gyro, 90, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 15 inches parallel to the starting bar
+	//Move backwards 19 inches parallel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(false, false, false, false);
@@ -518,7 +518,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_backwards(PID, 15, 127);
+		DRIVE_backwards(PID, 19, 127);
 		MOBILEGOAL_retract(false);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
@@ -527,39 +527,40 @@ void programmingSkillsAuton(){
 	//Point turn 90 degrees right, perpendicular to the starting bar
 	resetValues();
 	LOADED_mobileGoal(false, false, true, false);
-	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_turnRight(Gyro, 180, 6.5, 127);
+	for(int C = 0; drive.PID.notDone && C<45; C++){
+		DRIVE_turnRight(Gyro, 175, 6.5, 127);
 		MOBILEGOAL_retract(false);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	FAST_pickup(PID, 30, 127, 50, -30, 127, 50, true);
+	FAST_pickup(PID, 30, 127, 50, -30, 127, 50, true, true, false);
 
 	//Point turn 180 degrees right, facing the starting bar
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_turnLeft(Gyro, 0, 6.5, 127);
+		DRIVE_turnLeft(Gyro, -180, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	FAST_deposit(PID, 7.5, 127, 50, -7.5, 127, 75, true);
+	FAST_deposit(PID, 7.5, 127, 50, 0, 0, 0, true);
 	resetValues();
 
-	//Point turn 90 degrees right, perpendicular to the starting bar
+	//------------------------------ 80 points ----------------------------------/
+
+	//Point turn 180 degrees right, facing the starting bar
 	resetValues();
 	SensorValue[SENSOR_gyro] = 0;
-	LOADED_mobileGoal(false, true, true, false);
+	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<50; C++){
 		DRIVE_turnRight(Gyro, 45, 6.5, 127);
-		MOBILEGOAL_retract(true);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 60 inches away from the starting bar
+	//Swing turn backwards and left 60 inches away from the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(false, false, false, false);
@@ -569,7 +570,7 @@ void programmingSkillsAuton(){
 	drive.motionProfile.offsets[1] = 127;
 	drive.rectify = true;
 	for(int C = 0; drive.PID.notDone && C<25; C++){
-		DRIVE_backwards(MtnPrfl, 6, 127);
+		DRIVE_backwards(MtnPrfl, 69, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -581,6 +582,8 @@ void programmingSkillsAuton(){
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
+
+	resetValues();
 
 }
 

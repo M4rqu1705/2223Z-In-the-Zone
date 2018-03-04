@@ -128,7 +128,7 @@ void initialize(){
 		wait1Msec(2000);
 		SensorValue[SENSOR_gyro] = 0;
 
-		SensorScale[SENSOR_gyro] = 140;
+		SensorScale[SENSOR_gyro] = META_gyroCalibrationConstant;
 		//SensorScale[SENSOR_gyro] = 135;
 		SensorFullCount[SENSOR_gyro] = 3600;
 	}
@@ -178,7 +178,7 @@ void resetValues(){
 	drive.output[0] = drive.output[1] = 0;
 	drive.previousPosition[0] = drive.previousPosition[1] = 0;
 	drive.rectify = false;
-	drive.previousGyro = 0;
+	drive.previousGyro = 9182;
 
 	drive.PID.error = 0;
 	drive.PID.lastError = 0;
@@ -475,12 +475,18 @@ void DRIVE_forward(ENUM_driveMode mode, float pulses, float speed){
 
 	//Rectify drive if necessary
 	if(drive.rectify){
-		//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
-		int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])));
-		drive.output[0] += (temp1 <=0 && drive.output[0] >= 0)? temp1 : (temp>=0 && drive.output[0] <= 0) ? -temp1 : 0;
-		temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
-		drive.output[1] += (temp1 <=0 && drive.output[1] >= 0)? temp1 : (temp>=0 && drive.output[1] <= 0) ? -temp1 : 0;
-
+		if(drive.previousGyro != 9182){
+			int temp1 = (int)((SensorValue[SENSOR_gyro] - drive.previousGyro) * META_driveRectificationGyro);
+			drive.output[0] -= (temp1 < 0 && drive.output[0] >= 0) ? temp1 : (temp>=0 && drive.output[0] < 0) ? temp1 : 0;
+			drive.output[1] += (temp1 < 0 && drive.output[1] >= 0) ? temp1 : (temp>=0 && drive.output[1] < 0) ? temp1 : 0;
+		}
+		else{
+			//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+			int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])) * META_driveRectificationEncoder);
+			drive.output[0] += (temp1 < 0 && drive.output[0] >= 0) ? temp1 : (temp>=0 && drive.output[0] < 0) ? temp1 : 0;
+			temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])) * META_driveRectificationEncoder);
+			drive.output[1] += (temp1 < 0 && drive.output[1] >= 0) ? temp1 : (temp>=0 && drive.output[1] < 0) ? temp1 : 0;
+		}
 	}
 
 	//Print values to datalog for debugging reasons
@@ -544,11 +550,19 @@ void DRIVE_backwards(ENUM_driveMode mode, float pulses, float speed){
 
 	//Rectify drive if necessary
 	if(drive.rectify){
-		//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
-		int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])));
-		drive.output[0] += (temp1 <=0 && drive.output[0] >= 0)? temp1 : (temp>=0 && drive.output[0] <= 0) ? -temp1 : 0;
-		temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
-		drive.output[1] += (temp1 <=0 && drive.output[1] >= 0)? temp1 : (temp>=0 && drive.output[1] <= 0) ? -temp1 : 0;
+		if(drive.previousGyro != 9182){
+			writeDebugStream("\n\nUsing gyro to rectify");
+			int temp1 = (int)((SensorValue[SENSOR_gyro] - drive.previousGyro) * META_driveRectificationGyro);
+			drive.output[0] += temp1;
+			drive.output[1] -= temp1;
+		}
+		else{
+			//writeDebugStreamLine("Rectifying, d=%d",(abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])));
+			int temp1 = (int)((abs(SensorValue[SENSOR_encoderR]) - abs(SensorValue[SENSOR_encoderL])) * META_driveRectificationEncoder);
+			drive.output[0] += (temp1 < 0 && drive.output[0] >= 0) ? temp1 : (temp>=0 && drive.output[0] < 0) ? temp1 : 0;
+			temp1 = (int)((abs(SensorValue[SENSOR_encoderL]) - abs(SensorValue[SENSOR_encoderR])) * META_driveRectificationEncoder);
+			drive.output[1] += (temp1 < 0 && drive.output[1] >= 0) ? temp1 : (temp>=0 && drive.output[1] < 0) ? temp1 : 0;
+		}
 	}
 
 	//Print values to datalog for debugging reasons
@@ -790,7 +804,7 @@ void ARM_operatorControl(bool analog){
 			motor[MOTOR_arm] = -META_armMaxOutput;
 		}
 		else{
-			motor[MOTOR_arm] = 0;
+			ARM_move(PID, 1);
 		}
 	}
 }
@@ -819,7 +833,7 @@ void GOLIATH_operatorControl(){
 		motor[MOTOR_coneIntake] = -META_coneIntakeMaxOutput;
 	}
 	else{
-		motor[MOTOR_coneIntake] = 0;
+		motor[MOTOR_coneIntake] = -30;
 	}
 }
 
