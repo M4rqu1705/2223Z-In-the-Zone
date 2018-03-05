@@ -42,5 +42,14 @@ task usercontrol(){
 }
 
 task autonomous(){
+	/*//Turn right 90 degrees ready to deposit mobile goal
+	resetValues();
+	SensorValue[SENSOR_gyro] = 0;
+	LOADED_mobileGoal(false, false, true, false);
+	for(int C = 0; drive.PID.notDone && C<45; C++){
+		DRIVE_turnRight(Gyro, 90, 6.5, 127);
+		ARM_move(PID, 1);
+		delay(META_loopsDelay);
+	}*/
 	programmingSkillsAuton();
 }

@@ -79,7 +79,8 @@ float PID_KDarm[2] = {0.005, 0.05};
 
 //Information needed for calculations
 #define META_driveOpControlThreshold 20
-#define META_gyroCalibrationConstant 142
+//143
+#define META_gyroCalibrationConstant 140
 #define META_driveWidth 13.0
 #define META_driveWheelDiameter 3.25
 #define META_driveRectificationGyro 0.5

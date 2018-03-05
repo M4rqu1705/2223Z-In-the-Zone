@@ -22,8 +22,8 @@
 #include "fast.h"
 
 void programmingSkillsAuton(){
-////////////////////////////////////////////////////////
-	FAST_pickup(PID, 50, 127, 55, -43, 127, 55, true, false, true);
+	////////////////////////////////////////////////////////
+	FAST_pickup(PID, 55, 127, 55, -48, 127, 55, true, false, true);
 
 	//Point turn 35 degrees left
 	resetValues();
@@ -35,7 +35,7 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 30 inches parllel to the starting bar
+	//Move backwards 29 inches parllel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(true, true, false, false);
@@ -53,7 +53,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<43; C++){
-		DRIVE_backwards(PID, 30, 127);
+		DRIVE_backwards(PID, 29, 127);
 		ARM_move(PID, 1);
 		GOLIATH_pickUp(false, 100);
 		delay(META_loopsDelay);
@@ -128,7 +128,7 @@ void programmingSkillsAuton(){
 		delay(META_loopsDelay);
 	}
 
-	//Move backwards 17 inches parllel to the starting bar
+	//Move backwards 16 inches parllel to the starting bar
 	resetValues();
 	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	LOADED_mobileGoal(false, true, false, false);
@@ -145,7 +145,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_backwards(PID, 17, 127);
+		DRIVE_backwards(PID, 16, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -154,7 +154,7 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(false, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnLeft(Gyro, -180, 6.5, 127);
+		DRIVE_turnLeft(Gyro, -179, 6.5, 127);
 		ARM_move(PID, 1);
 		MOBILEGOAL_retract(false);
 		delay(META_loopsDelay);
@@ -179,20 +179,20 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(false, false, true, false);
 	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_turnLeft(Gyro, -90, 6.5, 127);
+		DRIVE_turnLeft(Gyro, -87.5, 6.5, 127);
 		ARM_move(PID, 1);
 		MOBILEGOAL_retract(false);
 		delay(META_loopsDelay);
 	}
 
 	//Pick up third mobile goal
-	FAST_pickup(PID, 30, 127, 35, 10, 127, 30, true, true, false);
+	FAST_pickup(PID, 30, 127, 35, 8, 127, 30, true, true, false);
 
 	//Turn right 90 degrees ready to deposit mobile goal
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<45; C++){
-		DRIVE_turnRight(Gyro, 92.5, 6.5, 127);
+		DRIVE_turnRight(Gyro, 90, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -225,15 +225,15 @@ void programmingSkillsAuton(){
 
 	//------------------------------------------- 40 points ----------------------------------------------//
 
-/*
+	/*
 	//Turn left 90 degrees for positioning
 	resetValues();
 	SensorValue[SENSOR_gyro] = 0;    delay(META_loopsDelay);
 	LOADED_mobileGoal(false, false, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnLeft(Gyro, -90, 6.5, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_turnLeft(Gyro, -90, 6.5, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	//Move forward 20 inches to prepare to pick up the Mobile Goal
@@ -246,26 +246,26 @@ void programmingSkillsAuton(){
 	drive.motionProfile.offsets[1] = 127;
 	drive.rectify = true;
 	for(int C = 0; drive.PID.notDone && C<20; C++){
-		DRIVE_forward(MtnPrfl, 6, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_forward(MtnPrfl, 6, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<60; C++){
-		DRIVE_forward(PID, 20, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_forward(PID, 20, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	//Rotate 45 degrees to face the mobile goal
 	resetValues();
 	LOADED_mobileGoal(false, false, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnLeft(Gyro, -135, 6.5, 127);
-		ARM_move(PID, 1);
-		MOBILEGOAL_retract(false);
-		delay(META_loopsDelay);
+	DRIVE_turnLeft(Gyro, -135, 6.5, 127);
+	ARM_move(PID, 1);
+	MOBILEGOAL_retract(false);
+	delay(META_loopsDelay);
 	}
 
 	FAST_pickup(PID, 30, 127, 50, -40, 127, 50, true);
@@ -274,9 +274,9 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<55; C++){
-		DRIVE_turnRight(Gyro, -105, 6.5, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_turnRight(Gyro, -105, 6.5, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	//Move backwards 30 inches parallel to the starting bar
@@ -289,25 +289,25 @@ void programmingSkillsAuton(){
 	drive.motionProfile.offsets[1] = 127;
 	drive.rectify = true;
 	for(int C = 0; drive.PID.notDone && C<25; C++){
-		DRIVE_backwards(MtnPrfl, 6, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_backwards(MtnPrfl, 6, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_backwards(PID, 30, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_backwards(PID, 30, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	//Turn right 90 degrees for positioning
 	resetValues();
 	LOADED_mobileGoal(true, true, true, false);
 	for(int C = 0; drive.PID.notDone && C<40; C++){
-		DRIVE_turnRight(Gyro, 0, 6.5, 127);
-		ARM_move(PID, 1);
-		delay(META_loopsDelay);
+	DRIVE_turnRight(Gyro, 0, 6.5, 127);
+	ARM_move(PID, 1);
+	delay(META_loopsDelay);
 	}
 
 	FAST_deposit(PID, 10, 127, 50, -12.5, 127, 50, true);
@@ -317,7 +317,7 @@ void programmingSkillsAuton(){
 	resetValues();
 	LOADED_mobileGoal(false, false, true, false);
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_turnLeft(Gyro, -33.5, 6.5, 127);
+		DRIVE_turnLeft(Gyro, -37.5, 6.5, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
@@ -362,7 +362,7 @@ void programmingSkillsAuton(){
 
 	resetValues();
 	for(int C = 0; drive.PID.notDone && C<50; C++){
-		DRIVE_forward(PID, 13, 127);
+		DRIVE_forward(PID, 14, 127);
 		ARM_move(PID, 1);
 		delay(META_loopsDelay);
 	}
