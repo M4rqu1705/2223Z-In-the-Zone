@@ -97,7 +97,7 @@ float PID_KDarm[2] = {0.005, 0.05};
 #define META_mogoRetracted 2400
 #define META_mogoMaxOutput 127
 
-#define META_armOpControlThreshold 50
+#define MTEA_armOpControlThreshold 50
 #define META_armUp 2900
 #define META_armDown 1250
 #define META_armScore 2324
