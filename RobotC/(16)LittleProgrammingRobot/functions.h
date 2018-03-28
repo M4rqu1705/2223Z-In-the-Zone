@@ -20,20 +20,38 @@
 #pragma systemfile
 
 typedef struct{
-	byte presentCurrent;	int presentCycle;
-	byte desiredCurrent;	int desiredCycle;
-} STRUCT_slewRate;
+	byte presentCurrent, desiredCurrent;
+	short presentCycle, desiredCycle;
+	float maxSlope;
+}STRUCT_slewRate;
 
 typedef struct {
-	float KP;		float KI;				float KD;
-	int error;	float integral;	float derivative;
-	int lastError;	byte output;
+	float KP, KI, KD, KV, integral, derivative;
+	int error, lastError;
+	byte output, correctionThreshold;
 }STRUCT_PID;
 
 typedef struct{
+	float valuesHistory[5], sorted[5];
+}STRUCT_medianFilter;
+
+typedef struct{
+	tSensors port;
+	bool inverted;
+	int currentPosition, previousPosition, pulsesPerRevolution;
+	float RPM;
+	STRUCT_medianFilter RPMfilter;
+}STRUCT_SENSOR_encoder;
+
+typedef struct{
+	tSensors port[2];
+	int intermediateReading;
+	bool toggleReset;
+}STRUCT_SENSOR_lineFollower;
+
+typedef struct{
 	byte output;
-	int previousPosition;
-	STRUCT_slewRate slewRate;	STRUCT_PID PID;
+	STRUCT_slewRate slewRate;	STRUCT_PID PID; STRUCT_SENSOR_encoder encoder;
 }STRUCT_driveSide;
 
 typedef struct{
@@ -76,6 +94,7 @@ void initialize(){
 	//Clear out datalog
 	datalogClear();
 
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
 	//Calibrate Gyro
 	if(bIfiRobotDisabled){
 		SensorType[SENSOR_gyro] = sensorNone;
@@ -94,15 +113,29 @@ void initialize(){
 void resetValues(){
 	motor[port1] = motor[port2] = motor[port9] = motor[port10] = 0;
 
-	drive.left.output = 0;
-	drive.left.previousPosition = 0;
-	drive.right.output = 0;
-	drive.right.previousPosition = 0;
+	drive.left.output = drive.right.output = 0;
+	drive.left.encoder.port = SENSOR_encoderL;
+	drive.right.encoder.port = SENSOR_encoderR;
+	drive.left.encoder.inverted = META_encoderLInverted;
+	drive.right.encoder.inverted = META_encoderRInverted;
+	drive.left.encoder.currentPosition = drive.left.encoder.previousPosition = 0;
+	drive.right.encoder.currentPosition = drive.right.encoder.previousPosition = 0;
+	drive.left.encoder.pulsesPerRevolution = drive.right.encoder.pulsesPerRevolution = META_drivePulsesPerRevolution;
+	drive.left.encoder.RPM = drive.right.encoder.RPM = 0;
 
-	slewRateInit(drive.left.slewRate, 0, 0, 0, 0);
-	slewRateInit(drive.right.slewRate, 0, 0, 0, 0);
-	pidInit(drive.left.PID, 0, 0, 0, 0, 0, 0, 0, 0);
-	pidInit(drive.right.PID, 0, 0, 0, 0, 0, 0, 0, 0);\
+
+	for(int counter = 0; counter < 5; counter++){
+		drive.left.encoder.RPMfilter.valuesHistory[counter] = 0;
+		drive.left.encoder.RPMfilter.sorted[counter] = 0;
+		drive.right.encoder.RPMfilter.valuesHistory[counter] = 0;
+		drive.right.encoder.RPMfilter.sorted[counter] = 0;
+	}
+
+	slewRateInit(drive.left.slewRate, 0, 0, 0, 0, META_driveSlewRateMaxSlope);
+	slewRateInit(drive.right.slewRate, 0, 0, 0, 0, META_driveSlewRateMaxSlope);
+	pidInit(drive.left.PID, 0, 0, 0, 0, 0, 0, 0, 0, PID_correctionThresholdDrive);
+	pidInit(drive.right.PID, 0, 0, 0, 0, 0, 0, 0, 0, PID_correctionThresholdDrive);
+	drive.left.PID.KV = drive.right.PID.KV = PID_KVdrive;
 
 	drive.joystickInputs[0] = 0;
 	drive.joystickInputs[1] = 0;
@@ -115,20 +148,36 @@ void operatorControl(int Cycle){
 	drive.joystickInputs[0] = vexRT[JOYSTICK_driveF];
 	drive.joystickInputs[1] = vexRT[JOYSTICK_driveS];
 
-	if((byte)MATH_withinThreshold(drive.joystickInputs[0], JOYSTICK_driveThreshold, -JOYSTICK_driveThreshold))	drive.joystickInputs[0] = 0;
-	if((byte)MATH_withinThreshold(drive.joystickInputs[1], JOYSTICK_driveThreshold, -JOYSTICK_driveThreshold))	drive.joystickInputs[1] = 0;
+	if((byte)checkWithinThreshold(drive.joystickInputs[0], JOYSTICK_driveThreshold, -JOYSTICK_driveThreshold))	drive.joystickInputs[0] = 0;
+	if((byte)checkWithinThreshold(drive.joystickInputs[1], JOYSTICK_driveThreshold, -JOYSTICK_driveThreshold))	drive.joystickInputs[1] = 0;
 
-	drive.left.output = MATH_clamp(drive.joystickInputs[0] + drive.joystickInputs[1]);
-	drive.right.output = MATH_clamp(drive.joystickInputs[0] - drive.joystickInputs[1]);
+	drive.left.output = clamp(drive.joystickInputs[0] + drive.joystickInputs[1]);
+	drive.right.output = clamp(drive.joystickInputs[0] - drive.joystickInputs[1]);
 
-	slewRateInit(drive.left.slewRate, motor[MOTOR_driveLF], Cycle, drive.left.output, 15);
-	slewRateInit(drive.right.slewRate, motor[MOTOR_driveRF], Cycle, drive.right.output, 15);
+	slewRateInit(drive.left.slewRate, motor[MOTOR_driveLF], drive.left.output, 1, 5, META_driveSlewRateMaxSlope);
+	slewRateInit(drive.right.slewRate, motor[MOTOR_driveRF], drive.right.output, 1, 5, META_driveSlewRateMaxSlope);
 
 	slewRateControl(MOTOR_driveLF, drive.left.slewRate);
 	slewRateControl(MOTOR_driveLB, drive.left.slewRate);
 	slewRateControl(MOTOR_driveRF, drive.right.slewRate);
-	slewRateControl(MOTOR_driveLB, drive.right.slewRate);
+	slewRateControl(MOTOR_driveRB, drive.right.slewRate);
 
+	//Update Encoders
+	updateEncoder(drive.left.encoder);
+	updateEncoder(drive.right.encoder);
+
+	writeDebugStream("speedPIDRobot(%f, %f, false)", medianFilter(drive.left.encoder.RPMfilter, drive.left.encoder.RPM), medianFilter(drive.right.encoder.RPMfilter, drive.right.encoder.RPM));
+
+}
+
+void speedPIDRobot(float driveLeftRPM, float driveRightRPM, bool bMobileGoalLoaded){
+	mobileGoalLoaded(bMobileGoalLoaded, false, false, true);
+	updateEncoder(drive.left.encoder);	updateEncoder(drive.right.encoder);
+
+	drive.left.output = calculatePID(drive.left.PID, driveLeftRPM, drive.left.encoder.RPM) + drive.left.PID.KV * drive.left.encoder.RPM;
+	drive.right.output = calculatePID(drive.right.PID, driveRightRPM, drive.right.encoder.RPM) + drive.right.PID.KV * drive.right.encoder.RPM;
+
+	delay(META_loopsDelay);
 }
 
 #endif

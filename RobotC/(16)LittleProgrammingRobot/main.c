@@ -31,12 +31,12 @@ void pre_auton(){
 }
 
 task autonomous(){
-
+	//775
 }
 
 task usercontrol(){
 	for(int C = 0; true; C++){
 		operatorControl(C);
-		delay(20);
+		delay(META_loopsDelay);
 	}
 }
