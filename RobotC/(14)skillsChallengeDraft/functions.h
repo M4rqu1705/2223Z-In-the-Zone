@@ -20,6 +20,7 @@
 #pragma systemfile
 
 //PID structure template in which the program will mainly store constants, integral, counters, and lastError
+
 typedef struct {
 	float KP;
 	float KI;
@@ -35,6 +36,7 @@ typedef struct {
 	byte output;
 	bool notDone;
 }TEMPLATE_PID;
+
 
 //Motion Profile structure template in which the program will store variables that will transform the motion profile trapezoid
 typedef struct {

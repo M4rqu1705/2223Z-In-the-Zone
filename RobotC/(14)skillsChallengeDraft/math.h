@@ -28,7 +28,7 @@ int MATH_map(int inNumber, int inMax, int inMin, int outMax, int outMin){
 byte MATH_clamp( int inNumber){
 	if(inNumber>127) return 127;
 	else if (inNumber<-127) return -127;
-	else return ( byte)(inNumber);
+	else return (byte)(inNumber);
 }
 
 int MATH_round(float inNumber){
