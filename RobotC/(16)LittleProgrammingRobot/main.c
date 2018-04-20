@@ -32,8 +32,8 @@ task autonomous(){
 }
 
 task usercontrol(){
-	for(int C = 0; true; C++){
-		operatorControl(C);
+	while(true){
+		operatorControl();
 		delay(META_loopsDelay);
 	}
 }
