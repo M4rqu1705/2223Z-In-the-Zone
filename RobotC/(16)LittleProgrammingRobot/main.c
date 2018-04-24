@@ -29,9 +29,117 @@ void pre_auton(){
 
 task autonomous(){
 
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<100; C++){
+		moveDrive(47, 127);
+		moveMobileGoalIntake(META_mobileGoalIntakeExtended);
+		moveLift(800, 127);
+		moveMiniFourbar(META_miniFourbarUp);
+		moveGoliathIntake(-30);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<25; C++){
+		moveMobileGoalIntake(META_mobileGoalIntakeRetracted);
+		moveLift(700, 127);
+		moveMiniFourbar(META_miniFourbarUp);
+		moveGoliathIntake(-50);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<100; C++){
+		moveDrive(-45, 127);
+		moveMobileGoalIntake(META_mobileGoalIntakeRetracted);
+		moveLift(200, 127);
+		moveMiniFourbar(META_miniFourbarUp);
+		moveGoliathIntake(-50);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	mobileGoalIsLoaded(false, false, true, false);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<75; C++){
+		turnDrive(135, 127);
+		moveLift(200, 127);
+		moveMiniFourbar(META_miniFourbarUp);
+		moveGoliathIntake(50);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<90; C++){
+		moveDrive(24, 127);
+		moveMobileGoalIntake(META_mobileGoalIntakeRetracted);
+		moveLift(500, 127);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+
+	mobileGoalIsLoaded(false, false, true, false);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[1], PID_KDminiFourbar[1], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<60; C++){
+		turnDrive(230, 127);
+		moveLift(500, 127);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<90; C++){
+		moveDrive(35, 127);
+		moveMobileGoalIntake(META_mobileGoalIntakeRetracted);
+		moveLift(500, 127);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<15; C++){
+		moveMobileGoalIntake(META_mobileGoalIntakeExtended);
+		moveLift(500, 127);
+		delay(META_loopsDelay);
+	}
+	resetValues();
+
+	SensorValue[SENSOR_encoderL] = SensorValue[SENSOR_encoderR] = 0;
+	mobileGoalIsLoaded(false, false, false, false);
+	pidInit(lift.PID, PID_KPlift[0], PID_KIlift[0], PID_KDlift[0], 0, 0, 0, 0, 0, PID_correctionCyclesLift);
+	pidInit(coneIntake.miniFourbar.PID, PID_KPminiFourbar[1], PID_KIminiFourbar[0], PID_KDminiFourbar[0], 0, 0, 0, 0, 0, PID_correctionCyclesMiniFourbar);
+	for(int C = 0; C<50; C++){
+		moveDrive(-40, 127);
+		if(C<10)moveMobileGoalIntake(META_mobileGoalIntakeExtended);
+		moveLift(500, 127);
+		delay(META_loopsDelay);
+	}
+	resetValues();
 }
 
 task usercontrol(){
+	resetValues();
 	while(true){
 		operatorControl();
 		delay(META_loopsDelay);

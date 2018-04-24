@@ -3,10 +3,10 @@
 
 #pragma systemfile
 
-byte clamp(float in){
-	if(in>=127) return 127;
-	else if(in<=-127) return -127;
-	else return (byte)(in);
+byte MATH_clamp(float in){
+	if(in>=127) return (byte)127;
+	else if (in<=-127) return (byte)-127;
+	else return (byte)(round(in));
 }
 
 float map(float inNumber, float inMax, float inMin, float outMax, float outMin){
@@ -24,9 +24,14 @@ float calculateSpeed(float &_previousValue, float _currentValue, int _pulsesPerR
 	return currentSpeed;
 }
 
+int sign(float inNumber){
+	if(inNumber>=0) return 1;
+	else return -1;
+}
+
 //Conversions
 int convertInchesToPulses(float inches){
-	return round(inches*(360/(META_driveWheelDiameter*PI)));
+	return round(inches*(META_drivePulsesPerRevolution/(META_driveWheelDiameter*PI)));
 }
 
 int convertDegreesToPulses(float targetDegrees, float turnRadius){
@@ -48,7 +53,7 @@ void slewRateControl(tMotor port, STRUCT_slewRate in){
 	if(slope > in.maxSlope) slope = in.maxSlope;
 	else if (slope < -in.maxSlope) slope = -in.maxSlope;
 
-	motor[port] = clamp(round(slope *(in.presentCycle) + in.presentCurrent));
+	motor[port] = MATH_clamp(round(slope *(in.presentCycle) + in.presentCurrent));
 }
 
 int updateEncoder(STRUCT_SENSOR_encoder &out){
@@ -93,29 +98,29 @@ byte calculatePID(STRUCT_PID &values,  int setpoint,  int processVariable){
 	values.derivative = (values.error - values.lastError)/(META_loopsDelay * 0.001);
 
 	//Calculate output
-	values.output = clamp((values.KP * values.error) +	(values.KI * values.integral) +	(values.KD * values.derivative));
+	values.output = MATH_clamp((values.KP * values.error) +	(values.KI * values.integral) +	(values.KD * values.derivative));
 
 	//Assign error to last error
 	values.lastError = values.error;
 
 	//Just in case Debug is needed
-	//writeDebugStreamLine("values = %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", values.KP, values.KI, values.KD, values.integralMax, values.error, values.lastError, values.integral, values.cyclesCounter, values.timeoutCounter, values.output); datalogAddValue(0, processVariable);
+	writeDebugStreamLine("values = %f, %f, %f, %f, %f, %f, %f", values.KP, values.KI, values.KD, values.error, values.lastError, values.integral, values.output); datalogAddValue(0, processVariable);
 
 	return (values.output);
 }
 
 //Adjust PID constants based on load and desired action
 void mobileGoalIsLoaded(bool loaded, bool retract, bool usingGyro, bool speedPID){
+	//If Mobile Goal Intake will retract
+	if(retract){
+		pidInit(mobileGoal.PID, PID_KPmobileGoalIntake[1], PID_KImobileGoalIntake[1], PID_KDmobileGoalIntake[1], 0, 0, 0, 0, 0, PID_correctionCyclesMobileGoal);
+	}
+	//If Mobile Goal Intake will extend
+	else{
+		pidInit(mobileGoal.PID, PID_KPmobileGoalIntake[0], PID_KImobileGoalIntake[0], PID_KDmobileGoalIntake[0], 0, 0, 0, 0, 0, PID_correctionCyclesMobileGoal);
+	}
 	//If Mobile Goal is loaded
 	if(loaded){
-		//If Mobile Goal Intake will retract
-		if(retract){
-
-		}
-		//If Mobile Goal Intake will extend
-		else{
-
-		}
 		//If drive will rotate, so it will use gyro
 		if(usingGyro){
 			pidInit(drive.left.PID, PID_KPdriveGyro[1], PID_KIdriveGyro[1], PID_KDdriveGyro[1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
@@ -123,24 +128,17 @@ void mobileGoalIsLoaded(bool loaded, bool retract, bool usingGyro, bool speedPID
 		}
 		//If drive will use speed PID to translate
 		else if(speedPID){
-			pidInit(drive.left.PID, PID_KPdrive[1][1], PID_KIdrive[1][1], PID_KPdrive[1][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
-			pidInit(drive.right.PID, PID_KPdrive[1][1], PID_KIdrive[1][1], PID_KPdrive[1][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.left.PID, PID_KPdrive[1][1], PID_KIdrive[1][1], PID_KDdrive[1][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.right.PID, PID_KPdrive[1][1], PID_KIdrive[1][1], PID_KDdrive[1][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
 		}
 		//If drive will use position PID
 		else{
-			pidInit(drive.left.PID, PID_KPdrive[1][0], PID_KIdrive[1][0], PID_KPdrive[1][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
-			pidInit(drive.right.PID, PID_KPdrive[1][0], PID_KIdrive[1][0], PID_KPdrive[1][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.left.PID, PID_KPdrive[1][0], PID_KIdrive[1][0], PID_KDdrive[1][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.right.PID, PID_KPdrive[1][0], PID_KIdrive[1][0], PID_KDdrive[1][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
 		}
 	}
 	//If Mobile Goal is not loaded
 	else{
-		if(retract){
-
-		}
-		//If Mobile Goal Intake will extend
-		else{
-
-		}
 		//If drive will rotate, so it will use gyro
 		if(usingGyro){
 			pidInit(drive.left.PID, PID_KPdriveGyro[0], PID_KIdriveGyro[0], PID_KDdriveGyro[0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
@@ -148,13 +146,13 @@ void mobileGoalIsLoaded(bool loaded, bool retract, bool usingGyro, bool speedPID
 		}
 		//If drive will use speed PID to translate
 		else if(speedPID){
-			pidInit(drive.left.PID, PID_KPdrive[0][1], PID_KIdrive[0][1], PID_KPdrive[0][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
-			pidInit(drive.right.PID, PID_KPdrive[0][1], PID_KIdrive[0][1], PID_KPdrive[0][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.left.PID, PID_KPdrive[0][1], PID_KIdrive[0][1], PID_KDdrive[0][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.right.PID, PID_KPdrive[0][1], PID_KIdrive[0][1], PID_KDdrive[0][1], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
 		}
 		//If drive will use position PID
 		else{
-			pidInit(drive.left.PID, PID_KPdrive[0][0], PID_KIdrive[0][0], PID_KPdrive[0][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
-			pidInit(drive.right.PID, PID_KPdrive[0][0], PID_KIdrive[0][0], PID_KPdrive[0][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.left.PID, PID_KPdrive[0][0], PID_KIdrive[0][0], PID_KDdrive[0][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
+			pidInit(drive.right.PID, PID_KPdrive[0][0], PID_KIdrive[0][0], PID_KDdrive[0][0], 0, 0, 0, 0, 0, PID_correctionCyclesDrive);
 		}
 	}
 }
