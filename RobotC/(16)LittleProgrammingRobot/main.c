@@ -20,11 +20,17 @@
 #include "Vex_Competition_Includes.c"
 #include "commons.h"
 #include "functions.h"
+#include "LCD.h"
 
 void pre_auton(){
 	bStopTasksBetweenModes = true;
 	bDisplayCompetitionStatusOnLcd = true;
+	LCD_init();
 	initialize();
+
+	while(bIfiRobotDisabled){
+		LCD_select();
+	}
 }
 
 task autonomous(){

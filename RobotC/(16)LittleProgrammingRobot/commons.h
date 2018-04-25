@@ -61,8 +61,8 @@ float PID_KPdriveGyro[2] = {0.35, 0};
 float PID_KIdriveGyro[2] = {0 , 0};
 float PID_KDdriveGyro[2] = {0.035, 0};
 float PID_KPlift[2] = {0.25, 0.2}, PID_KIlift[2] = {0.1, 0.1}, PID_KDlift[2] = {0, 0};
-float PID_KPmobileGoalIntake[2] = {1, 0.25}, PID_KImobileGoalIntake[2] = {0, 0}, PID_KDmobileGoalIntake[2] = {0, 0.05};
-float PID_KPminiFourbar[2] = {0.225, 0.225}, PID_KIminiFourbar[2] = {0, 0}, PID_KDminiFourbar[2] = {0.0005, 0.0005};
+float PID_KPmobileGoalIntake[2] = {0.1, 0.1}, PID_KImobileGoalIntake[2] = {0, 0}, PID_KDmobileGoalIntake[2] = {0, 0.05};
+float PID_KPminiFourbar[2] = {0.075, 0.1}, PID_KIminiFourbar[2] = {0, 0}, PID_KDminiFourbar[2] = {0, 0.5};
 
 #define PID_correctionCyclesDrive 20
 #define PID_correctionCyclesLift 20
